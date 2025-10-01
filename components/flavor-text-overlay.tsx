@@ -97,7 +97,7 @@ export default function FlavorTextOverlay({
             style={{ opacity: 0 }}
           >
             <div className="font-mono text-xs lg:text-sm font-medium tracking-widest uppercase text-white">
-              {month} • FLAVOR OF THE MONTH
+              {month} • FLAVOUR OF THE MONTH
             </div>
           </div>
           

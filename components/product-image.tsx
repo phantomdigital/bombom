@@ -2,8 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
-import StrawberryParticles from './strawberry-particles';
-import TickerTape from './ticker-tape';
 import NeoParticles from './neo-particles';
 
 interface ProductImageProps {
@@ -25,15 +23,8 @@ export default function ProductImage({
   imagePath = '/images/optim.png',
   position = 'right',
   size = 'medium',
-  opacity = 0.9,
-  showStrawberries = false,
-  strawberryCount = 180,
-  strawberrySpawnRate = 8.0,
-  strawberryOpacity = 0.9,
   showBadge = false,
   badgeText = 'This Month',
-  showTicker = false,
-  tickerText = 'FRESH STRAWBERRY GELATO • MADE DAILY • LIMITED TIME'
 }: ProductImageProps) {
   const productContainerRef = useRef<HTMLDivElement>(null);
   const badgeRef = useRef<HTMLDivElement>(null);

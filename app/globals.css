@@ -118,9 +118,27 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    cursor: url('/images/pointer.svg') 12 12, auto;
   }
   body {
     @apply bg-background text-foreground;
+  }
+  
+  /* Custom cursor for pointer events only */
+  a, button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"], 
+  select, [tabindex]:not([tabindex="-1"]), [onclick], .cursor-pointer {
+    cursor: url('/images/cursor.svg') 12 12, pointer;
+  }
+  
+  /* Custom text selection colors */
+  ::selection {
+    background-color: var(--color-bom-red);
+    color: var(--color-bom-darkred);
+  }
+  
+  ::-moz-selection {
+    background-color: var(--color-bom-red);
+    color: var(--color-bom-darkred);
   }
 }
 
