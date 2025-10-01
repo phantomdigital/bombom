@@ -206,7 +206,7 @@ export default function ProductImage({
           alt="Product"
           className={`${getSizeClasses()} object-contain drop-shadow-2xl relative z-10`}
           style={{
-            filter: 'brightness(1.1) contrast(1.05)' // Slight enhancement for Neo-Grotesque pop
+            filter: 'brightness(1.1) contrast(1.05)' 
           }}
         />
       </div>
