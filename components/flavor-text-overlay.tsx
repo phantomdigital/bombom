@@ -1,5 +1,9 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
+import { gsap } from 'gsap';
+import AnimatedText from './animated-text';
+
 interface FlavorTextOverlayProps {
   month: string;
   flavorName: string;
@@ -29,6 +33,39 @@ export default function FlavorTextOverlay({
   position = 'top-left',
   opacity = 0.9
 }: FlavorTextOverlayProps) {
+  const badgeRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!badgeRef.current) return;
+
+    // Badge animation - scale up with bounce and slight rotation
+    gsap.fromTo(badgeRef.current, 
+      {
+        scale: 0,
+        rotation: -10,
+        opacity: 0
+      },
+      {
+        scale: 1,
+        rotation: 0,
+        opacity: 1,
+        duration: 0.8,
+        ease: "back.out(1.7)",
+        delay: 0.1
+      }
+    );
+
+    // Add a subtle floating animation after the initial entrance
+    gsap.to(badgeRef.current, {
+      y: -4,
+      duration: 2,
+      ease: "sine.inOut",
+      yoyo: true,
+      repeat: -1,
+      delay: 1
+    });
+  }, []);
+
   const getPositionClasses = () => {
     switch (position) {
       case 'top-left':
@@ -53,41 +90,55 @@ export default function FlavorTextOverlay({
     >
       <div className="text-white max-w-lg h-full flex flex-col">
         <div className="flex-1">
-          {/* Month - Small, understated */}
-          <div className="font-mono text-sm lg:text-base font-light tracking-wider uppercase mb-2 lg:mb-3 opacity-70">
-            {month}
+          {/* Flavor of the Month - Prominent badge */}
+          <div 
+            ref={badgeRef}
+            className="inline-block bg-white/20 backdrop-blur-sm border border-white/30 rounded-full px-4 py-2 mb-4 lg:mb-6"
+            style={{ opacity: 0 }}
+          >
+            <div className="font-mono text-xs lg:text-sm font-medium tracking-widest uppercase text-white">
+              {month} • FLAVOR OF THE MONTH
+            </div>
           </div>
           
           {/* Main Flavor Name - Bold, prominent */}
-          <h1 className="font-gasoek font-normal text-4xl lg:text-6xl xl:text-8xl leading-[0.85] tracking-[0.0001em] mb-4 lg:mb-6">
+          <AnimatedText 
+            as="h1" 
+            className="font-gasoek font-normal text-4xl lg:text-6xl xl:text-[8.15rem] leading-[0.95] tracking-[-0.02em] mb-6 lg:mb-8 text-white/95"
+            delay={0.3}
+            stagger={0.1}
+            duration={0.6}
+          >
             {flavorName}
-          </h1>
+          </AnimatedText>
           
           {/* Flavor Description - Clean, readable */}
           {flavorDescription && (
-            <div className="font-sans text-xl lg:text-2xl font-normal mb-6 lg:mb-8 opacity-85 tracking-wide">
+            <AnimatedText 
+              as="div" 
+              className="font-sans text-xl lg:text-2xl font-light mb-8 lg:mb-10 opacity-90 tracking-wide leading-relaxed max-w-lg text-white/90"
+              delay={1.2}
+              stagger={0.05}
+              duration={0.5}
+            >
               {flavorDescription}
-            </div>
+            </AnimatedText>
           )}
 
           {/* Hero Subtitle - Brief compelling copy */}
           {heroSubtitle && (
-            <p className="font-sans text-base lg:text-lg font-light opacity-80 leading-relaxed max-w-md">
+            <AnimatedText 
+              as="p" 
+              className="font-sans text-base lg:text-lg font-light opacity-80 leading-relaxed max-w-md"
+              delay={1.8}
+              stagger={0.03}
+              duration={0.4}
+            >
               {heroSubtitle}
-            </p>
+            </AnimatedText>
           )}
         </div>
 
-        {/* Call to Action Button - Bottom aligned */}
-        <div className="pointer-events-auto mt-auto">
-          <button 
-            onClick={onCtaClick}
-            className="group relative overflow-hidden bg-white/10 backdrop-blur-sm border border-white/30 text-white font-sans font-medium text-sm lg:text-base uppercase tracking-[0.2em] px-10 lg:px-12 py-4 lg:py-5 hover:bg-white hover:border-white hover:text-bom-darkred transition-all duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-transparent shadow-lg hover:shadow-2xl hover:shadow-white/20 hover:scale-[1.02]"
-          >
-            <span className="relative z-10">{ctaText}</span>
-            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-out" />
-          </button>
-        </div>
       </div>
     </div>
   );
