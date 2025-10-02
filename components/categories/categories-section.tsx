@@ -22,12 +22,14 @@ export default function CategoriesSection() {
           <button className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition-colors duration-200 group">
             <span className="font-sans text-sm lg:text-base font-medium">See Full Menu</span>
             <svg 
-              className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" 
+              width="12" 
+              height="12" 
+              viewBox="0 0 9 9" 
               fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+              className="transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              <path d="M1 8L8 1M8 1H1M8 1V8" stroke="currentColor" strokeLinejoin="round"/>
             </svg>
           </button>
         </div>
@@ -40,7 +42,7 @@ export default function CategoriesSection() {
           }}
           className="w-full"
         >
-          <CarouselContent className="-ml-4">
+          <CarouselContent className="-ml-4 overflow-visible">
             {productCategories.map((category) => (
               <CarouselItem key={category.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
                 <CategoryCard category={category} />
