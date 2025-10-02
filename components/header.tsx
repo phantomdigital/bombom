@@ -1,6 +1,6 @@
 export default function Header() {
   return (
-    <header className="w-full mx-auto px-4 lg:px-24 xl:px-32 2xl:px-40 [@media(min-width:1795px)]:px-48 py-2 sm:py-3 lg:py-6 border-b border-gray-800/10 backdrop-blur-sm bg-transparent sticky top-0 z-50">
+    <header className="w-full bg-sky-100/85 mx-auto px-4 lg:px-24 xl:px-32 2xl:px-40 [@media(min-width:1795px)]:px-48 py-2 sm:py-3 lg:py-6 border-b border-gray-800/10 backdrop-blur-sm sticky top-0 z-950">
       <div className="flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center group">
