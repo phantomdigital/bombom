@@ -11,7 +11,7 @@ export const productCategories: ProductCategory[] = [
   {
     id: 'artisan-gelato',
     name: 'Artisan Gelato',
-    description: 'Traditional Italian-style gelato with rotating seasonal flavors',
+    description: 'Traditional Italian-style gelato with rotating seasonal flavours',
     image: '/images/categories/gelato.jpg',
     colorTheme: '#ed5878',
     href: '/menu/gelato'
