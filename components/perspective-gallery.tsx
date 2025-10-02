@@ -8,6 +8,7 @@ import LeftFadeOverlay from './left-fade-overlay';
 import FlavorTextContent from './flavor-text-content';
 import PinkTintOverlay from './pink-tint-overlay';
 import ProductImageFlex from './product-image-flex';
+import NeoParticles from './neo-particles';
 
 // DOM + GSAP version: three rigid panels with synchronized content strips to stay seamless across seams
 export default function PerspectiveGallery() {
@@ -165,6 +166,11 @@ export default function PerspectiveGallery() {
         }}
       />
       
+      {/* Neo Particles - Full Container */}
+      <div className="absolute inset-0 pointer-events-none z-[440] overflow-hidden">
+        <NeoParticles />
+      </div>
+      
       {/* Content Layer - Flex Layout */}
       <div className="relative z-[500] w-full h-full flex flex-col md:flex-row items-center justify-between p-4 sm:p-6 md:p-8 lg:p-12 xl:p-16">
         {/* Text Content - Left Side */}
@@ -187,7 +193,7 @@ export default function PerspectiveGallery() {
         <div className="flex-shrink-0 flex items-center justify-center md:justify-end mr-0 md:mr-8 lg:mr-24">
           <ProductImageFlex 
             size="large"
-            opacity={0.95}
+            opacity={1}
             showBadge={true}
             badgeText="This Month"
           />

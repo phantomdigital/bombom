@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
+import NeoParticles from './neo-particles';
 
 interface ProductImageFlexProps {
   imagePath?: string;
@@ -12,6 +13,7 @@ interface ProductImageFlexProps {
   className?: string;
   pinkBgWidth?: string; // CSS width value like "30vw", "400px", "50%"
   pinkBgOpacity?: number;
+  showParticles?: boolean;
 }
 
 export default function ProductImageFlex({
@@ -23,6 +25,7 @@ export default function ProductImageFlex({
   className = '',
   pinkBgWidth = '30vw',
   pinkBgOpacity = 0.9,
+  showParticles = false,
 }: ProductImageFlexProps) {
   const productContainerRef = useRef<HTMLDivElement>(null);
   const badgeRef = useRef<HTMLDivElement>(null);
@@ -96,12 +99,12 @@ export default function ProductImageFlex({
         {showBadge && (
           <div 
             ref={badgeRef}
-            className="absolute -top-6 -right-6 md:-top-8 md:-right-8 lg:-top-10 lg:-right-10 z-10 pointer-events-auto"
+            className="absolute -top-6 -right-6 md:-top-8 md:-right-8 lg:top-16 lg:right-6 z-50 pointer-events-auto"
             style={{ 
               animation: 'spin-slow 45s linear infinite'
             }}
           >
-            <div className="relative w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 lg:w-40 lg:h-40">
+            <div className="relative w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 lg:w-48 lg:h-48">
               {/* Asterisk/Star shape - 6 points */}
               <div className="absolute inset-0 flex items-center justify-center">
                 {[...Array(6)].map((_, i) => (
