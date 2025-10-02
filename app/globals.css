@@ -2,8 +2,12 @@
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
+@custom-media --stack (width < 1125px);
+@custom-media --3xl (width >= 1795px);
 
 @theme inline {
+  --breakpoint-stack: 1125px;
+  --breakpoint-3xl: 1795px;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);

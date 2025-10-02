@@ -83,6 +83,9 @@ export default function CopacabanaShader({ width = 800, height = 600, primaryCol
   useEffect(() => {
     if (!canvasRef.current) return;
 
+    // Check if mobile once for performance settings
+    const isMobile = window.innerWidth < 768;
+
     // Setup
     const scene = new THREE.Scene();
     sceneRef.current = scene;
@@ -93,10 +96,13 @@ export default function CopacabanaShader({ width = 800, height = 600, primaryCol
     const renderer = new THREE.WebGLRenderer({ 
       canvas: canvasRef.current,
       alpha: true,
-      antialias: true
+      antialias: false, // Disable antialiasing on mobile for performance
+      powerPreference: 'high-performance'
     });
-    renderer.setSize(width, height);
-    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(width, height, false); // false = don't update canvas style
+    // Limit pixel ratio on mobile devices for better performance
+    const pixelRatio = isMobile ? Math.min(window.devicePixelRatio, 1) : Math.min(window.devicePixelRatio, 2);
+    renderer.setPixelRatio(pixelRatio);
     // Ensure color management matches CSS/hex expectations
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.NoToneMapping;
@@ -127,20 +133,31 @@ export default function CopacabanaShader({ width = 800, height = 600, primaryCol
     const mesh = new THREE.Mesh(geometry, material);
     scene.add(mesh);
 
-    // Animation loop
-    const animate = () => {
+    // Animation loop - throttle on mobile
+    let lastTime = 0;
+    const targetFPS = isMobile ? 30 : 60; // 30fps on mobile, 60fps on desktop
+    const frameInterval = 1000 / targetFPS;
+    
+    const animate = (currentTime: number) => {
+      animationFrameRef.current = requestAnimationFrame(animate);
+      
+      const deltaTime = currentTime - lastTime;
+      if (deltaTime < frameInterval) {
+        return; // Skip frame if not enough time has passed
+      }
+      
+      lastTime = currentTime - (deltaTime % frameInterval);
+      
       if (materialRef.current) {
-        materialRef.current.uniforms.u_time.value += 0.016; // ~60fps
+        materialRef.current.uniforms.u_time.value += 0.016; // ~60fps time increment
       }
       
       if (rendererRef.current && sceneRef.current && cameraRef.current) {
         rendererRef.current.render(sceneRef.current, cameraRef.current);
       }
-      
-      animationFrameRef.current = requestAnimationFrame(animate);
     };
     
-    animate();
+    animate(0);
 
     // Cleanup
     return () => {
@@ -161,7 +178,7 @@ export default function CopacabanaShader({ width = 800, height = 600, primaryCol
   useEffect(() => {
     const handleResize = () => {
       if (rendererRef.current && materialRef.current) {
-        rendererRef.current.setSize(width, height);
+        rendererRef.current.setSize(width, height, false);
         materialRef.current.uniforms.u_resolution.value.set(width, height);
       }
     };
@@ -184,7 +201,14 @@ export default function CopacabanaShader({ width = 800, height = 600, primaryCol
     <canvas 
       ref={canvasRef}
       className="w-full h-full"
-      style={{ display: 'block', background: 'transparent', opacity: opacity }}
+      style={{ 
+        display: 'block', 
+        background: 'transparent', 
+        opacity: opacity,
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover'
+      }}
     />
   );
 }

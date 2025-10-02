@@ -2,39 +2,34 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
-import NeoParticles from './neo-particles';
 
-interface ProductImageProps {
+interface ProductImageFlexProps {
   imagePath?: string;
-  position?: 'right' | 'left' | 'center';
   size?: 'small' | 'medium' | 'large';
   opacity?: number;
-  showStrawberries?: boolean;
-  strawberryCount?: number;
-  strawberrySpawnRate?: number;
-  strawberryOpacity?: number;
   showBadge?: boolean;
   badgeText?: string;
-  showTicker?: boolean;
-  tickerText?: string;
+  className?: string;
+  pinkBgWidth?: string; // CSS width value like "30vw", "400px", "50%"
+  pinkBgOpacity?: number;
 }
 
-export default function ProductImage({
+export default function ProductImageFlex({
   imagePath = '/images/optim.png',
-  position = 'right',
   size = 'medium',
+  opacity = 1,
   showBadge = false,
   badgeText = 'This Month',
-}: ProductImageProps) {
+  className = '',
+  pinkBgWidth = '30vw',
+  pinkBgOpacity = 0.9,
+}: ProductImageFlexProps) {
   const productContainerRef = useRef<HTMLDivElement>(null);
   const badgeRef = useRef<HTMLDivElement>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [isMobile, setIsMobile] = useState(false);
 
+  // Mouse tracking for subtle 3D effect (client-side only)
   useEffect(() => {
-    // Set initial mobile state
-    setIsMobile(window.innerWidth < 768);
-    
     const handleMouseMove = (e: MouseEvent) => {
       const { clientX, clientY } = e;
       const { innerWidth, innerHeight } = window;
@@ -46,26 +41,17 @@ export default function ProductImage({
       setMousePosition({ x, y });
     };
 
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
     window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('resize', handleResize);
-    };
+    return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
+  // Apply subtle 3D rotation based on mouse position
   useEffect(() => {
-    // Very subtle rotation based on mouse position
-    const rotationIntensity = 0.8; // Much more subtle - less than 1 degree
+    const rotationIntensity = 0.8;
     const rotateX = -mousePosition.y * rotationIntensity;
     const rotateY = mousePosition.x * rotationIntensity;
     const rotateZ = mousePosition.x * rotationIntensity * 0.3;
 
-    // Animate the product container
     if (productContainerRef.current) {
       gsap.to(productContainerRef.current, {
         duration: 1.2,
@@ -78,7 +64,6 @@ export default function ProductImage({
       });
     }
 
-    // Animate the badge with slightly different movement
     if (badgeRef.current) {
       gsap.to(badgeRef.current, {
         duration: 1.0,
@@ -92,90 +77,37 @@ export default function ProductImage({
     }
   }, [mousePosition]);
 
-  const getPositionClasses = () => {
-    switch (position) {
-      case 'right':
-        // Use isMobile state for dynamic positioning
-        if (isMobile) {
-          return 'bottom-2 left-1/2 -translate-x-1/2';
-        }
-        return 'right-8 top-1/2 -translate-y-1/2 lg:right-20 xl:right-40';
-      case 'left':
-        if (isMobile) {
-          return 'bottom-2 left-1/2 -translate-x-1/2';
-        }
-        return 'left-8 top-1/2 -translate-y-1/2 lg:left-16';
-      case 'center':
-        return 'left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2';
-      default:
-        if (isMobile) {
-          return 'bottom-2 left-1/2 -translate-x-1/2';
-        }
-        return 'right-8 top-1/2 -translate-y-1/2 lg:right-16';
-    }
-  };
-
-  const getSizeClasses = () => {
-    switch (size) {
-      case 'small':
-        return 'w-56 sm:w-64 md:w-32 lg:w-40 xl:w-48 h-auto';
-      case 'medium':
-        return 'w-72 sm:w-80 md:w-48 lg:w-56 xl:w-64 h-auto';
-      case 'large':
-        return 'w-80 sm:w-96 md:w-56 lg:w-72 xl:w-94 h-auto';
-      default:
-        return 'w-72 sm:w-80 md:w-48 lg:w-56 xl:w-64 h-auto';
-    }
+  // CSS classes for different sizes - no JavaScript needed
+  const sizeClasses = {
+    small: 'w-32 sm:w-40 md:w-48',
+    medium: 'w-48 sm:w-56 md:w-64 lg:w-72',
+    large: 'w-56 sm:w-64 md:w-72 lg:w-80 xl:w-96',
   };
 
   return (
-    <>
-      {/* Full viewport height background in BOM red - dynamic based on isMobile state */}
-      <div 
-        className={`absolute bg-bom-red pointer-events-none ${
-          isMobile 
-            ? 'bottom-0 left-0 right-0 h-[40vh]'
-            : position === 'right' 
-            ? 'top-0 bottom-0 right-0 w-[30vw] lg:w-[22vw] xl:w-[18vw]' 
-            : position === 'left' 
-            ? 'top-0 bottom-0 left-0 w-[35vw]' 
-            : 'top-0 left-1/2 -translate-x-1/2 w-[35vw]'
-        }`}
-        style={{ 
-          zIndex: 420 // Pink background - bottom layer
-        }}
-      />
-      
-
-      
-      {/* Neo-Grotesque particles - positioned near product */}
-      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 440 }}>
-        <NeoParticles />
-      </div>
-      
+    <div className={`relative ${className}`}>
+      {/* Product Container */}
       <div
         ref={productContainerRef}
-        className={`absolute pointer-events-none ${getPositionClasses()}`}
-        style={{ 
-          zIndex: 450 // Product image - top layer (below text at 500)
-        }}
+        className="relative flex flex-col items-center justify-center p-8"
+        style={{ opacity }}
       >
-        {/* Neo-Grotesque Asterisk Badge */}
+        {/* Badge - Positioned relative to product */}
         {showBadge && (
           <div 
             ref={badgeRef}
-            className="absolute -top-4 -right-4 sm:-top-6 sm:-right-6 md:-top-10 md:-right-10 lg:top-6 lg:-right-1 pointer-events-auto z-50"
+            className="absolute -top-6 -right-6 md:-top-8 md:-right-8 lg:-top-10 lg:-right-10 z-10 pointer-events-auto"
             style={{ 
               animation: 'spin-slow 45s linear infinite'
             }}
           >
-            <div className="relative w-32 h-32 sm:w-36 sm:h-36 md:w-32 md:h-32 lg:w-40 lg:h-40 xl:w-50 xl:h-50">
+            <div className="relative w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 lg:w-40 lg:h-40">
               {/* Asterisk/Star shape - 6 points */}
               <div className="absolute inset-0 flex items-center justify-center">
                 {[...Array(6)].map((_, i) => (
                   <div
                     key={i}
-                    className="absolute w-2.5 sm:w-3 md:w-3 lg:w-3 xl:w-4 h-16 sm:h-18 md:h-16 lg:h-20 xl:h-24 bg-bom-darkred"
+                    className="absolute w-2.5 h-14 sm:w-3 sm:h-16 md:h-18 lg:h-20 bg-bom-darkred"
                     style={{
                       transform: `rotate(${i * 60}deg)`,
                       transformOrigin: 'center center'
@@ -185,12 +117,15 @@ export default function ProductImage({
               </div>
               
               {/* Main circle */}
-              <div className="absolute inset-3 sm:inset-4 md:inset-5 lg:inset-6 xl:inset-7 bg-white rounded-full border-2 sm:border-3 md:border-3 lg:border-4 xl:border-[5px] border-black flex items-center justify-center overflow-hidden" style={{ boxShadow: '0 25px 50px -12px rgba(236, 72, 153, 0.5)' }}>
+              <div 
+                className="absolute inset-3 sm:inset-4 md:inset-5 lg:inset-6 bg-white rounded-full border-2 sm:border-3 lg:border-4 border-black flex items-center justify-center overflow-hidden" 
+                style={{ boxShadow: '0 25px 50px -12px rgba(236, 72, 153, 0.5)' }}
+              >
                 {/* Neo-star SVG in center */}
                 <div className="absolute inset-0 flex items-center justify-center z-10">
                   <svg 
                     viewBox="0 0 149.13 149.13" 
-                    className="w-10 h-10 sm:w-12 sm:h-12 md:w-12 md:h-12 lg:w-14 lg:h-14 xl:w-12 xl:h-12 fill-bom-darkred" 
+                    className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 fill-bom-darkred" 
                     style={{ 
                       animation: 'spin-slow 8s linear infinite reverse'
                     }}
@@ -215,7 +150,7 @@ export default function ProductImage({
                         d="M 50, 50 m -35, 0 a 35,35 0 1,1 70,0 a 35,35 0 1,1 -70,0"
                       />
                     </defs>
-                    <text className="text-[0.45rem] sm:text-[0.5rem] md:text-[0.5rem] lg:text-[0.55rem] xl:text-[0.7rem] font-mono font-black uppercase fill-black" letterSpacing="0.2em">
+                    <text className="text-[0.45rem] sm:text-[0.5rem] lg:text-[0.55rem] font-mono font-black uppercase fill-black" letterSpacing="0.2em">
                       <textPath href="#circlePath" startOffset="0%">
                         {badgeText} ✱ {badgeText} ✱ {badgeText} ✱ 
                       </textPath>
@@ -227,15 +162,17 @@ export default function ProductImage({
           </div>
         )}
         
+        {/* Product Image */}
         <img
           src={imagePath}
           alt="Product"
-          className={`${getSizeClasses()} object-contain drop-shadow-2xl relative z-10`}
+          className={`${sizeClasses[size]} h-auto object-contain drop-shadow-2xl relative z-10`}
           style={{
             filter: 'brightness(1.1) contrast(1.05)' 
           }}
         />
       </div>
-    </>
+    </div>
   );
 }
+
