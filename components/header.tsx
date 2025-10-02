@@ -15,21 +15,21 @@ export default function Header() {
         <nav className="hidden md:flex items-center space-x-8 lg:space-x-12">
           <a 
             href="#menu" 
-            className="relative inline-block font-sans text-sm lg:text-base font-medium text-gray-800 hover:text-[#ed5878] transition-colors duration-300 uppercase tracking-widest pb-1 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#ed5878] after:transition-all after:duration-300 hover:after:w-full"
+            className="font-sans text-sm lg:text-base font-medium text-gray-800 hover:text-sky-800 transition-colors duration-300 uppercase tracking-widest"
           >
             Menu
           </a>
           <span className="text-gray-300 text-xs">•</span>
           <a 
             href="#locations" 
-            className="relative inline-block font-sans text-sm lg:text-base font-medium text-gray-800 hover:text-[#ed5878] transition-colors duration-300 uppercase tracking-widest pb-1 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#ed5878] after:transition-all after:duration-300 hover:after:w-full"
+            className="font-sans text-sm lg:text-base font-medium text-gray-800 hover:text-sky-800 transition-colors duration-300 uppercase tracking-widest"
           >
             Locations
           </a>
           <span className="text-gray-300 text-xs">•</span>
           <a 
             href="#about" 
-            className="relative inline-block font-sans text-sm lg:text-base font-medium text-gray-800 hover:text-[#ed5878] transition-colors duration-300 uppercase tracking-widest pb-1 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#ed5878] after:transition-all after:duration-300 hover:after:w-full"
+            className="font-sans text-sm lg:text-base font-medium text-gray-800 hover:text-sky-800 transition-colors duration-300 uppercase tracking-widest"
           >
             About
           </a>
@@ -46,7 +46,7 @@ export default function Header() {
         </div>
 
         {/* Mobile Menu Button */}
-        <button className="md:hidden text-gray-800 font-sans font-medium text-sm uppercase tracking-widest hover:text-[#ed5878] transition-colors duration-300">
+        <button className="md:hidden text-gray-800 font-sans font-medium text-sm uppercase tracking-widest hover:text-gray-400 transition-colors duration-300">
           Menu
         </button>
       </div>

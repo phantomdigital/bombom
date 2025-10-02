@@ -1,6 +1,15 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Adobe Fonts with font-display for better loading */
+@font-face {
+  font-family: "gasoek-one";
+  src: url("https://use.typekit.net/af/cb695f/00000000000000003b9b2033/27/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n4&v=3") format("woff2"), url("https://use.typekit.net/af/cb695f/00000000000000003b9b2033/27/d?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n4&v=3") format("woff");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400;
+}
+
 @custom-variant dark (&:is(.dark *));
 @custom-media --stack (width < 1125px);
 @custom-media --3xl (width >= 1795px);
@@ -126,6 +135,22 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  
+  /* Font loading states - hide content until fonts are ready */
+  .wf-loading * {
+    visibility: hidden;
+  }
+  
+  .wf-active *,
+  .wf-inactive * {
+    visibility: visible;
+  }
+  
+  /* Ensure gasoek font loads with proper fallback */
+  .font-gasoek {
+    font-family: "gasoek-one", "Arial Black", sans-serif;
+    font-display: swap;
   }
   
   /* Custom cursor for pointer events only */
