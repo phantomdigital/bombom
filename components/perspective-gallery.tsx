@@ -38,6 +38,7 @@ export default function PerspectiveGallery() {
 
   // Calculate pink background positioning based on product image position
   const calculatePinkBgPosition = useCallback(() => {
+    if (typeof window === 'undefined') return; // Server-side check
     if (!productImageRef.current || !containerRef.current) return;
     
     const container = containerRef.current;
@@ -249,7 +250,7 @@ export default function PerspectiveGallery() {
           right: pinkBgStyle.right,
           top: pinkBgStyle.top,
           bottom: pinkBgStyle.bottom,
-          height: window.innerWidth < 768 ? '25vh' : '100%'
+          height: typeof window !== 'undefined' && window.innerWidth < 768 ? '25vh' : '100%'
         }}
       />
       
