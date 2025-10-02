@@ -82,9 +82,9 @@ export default function ProductImageFlex({
 
   // CSS classes for different sizes - no JavaScript needed
   const sizeClasses = {
-    small: 'w-32 sm:w-40 md:w-48',
-    medium: 'w-48 sm:w-56 md:w-64 lg:w-72',
-    large: 'w-56 sm:w-64 md:w-72 lg:w-80 xl:w-96',
+    small: 'w-48 sm:w-32 md:w-40 lg:w-44 xl:w-48',
+    medium: 'w-64 sm:w-40 md:w-48 lg:w-56 xl:w-64',
+    large: 'w-80 sm:w-48 md:w-56 lg:w-64 xl:w-80',
   };
 
   return (

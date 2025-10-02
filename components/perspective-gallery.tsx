@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useCallback } from 'react';
+import { useEffect, useMemo, useRef, useCallback, useState } from 'react';
 import { gsap } from 'gsap';
 import { getCurrentMonthFlavor } from '@/lib/flavors';
 import CopacabanaShader from './copacabana-shader';
@@ -17,6 +17,16 @@ export default function PerspectiveGallery() {
   const leftRef = useRef<HTMLDivElement>(null);
   const centerRef = useRef<HTMLDivElement>(null);
   const rightRef = useRef<HTMLDivElement>(null);
+  const productImageRef = useRef<HTMLDivElement>(null);
+  const pinkBgRef = useRef<HTMLDivElement>(null);
+
+  const [pinkBgStyle, setPinkBgStyle] = useState({
+    width: '25vw',
+    left: 'auto',
+    right: '0',
+    top: '0',
+    bottom: '0'
+  });
 
   const currentFlavor = getCurrentMonthFlavor();
 
@@ -25,6 +35,50 @@ export default function PerspectiveGallery() {
   const dims = useMemo(() => ({ left: topBottomExtension, center: centerHeight, right: topBottomExtension, height: 3640 }), [centerHeight, topBottomExtension]);
   const overscan = 1.0; // scale up content to hide edges/gaps
   const angle = 90; // degrees (increase for sharper edges)
+
+  // Calculate pink background positioning based on product image position
+  const calculatePinkBgPosition = useCallback(() => {
+    if (!productImageRef.current || !containerRef.current) return;
+    
+    const container = containerRef.current;
+    const productImage = productImageRef.current;
+    const containerRect = container.getBoundingClientRect();
+    const productRect = productImage.getBoundingClientRect();
+    
+    const isMobile = window.innerWidth < 768;
+    
+    if (isMobile) {
+      // Mobile: full width at bottom
+      setPinkBgStyle({
+        width: '100%',
+        left: '0',
+        right: 'auto',
+        top: 'auto',
+        bottom: '0'
+      });
+    } else {
+      // Desktop: calculate from right edge to middle of product image container
+      const containerWidth = containerRect.width;
+      
+      // Find the center of the product image container
+      const productCenter = productRect.left + (productRect.width / 2);
+      
+      // Calculate width from right edge to product center, relative to the main container
+      const widthFromRightPx = containerRect.right - productCenter;
+      const widthPercentage = (widthFromRightPx / containerWidth) * 100;
+      
+      // Ensure minimum width and maximum reasonable width
+      const clampedWidth = Math.min(Math.max(20, widthPercentage), 60);
+      
+      setPinkBgStyle({
+        width: `${clampedWidth}%`,
+        left: 'auto',
+        right: '0',
+        top: '0',
+        bottom: '0'
+      });
+    }
+  }, []);
 
   // Responsive container scale based on viewport
   const getContainerScale = useCallback((width: number) => {
@@ -100,11 +154,38 @@ export default function PerspectiveGallery() {
         gsap.set(rightRef.current, { display: 'block' });
         gsap.set(centerRef.current, { overflow: 'hidden' });
       }
+      
+      // Recalculate pink background position
+      setTimeout(calculatePinkBgPosition, 100); // Small delay to ensure layout is updated
     };
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [dims, getContainerScale]);
+
+  // Calculate pink background position after component mounts and on layout changes
+  useEffect(() => {
+    const timer = setTimeout(calculatePinkBgPosition, 100); // Shorter delay for faster response
+    return () => clearTimeout(timer);
+  }, [calculatePinkBgPosition]);
+
+  // Also trigger calculation on window load and when images are loaded
+  useEffect(() => {
+    const handleLoad = () => {
+      // Multiple attempts to ensure accurate positioning
+      calculatePinkBgPosition();
+      setTimeout(calculatePinkBgPosition, 50);
+      setTimeout(calculatePinkBgPosition, 200);
+    };
+    
+    window.addEventListener('load', handleLoad);
+    // Also trigger when fonts are loaded, which can affect layout
+    if ('fonts' in document) {
+      document.fonts.ready.then(calculatePinkBgPosition);
+    }
+    
+    return () => window.removeEventListener('load', handleLoad);
+  }, [calculatePinkBgPosition]);
 
   const renderStrip = useCallback((width: number) => {
     return (
@@ -157,12 +238,18 @@ export default function PerspectiveGallery() {
         opacity={0.25}
       />
       
-      {/* Pink Background Area - Fixed to right */}
+      {/* Pink Background Area - JavaScript calculated positioning */}
       <div 
-        className="absolute top-0 bottom-0 right-0 bg-bom-red pointer-events-none z-[420]"
+        ref={pinkBgRef}
+        className="absolute pointer-events-none z-[420] bg-bom-red"
         style={{ 
-          width: '20vw',
           opacity: 0.95,
+          width: pinkBgStyle.width,
+          left: pinkBgStyle.left,
+          right: pinkBgStyle.right,
+          top: pinkBgStyle.top,
+          bottom: pinkBgStyle.bottom,
+          height: window.innerWidth < 768 ? '25vh' : '100%'
         }}
       />
       
@@ -190,7 +277,7 @@ export default function PerspectiveGallery() {
         </div>
 
         {/* Product Image - Right Side */}
-        <div className="flex-shrink-0 flex items-center justify-center md:justify-end mr-0 md:mr-8 lg:mr-24">
+        <div ref={productImageRef} className="flex-shrink-0 flex items-center justify-center md:justify-end mr-0 md:mr-8 lg:mr-24 -mt-12 md:-mt-6">
           <ProductImageFlex 
             size="large"
             opacity={1}
