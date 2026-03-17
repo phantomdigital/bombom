@@ -1,19 +1,30 @@
+import Image from "next/image";
+
 export default function ComingSoonPage() {
   return (
-    <main className="min-h-[calc(100vh-5rem)] sm:min-h-[calc(100vh-6rem)] lg:min-h-[calc(100vh-11rem)] px-4 lg:px-10 xl:px-16 2xl:px-18 [@media(min-width:1795px)]:px-48 py-6">
-      <section className="w-full min-h-[60vh] rounded-2xl sm:rounded-3xl lg:rounded-4xl bg-[#ed5878] text-white flex items-center justify-center">
-        <div className="text-center px-6">
-          <p className="uppercase tracking-[0.2em] text-sm opacity-90">
-            BomBom Treats
-          </p>
-          <h1 className="mt-4 text-4xl sm:text-5xl lg:text-6xl font-semibold">
-            Coming Soon
-          </h1>
-          <p className="mt-4 text-base sm:text-lg opacity-95">
-            We are putting the final touches on the new site.
-          </p>
+    <main className="min-h-screen flex flex-col items-center justify-center px-6 sm:px-10 lg:px-16 py-12">
+      <div className="w-full max-w-5xl">
+        {/* <div className="flex items-center justify-between text-xs sm:text-sm lg:text-base font-medium text-gray-700 uppercase tracking-[0.3em] px-4 sm:px-8 mb-6 sm:mb-8 lg:mb-10">
+          <span>Frozen Yogurt</span>
+          <span>Soft Serve</span>
+          <span>Ice Cream</span>
+        </div> */}
+
+        <div className="w-full px-4 sm:px-8">
+          <Image
+            src="/images/logo/logo.png"
+            alt="BomBom Treats"
+            width={1200}
+            height={300}
+            className="w-full h-auto"
+            priority
+          />
         </div>
-      </section>
+
+        <p className="mt-8 sm:mt-10 lg:mt-12 text-center text-sm sm:text-base lg:text-lg text-gray-600 max-w-2xl mx-auto px-4">
+          We're putting the finishing touches on something special. Coming Autumn 2026.
+        </p>
+      </div>
     </main>
   );
 }
