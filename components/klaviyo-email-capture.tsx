@@ -125,6 +125,11 @@ export default function KlaviyoEmailCapture({
       setShowErrorToast(false);
       setErrorToastMessage('');
       setEmail('');
+      setIsFocused(false);
+      if (typeof document !== 'undefined') {
+        const el = document.activeElement;
+        if (el instanceof HTMLElement) el.blur();
+      }
       return;
     }
 
@@ -151,6 +156,7 @@ export default function KlaviyoEmailCapture({
     const hideTimeoutId = setTimeout(() => {
       setShowSuccess(false);
       setIsSuccessFading(false);
+      setIsFocused(false);
     }, durationMs + fadeMs);
 
     return () => {
