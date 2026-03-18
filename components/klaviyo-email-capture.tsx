@@ -80,6 +80,7 @@ interface KlaviyoEmailCaptureProps {
   buttonText?: string;
   successMessage?: string;
   variant?: 'default' | 'inline' | 'stacked';
+  onSuccessVisibilityChange?: (isVisible: boolean) => void;
 }
 
 export default function KlaviyoEmailCapture({
@@ -90,6 +91,7 @@ export default function KlaviyoEmailCapture({
   buttonText = 'Subscribe',
   successMessage = 'Thanks for subscribing!',
   variant = 'inline',
+  onSuccessVisibilityChange,
 }: KlaviyoEmailCaptureProps) {
   const [state, formAction, isPending] = useActionState(subscribeToKlaviyo, null);
   const [email, setEmail] = useState('');
@@ -105,6 +107,9 @@ export default function KlaviyoEmailCapture({
   const measurerRef = useRef<HTMLSpanElement>(null);
   const [centerOffset, setCenterOffset] = useState(0);
   const [hasCycled, setHasCycled] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successProgress, setSuccessProgress] = useState(0);
+  const [isSuccessFading, setIsSuccessFading] = useState(false);
 
   useLayoutEffect(() => {
     setFlavourStyle(FLAVOUR_BUTTON_STYLES[Math.floor(Math.random() * FLAVOUR_BUTTON_STYLES.length)]);
@@ -112,9 +117,51 @@ export default function KlaviyoEmailCapture({
 
   useEffect(() => {
     if (state?.success) {
+      setShowSuccess(true);
+      setIsSuccessFading(false);
+      setSuccessProgress(0);
       setEmail('');
     }
-  }, [state?.success]);
+  }, [state]);
+
+  useEffect(() => {
+    onSuccessVisibilityChange?.(showSuccess);
+  }, [showSuccess, onSuccessVisibilityChange]);
+
+  useEffect(() => {
+    if (!showSuccess) return;
+
+    let rafId = 0;
+    let fadeTimeoutId: ReturnType<typeof setTimeout> | undefined;
+    const durationMs = 5000;
+    const fadeMs = 400;
+    const startTime = performance.now();
+
+    const tick = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / durationMs, 1);
+      setSuccessProgress(progress * 100);
+
+      if (progress < 1) {
+        rafId = requestAnimationFrame(tick);
+        return;
+      }
+
+      setIsSuccessFading(true);
+      fadeTimeoutId = setTimeout(() => {
+        setShowSuccess(false);
+        setIsSuccessFading(false);
+        setSuccessProgress(0);
+      }, fadeMs);
+    };
+
+    rafId = requestAnimationFrame(tick);
+
+    return () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      if (fadeTimeoutId) clearTimeout(fadeTimeoutId);
+    };
+  }, [showSuccess]);
 
   useEffect(() => {
     if (placeholder) return;
@@ -163,7 +210,7 @@ export default function KlaviyoEmailCapture({
     if (cycleIndex > 0) setHasCycled(true);
   }, [cycleIndex]);
 
-  const status = state?.success ? 'success' : state?.success === false ? 'error' : isPending ? 'loading' : 'idle';
+  const status = showSuccess ? 'success' : state?.success === false ? 'error' : isPending ? 'loading' : 'idle';
   const errorMessage = state?.success === false ? state.error : '';
   const hasError = status === 'error';
   const friendlyErrorMessage = errorMessage || 'Something went wrong. Please try again.';
@@ -174,8 +221,22 @@ export default function KlaviyoEmailCapture({
   return (
     <div className={cn('w-full max-w-xl', className)}>
       {status === 'success' ? (
-        <div className="text-center py-5 px-6 bg-bom-white/10 border border-bom-white rounded-sm font-sans font-semibold">
-          <p className="text-bom-white font-medium">{successMessage}</p>
+        <div
+          className={cn(
+            'overflow-hidden rounded-sm bg-bom-white/10 text-center font-sans font-semibold transition-opacity duration-400',
+            isSuccessFading ? 'opacity-0' : 'opacity-100'
+          )}
+        >
+          <div className="px-6 py-5">
+            <p className="text-bom-white font-medium">{successMessage}</p>
+          </div>
+          <div className="h-1 w-full bg-bom-white/15">
+            <div
+              className="h-full bg-bom-white transition-[width] duration-100 ease-linear"
+              style={{ width: `${successProgress}%` }}
+              aria-hidden
+            />
+          </div>
         </div>
       ) : (
         <form
@@ -297,17 +358,17 @@ export default function KlaviyoEmailCapture({
               flavourStyle.text,
               'focus-visible:ring-bom-red/30 focus-visible:ring-[3px]',
               'text-sm sm:text-base font-sans font-medium uppercase tracking-wider transition-all',
-              'h-14 px-5 sm:px-8 border border-bom-black',
-              'w-full sm:w-auto sm:whitespace-nowrap'
+              'h-14 py-0 px-5 sm:px-8 border border-bom-black',
+              'w-full sm:w-auto sm:whitespace-nowrap items-stretch'
             )}
           >
             {status === 'loading' ? (
-              <span className="inline-flex items-center gap-2">
+              <span className="inline-flex h-full items-center gap-2">
                 <AiOutlineLoading3Quarters className="size-4 animate-spin" aria-hidden />
                 <span>Subscribing...</span>
               </span>
             ) : (
-              buttonText
+              <span className="inline-flex h-full items-center">{buttonText}</span>
             )}
           </Button>
         </form>

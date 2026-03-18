@@ -164,7 +164,7 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    cursor: url('/images/pointer.svg') 12 12, auto;
+    cursor: var(--cursor-default);
   }
   body {
     @apply bg-background text-foreground font-sans;
@@ -303,12 +303,127 @@
   animation: ticker-marquee 25s linear infinite;
 }
 
-/* Override Tailwind's cursor-pointer so custom cursor shows on interactive elements */
-a, a *,
-button, button *,
-[role="button"], [role="button"] *,
-input[type="button"], input[type="submit"], input[type="reset"],
-select, [tabindex]:not([tabindex="-1"]), [onclick],
-.cursor-pointer, .cursor-pointer * {
-  cursor: url('/images/cursor.svg') 12 12, pointer;
+/* Centralized interactive cursor mapping */
+:root {
+  --cursor-default: url('/images/pointer.svg') 12 12, auto;
+  --cursor-interactive: url('/images/cursor.svg') 12 12, pointer;
+  --cursor-text: url('/images/i_bar.svg') 12 12, text;
+}
+
+/* Interactive targets get the action cursor */
+:where(
+  a,
+  button,
+  [role="button"],
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
+  select,
+  summary,
+  label[for],
+  [onclick],
+  [tabindex]:not([tabindex="-1"]),
+  .cursor-pointer
+) {
+  cursor: var(--cursor-interactive);
+}
+
+/* Children inherit the same cursor as the interactive parent */
+:where(
+  a,
+  button,
+  [role="button"],
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
+  select,
+  summary,
+  label[for],
+  [onclick],
+  [tabindex]:not([tabindex="-1"]),
+  .cursor-pointer
+) * {
+  cursor: inherit;
+}
+
+/* Include pseudo-elements so decorative layers don't break cursor style */
+:where(
+  a,
+  button,
+  [role="button"],
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
+  select,
+  summary,
+  label[for],
+  [onclick],
+  [tabindex]:not([tabindex="-1"]),
+  .cursor-pointer
+)::before,
+:where(
+  a,
+  button,
+  [role="button"],
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
+  select,
+  summary,
+  label[for],
+  [onclick],
+  [tabindex]:not([tabindex="-1"]),
+  .cursor-pointer
+)::after,
+:where(
+  a,
+  button,
+  [role="button"],
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
+  select,
+  summary,
+  label[for],
+  [onclick],
+  [tabindex]:not([tabindex="-1"]),
+  .cursor-pointer
+) *::before,
+:where(
+  a,
+  button,
+  [role="button"],
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
+  select,
+  summary,
+  label[for],
+  [onclick],
+  [tabindex]:not([tabindex="-1"]),
+  .cursor-pointer
+) *::after {
+  cursor: inherit;
+}
+
+/* Text-entry targets use the text (I-beam) intent with custom SVG */
+:where(
+  textarea,
+  [contenteditable="true"],
+  [contenteditable="plaintext-only"],
+  input:not([type]),
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="number"],
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"],
+  input[type="month"],
+  input[type="week"]
+) {
+  cursor: var(--cursor-text);
 }
