@@ -39,16 +39,16 @@ export default function ComingSoonPage() {
         </div>
       </div>
 
-      <footer className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-6 sm:px-10 lg:px-16 py-8 pb-12 bg-bom-ice">
-        <div className="flex flex-col gap-2">
-          <span className="font-sans text-3xl sm:text-4xl lg:text-5xl font-medium text-bom-white tracking-tight">
+      <footer className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 sm:gap-4 px-5 sm:px-10 lg:px-16 py-6 sm:py-8 pb-10 sm:pb-12 bg-bom-ice">
+        <div className="flex flex-col gap-1 sm:gap-2">
+          <span className="font-sans text-3xl sm:text-4xl lg:text-5xl font-medium text-bom-white tracking-tight leading-tight">
             Coming Autumn!
           </span>
-          <address className="bom-body1-sm text-bom-white not-italic text-left">
+          <address className="bom-body1-sm text-base text-bom-white not-italic text-left">
             Shop 1, 117 Baylis St, Wagga
           </address>
         </div>
-        <nav className="flex items-center gap-6">
+        <nav className="flex items-center gap-5 sm:gap-6">
           <Link
             href="https://instagram.com/bombom.au"
             target="_blank"

@@ -99,7 +99,7 @@ export default function KlaviyoEmailCapture({
         <form
           action={formAction}
           className={cn(
-            'flex gap-2',
+            'flex gap-1.5 sm:gap-2',
             isStacked && 'flex-col',
             isInline && 'flex-col sm:flex-row sm:items-center',
             variant === 'default' && 'flex-col sm:flex-row items-stretch sm:items-center'
@@ -115,7 +115,7 @@ export default function KlaviyoEmailCapture({
               placeholder={displayPlaceholder}
               disabled={isPending}
               className={cn(
-                'h-14 min-h-14 py-3 px-4 sm:px-6 rounded-sm text-base font-medium font-sans uppercase tracking-wider w-full min-w-0 box-border',
+                'h-14 min-h-14 py-2.5 px-3 sm:py-3 sm:px-6 rounded-sm text-sm sm:text-base font-medium font-sans uppercase tracking-wider w-full min-w-0 box-border',
                 'bg-background border border-bom-black shadow-none',
                 'transition-all outline-none',
                 'focus:border-bom-darkred focus:ring-[3px] focus:ring-bom-red/20 focus:ring-offset-0',
@@ -150,8 +150,8 @@ export default function KlaviyoEmailCapture({
               flavourStyle.hoverBg,
               flavourStyle.text,
               'focus-visible:ring-bom-red/30 focus-visible:ring-[3px]',
-              'font-sans font-medium uppercase tracking-wider transition-all',
-              'h-14 px-8 border border-bom-black',
+              'text-sm sm:text-base font-sans font-medium uppercase tracking-wider transition-all',
+              'h-14 px-5 sm:px-8 border border-bom-black',
               'w-full sm:w-auto sm:whitespace-nowrap'
             )}
           >
