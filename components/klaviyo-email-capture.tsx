@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect, useLayoutEffect, useState } from 'react';
+import { useActionState, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { HiChevronRight } from 'react-icons/hi2';
@@ -101,6 +101,11 @@ export default function KlaviyoEmailCapture({
   const longestCycleLength = Math.max(...cycles.map((item) => item.length), 0);
   const rotatingTextWidthCh = Math.min(Math.max(longestCycleLength + 3, 10), 24);
 
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const measurerRef = useRef<HTMLSpanElement>(null);
+  const [centerOffset, setCenterOffset] = useState(0);
+  const [hasCycled, setHasCycled] = useState(false);
+
   useLayoutEffect(() => {
     setFlavourStyle(FLAVOUR_BUTTON_STYLES[Math.floor(Math.random() * FLAVOUR_BUTTON_STYLES.length)]);
   }, []);
@@ -131,6 +136,32 @@ export default function KlaviyoEmailCapture({
   const showPlaceholderOverlay = useAnimatedPlaceholder && !email && !isFocused;
   const nativePlaceholder = placeholder ?? (useAnimatedPlaceholder ? '' : cycles[0]);
   const rotatingText = `${cycles[cycleIndex]}...`;
+
+  useLayoutEffect(() => {
+    const overlay = overlayRef.current;
+    const measurer = measurerRef.current;
+    if (!overlay || !measurer || !showPlaceholderOverlay) return;
+
+    const updateOffset = () => {
+      if (!overlay || !measurer) return;
+      const containerWidth = overlay.getBoundingClientRect().width;
+      const contentWidth = measurer.getBoundingClientRect().width;
+      const paddingLeft = parseFloat(getComputedStyle(overlay).paddingLeft) || 0;
+      const centerX = containerWidth / 2;
+      const contentCenterOffset = contentWidth / 2;
+      setCenterOffset(Math.max(0, centerX - contentCenterOffset - paddingLeft));
+    };
+
+    updateOffset();
+    const ro = new ResizeObserver(updateOffset);
+    ro.observe(overlay);
+
+    return () => ro.disconnect();
+  }, [showPlaceholderOverlay, cycleIndex, rotatingText]);
+
+  useEffect(() => {
+    if (cycleIndex > 0) setHasCycled(true);
+  }, [cycleIndex]);
 
   const status = state?.success ? 'success' : state?.success === false ? 'error' : isPending ? 'loading' : 'idle';
   const errorMessage = state?.success === false ? state.error : '';
@@ -166,10 +197,28 @@ export default function KlaviyoEmailCapture({
             </div>
             {showPlaceholderOverlay && (
               <div
-                className="pointer-events-none absolute inset-0 flex items-center px-3 sm:px-6 text-muted-foreground justify-start"
+                ref={overlayRef}
+                className="pointer-events-none absolute inset-0 flex items-center overflow-hidden px-3 sm:px-6 text-muted-foreground"
                 aria-hidden
               >
-                <span className="inline-flex items-center gap-1 leading-none max-sm:ml-[28%] sm:ml-0">
+                {/* Off-screen measurer - exact same structure for accurate width */}
+                <span
+                  ref={measurerRef}
+                  className="absolute left-[-9999px] top-0 inline-flex items-center gap-1 leading-none text-sm sm:text-base font-medium font-sans whitespace-nowrap invisible"
+                  aria-hidden
+                >
+                  <span className="shrink-0">{PLACEHOLDER_PREFIX}</span>
+                  <span>{rotatingText}</span>
+                </span>
+                <motion.span
+                  className="inline-flex items-center gap-1 leading-none"
+                  animate={{ x: centerOffset }}
+                  transition={
+                    hasCycled
+                      ? { type: 'tween', ease: 'easeOut', duration: 0.35 }
+                      : { duration: 0 }
+                  }
+                >
                   <span className="shrink-0 text-sm sm:text-base font-medium font-sans">
                     {PLACEHOLDER_PREFIX}
                   </span>
@@ -177,13 +226,14 @@ export default function KlaviyoEmailCapture({
                     className="relative inline-block h-[1.2em] overflow-hidden text-left align-middle"
                     style={{ width: `${rotatingTextWidthCh}ch` }}
                   >
-                    <AnimatePresence mode="wait">
+                    <AnimatePresence mode="wait" initial={false}>
                       <motion.span
                         key={rotatingText}
                         variants={LETTER_CONTAINER_VARIANTS}
                         initial="initial"
                         animate="animate"
                         exit="exit"
+                        style={{ overflow: 'hidden' }}
                         className="absolute inset-0 flex items-center justify-start font-medium font-sans text-sm sm:text-base leading-none whitespace-nowrap"
                       >
                         {Array.from(rotatingText).map((char, idx) => (
@@ -198,7 +248,7 @@ export default function KlaviyoEmailCapture({
                       </motion.span>
                     </AnimatePresence>
                   </span>
-                </span>
+                </motion.span>
               </div>
             )}
             <input
@@ -211,7 +261,7 @@ export default function KlaviyoEmailCapture({
               placeholder={nativePlaceholder}
               disabled={isPending}
               className={cn(
-                'h-14 min-h-14 py-2.5 pl-3 pr-10 sm:py-3 sm:pl-6 sm:pr-12 rounded-sm text-sm sm:text-base font-medium font-sans w-full min-w-0 box-border',
+                'h-14 min-h-14 py-2.5 pl-3 pr-10 sm:py-3 sm:pl-6 sm:pr-12 rounded-sm text-base font-medium font-sans w-full min-w-0 box-border',
                 'bg-background border border-bom-black shadow-none',
                 'transition-all outline-none',
                 'focus:border-bom-darkred focus:ring-[3px] focus:ring-bom-red/20 focus:ring-offset-0',

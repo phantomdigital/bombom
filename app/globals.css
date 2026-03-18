@@ -251,15 +251,6 @@
     text-align: center;
   }
 
-  /* Custom cursor for pointer events only */
-  a, a *,
-  button, button *,
-  [role="button"], [role="button"] *,
-  input[type="button"], input[type="submit"], input[type="reset"],
-  select, [tabindex]:not([tabindex="-1"]), [onclick], .cursor-pointer, .cursor-pointer * {
-    cursor: url('/images/cursor.svg') 12 12, pointer;
-  }
-  
   /* Custom text selection colors */
   ::selection {
     background-color: var(--color-bom-red);
@@ -310,4 +301,14 @@
 
 .animate-ticker-marquee {
   animation: ticker-marquee 25s linear infinite;
+}
+
+/* Override Tailwind's cursor-pointer so custom cursor shows on interactive elements */
+a, a *,
+button, button *,
+[role="button"], [role="button"] *,
+input[type="button"], input[type="submit"], input[type="reset"],
+select, [tabindex]:not([tabindex="-1"]), [onclick],
+.cursor-pointer, .cursor-pointer * {
+  cursor: url('/images/cursor.svg') 12 12, pointer;
 }
