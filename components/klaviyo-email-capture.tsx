@@ -1,17 +1,59 @@
 'use client';
 
-import { useActionState, useEffect, useState } from 'react';
+import { useActionState, useEffect, useLayoutEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
+import { HiChevronRight } from 'react-icons/hi2';
 import { subscribeToKlaviyo } from '@/app/actions/klaviyo';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
+const PLACEHOLDER_PREFIX = 'Hey you,';
 const DEFAULT_PLACEHOLDER_CYCLE = [
-  'Hey you!',
-  'Enter your email here to know when we open',
-  'Drop your email here...',
-  'your@email.here',
+  'enter your email',
+  'join the list',
+  'be first in line',
+  'drop your email',
+  'get the first scoop',
+  'stay in the loop',
+  "we'll keep you posted",
 ];
+
+const LETTER_CONTAINER_VARIANTS = {
+  initial: {},
+  animate: {
+    transition: {
+      staggerChildren: 0.025,
+      delayChildren: 0.015,
+    },
+  },
+  exit: {
+    transition: {
+      staggerChildren: 0.015,
+      staggerDirection: -1,
+    },
+  },
+};
+
+const LETTER_VARIANTS = {
+  initial: { y: 16, opacity: 0 },
+  animate: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      duration: 0.22,
+      ease: 'easeOut' as const,
+    },
+  },
+  exit: {
+    y: -16,
+    opacity: 0,
+    transition: {
+      duration: 0.16,
+      ease: 'easeIn' as const,
+    },
+  },
+};
 
 /** Flavour colours with correct text contrast per brand guidelines */
 export const FLAVOUR_BUTTON_STYLES = [
@@ -38,8 +80,6 @@ interface KlaviyoEmailCaptureProps {
   buttonText?: string;
   successMessage?: string;
   variant?: 'default' | 'inline' | 'stacked';
-  /** Pre-chosen flavour for button (avoids client-side flash). Pass from server for random; omit for default. */
-  flavourStyle?: FlavourStyle;
 }
 
 export default function KlaviyoEmailCapture({
@@ -50,14 +90,20 @@ export default function KlaviyoEmailCapture({
   buttonText = 'Subscribe',
   successMessage = 'Thanks for subscribing!',
   variant = 'inline',
-  flavourStyle: flavourStyleProp,
 }: KlaviyoEmailCaptureProps) {
   const [state, formAction, isPending] = useActionState(subscribeToKlaviyo, null);
   const [email, setEmail] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
   const cycles = placeholderCycle ?? DEFAULT_PLACEHOLDER_CYCLE;
   const [cycleIndex, setCycleIndex] = useState(0);
-  const displayPlaceholder = placeholder ?? cycles[cycleIndex];
-  const flavourStyle = flavourStyleProp ?? FLAVOUR_BUTTON_STYLES[0];
+  const [flavourStyle, setFlavourStyle] = useState<FlavourStyle>(() => FLAVOUR_BUTTON_STYLES[0]);
+  const useAnimatedPlaceholder = !placeholder;
+  const longestCycleLength = Math.max(...cycles.map((item) => item.length), 0);
+  const rotatingTextWidthCh = Math.min(Math.max(longestCycleLength + 3, 10), 24);
+
+  useLayoutEffect(() => {
+    setFlavourStyle(FLAVOUR_BUTTON_STYLES[Math.floor(Math.random() * FLAVOUR_BUTTON_STYLES.length)]);
+  }, []);
 
   useEffect(() => {
     if (state?.success) {
@@ -68,9 +114,10 @@ export default function KlaviyoEmailCapture({
   useEffect(() => {
     if (placeholder) return;
     let timeoutId: ReturnType<typeof setTimeout>;
+    const INITIAL_HOLD_MS = 3500;
     const scheduleNext = (forIndex: number) => {
       const text = cycles[forIndex];
-      const duration = getReadingDuration(text);
+      const duration = forIndex === 0 ? INITIAL_HOLD_MS : getReadingDuration(text);
       timeoutId = setTimeout(() => {
         const next = (forIndex + 1) % cycles.length;
         setCycleIndex(next);
@@ -80,6 +127,10 @@ export default function KlaviyoEmailCapture({
     scheduleNext(cycleIndex);
     return () => clearTimeout(timeoutId);
   }, [placeholder, cycles]);
+
+  const showPlaceholderOverlay = useAnimatedPlaceholder && !email && !isFocused;
+  const nativePlaceholder = placeholder ?? (useAnimatedPlaceholder ? '' : cycles[0]);
+  const rotatingText = `${cycles[cycleIndex]}...`;
 
   const status = state?.success ? 'success' : state?.success === false ? 'error' : isPending ? 'loading' : 'idle';
   const errorMessage = state?.success === false ? state.error : '';
@@ -106,16 +157,61 @@ export default function KlaviyoEmailCapture({
           )}
         >
           {listId && <input type="hidden" name="listId" value={listId} />}
-          <div className="flex-1 min-w-0">
+          <div className="group relative flex-1 min-w-0 cursor-pointer">
+            <div
+              className="pointer-events-none absolute right-3 top-1/2 z-10 -translate-y-1/2 text-muted-foreground opacity-0 transition-opacity duration-200 group-hover:opacity-100 sm:right-6"
+              aria-hidden
+            >
+              <HiChevronRight className="size-5" />
+            </div>
+            {showPlaceholderOverlay && (
+              <div
+                className="pointer-events-none absolute inset-0 flex items-center px-3 sm:px-6 text-muted-foreground justify-start"
+                aria-hidden
+              >
+                <span className="inline-flex items-center gap-1 leading-none max-sm:ml-[28%] sm:ml-0">
+                  <span className="shrink-0 text-sm sm:text-base font-medium font-sans">
+                    {PLACEHOLDER_PREFIX}
+                  </span>
+                  <span
+                    className="relative inline-block h-[1em] overflow-hidden text-left align-middle"
+                    style={{ width: `${rotatingTextWidthCh}ch` }}
+                  >
+                    <AnimatePresence mode="wait">
+                      <motion.span
+                        key={rotatingText}
+                        variants={LETTER_CONTAINER_VARIANTS}
+                        initial="initial"
+                        animate="animate"
+                        exit="exit"
+                        className="absolute inset-0 flex items-center justify-start font-medium font-sans text-sm sm:text-base leading-none whitespace-nowrap"
+                      >
+                        {Array.from(rotatingText).map((char, idx) => (
+                          <motion.span
+                            key={`${char}-${idx}`}
+                            variants={LETTER_VARIANTS}
+                            className="inline-block"
+                          >
+                            {char === ' ' ? '\u00A0' : char}
+                          </motion.span>
+                        ))}
+                      </motion.span>
+                    </AnimatePresence>
+                  </span>
+                </span>
+              </div>
+            )}
             <input
               type="email"
               name="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder={displayPlaceholder}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              placeholder={nativePlaceholder}
               disabled={isPending}
               className={cn(
-                'h-14 min-h-14 py-2.5 px-3 sm:py-3 sm:px-6 rounded-sm text-sm sm:text-base font-medium font-sans uppercase tracking-wider w-full min-w-0 box-border',
+                'h-14 min-h-14 py-2.5 pl-3 pr-10 sm:py-3 sm:pl-6 sm:pr-12 rounded-sm text-sm sm:text-base font-medium font-sans uppercase tracking-wider w-full min-w-0 box-border',
                 'bg-background border border-bom-black shadow-none',
                 'transition-all outline-none',
                 'focus:border-bom-darkred focus:ring-[3px] focus:ring-bom-red/20 focus:ring-offset-0',

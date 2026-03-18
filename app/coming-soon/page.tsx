@@ -1,20 +1,9 @@
 import Link from "next/link";
 import BomBomLogo from "@/components/bombom-logo";
-import KlaviyoEmailCapture, {
-  FLAVOUR_BUTTON_STYLES,
-} from "@/components/klaviyo-email-capture";
+import KlaviyoEmailCapture from "@/components/klaviyo-email-capture";
 import { SiInstagram, SiTiktok } from "react-icons/si";
 
-export const dynamic = "force-dynamic";
-
-function pickFlavour() {
-  return FLAVOUR_BUTTON_STYLES[
-    Math.floor(Math.random() * FLAVOUR_BUTTON_STYLES.length)
-  ];
-}
-
 export default function ComingSoonPage() {
-  const flavour = pickFlavour();
   return (
     <main className="min-h-screen flex flex-col">
       <div className="flex-1 flex flex-col items-center justify-center px-6 sm:px-10 lg:px-16 py-12">
@@ -30,12 +19,14 @@ export default function ComingSoonPage() {
           />
 
           <div className="mx-auto w-full">
+            <p className="bom-body1-heading-sm sm:bom-body1-sm text-bom-black text-center mb-5">
+              Be first to know when we open.
+            </p>
             <KlaviyoEmailCapture
               buttonText="Get Notified"
               successMessage="Thanks! We'll let you know when we launch."
               variant="inline"
               className="mx-auto"
-              flavourStyle={flavour}
             />
           </div>
         </div>
@@ -46,7 +37,7 @@ export default function ComingSoonPage() {
           <span className="font-sans text-3xl sm:text-4xl lg:text-5xl font-medium text-bom-white tracking-tight leading-tight">
             Coming Autumn!
           </span>
-          <address className="bom-body1-sm text-base text-bom-white not-italic text-left">
+          <address className="bom-body1-sm text-bom-white not-italic text-left">
             Shop 1, 117 Baylis St, Wagga
           </address>
         </div>
