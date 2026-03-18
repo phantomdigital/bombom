@@ -30,10 +30,10 @@ const toneStyles: Record<
     close: 'text-bom-white/80 hover:text-bom-white',
   },
   error: {
-    container: 'border-bom-black/20 bg-bom-musk/95',
+    container: 'border-bom-black bg-bom-musk/95',
     text: 'text-bom-black',
-    track: 'bg-bom-black/10',
-    bar: 'bg-bom-black/45',
+    track: 'bg-bom-musk/20',
+    bar: 'bg-bom-black/20',
     close: 'text-bom-black/65 hover:text-bom-black',
   },
 };
@@ -49,9 +49,14 @@ export default function TimedPopover({
   className,
 }: TimedPopoverProps) {
   const [isFading, setIsFading] = useState(false);
+  const onDismissRef = useRef(onDismiss);
   const hasDismissedRef = useRef(false);
   const fadeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dismissTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    onDismissRef.current = onDismiss;
+  }, [onDismiss]);
 
   const clearTimers = useCallback(() => {
     if (fadeTimeoutRef.current) clearTimeout(fadeTimeoutRef.current);
@@ -63,8 +68,8 @@ export default function TimedPopover({
   const requestDismiss = useCallback(() => {
     if (hasDismissedRef.current) return;
     hasDismissedRef.current = true;
-    onDismiss();
-  }, [onDismiss]);
+    onDismissRef.current();
+  }, []);
 
   useEffect(() => {
     if (!open) {
@@ -121,7 +126,7 @@ export default function TimedPopover({
               type="button"
               onClick={dismissEarly}
               className={cn(
-                'absolute right-2 top-1/2 -translate-y-1/2 rounded-sm p-1 transition-colors',
+                'absolute right-1 top-1/2 -translate-y-1/2 rounded-sm p-2.5 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center',
                 toneStyle.close
               )}
               aria-label="Dismiss message"

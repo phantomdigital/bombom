@@ -321,7 +321,7 @@ export default function KlaviyoEmailCapture({
                 'h-14 min-h-14 py-2.5 px-10 sm:py-3 sm:pl-6 sm:pr-12 rounded-sm text-base font-medium font-sans w-full min-w-0 box-border',
                 'bg-background border border-bom-black shadow-none',
                 'transition-all outline-none',
-                'focus:border-bom-darkred focus:ring-[3px] focus:ring-bom-red/20 focus:ring-offset-0',
+                'focus:border-bom-black focus:ring-[1px] focus:ring-bom-black/20 focus:ring-offset-0',
                 hasError && 'border-bom-darkred focus:border-bom-darkred focus:ring-bom-darkred/20',
                 'disabled:opacity-50 disabled:cursor-not-allowed',
                 'text-center sm:text-left placeholder:text-center sm:placeholder:text-left',
