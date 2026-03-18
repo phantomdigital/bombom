@@ -50,6 +50,19 @@ function mapKlaviyoErrorToUserMessage(rawMessage: string, fallback: string): str
   return fallback;
 }
 
+type KlaviyoErrorItem = {
+  detail?: string;
+  title?: string;
+  code?: string;
+};
+
+function getFirstKlaviyoError(errorData: unknown): KlaviyoErrorItem | null {
+  if (!errorData || typeof errorData !== 'object') return null;
+  const maybeErrors = (errorData as { errors?: KlaviyoErrorItem[] }).errors;
+  if (!Array.isArray(maybeErrors) || maybeErrors.length === 0) return null;
+  return maybeErrors[0] ?? null;
+}
+
 function maskEmail(email: string): string {
   const [local, domain] = email.split('@');
   if (!local || !domain) return email;
@@ -140,18 +153,56 @@ export async function subscribeToKlaviyo(
       body: profileResponseBody,
     });
 
-    if (!profileResponse.ok) {
+    let profileId: string | undefined;
+
+    if (profileResponse.ok) {
+      const profileData = profileResponseBody as { data?: { id?: string } } | null;
+      profileId = profileData?.data?.id;
+    } else {
       const errorData = profileResponseBody;
-      console.error('Klaviyo profile creation error:', errorData);
-      const rawMessage = extractKlaviyoErrorText(errorData);
-      return {
-        success: false,
-        error: mapKlaviyoErrorToUserMessage(rawMessage, 'We could not save your email right now. Please try again.'),
-      };
+      const firstError = getFirstKlaviyoError(errorData);
+      const isDuplicateProfile =
+        firstError?.code === 'duplicate_profile' ||
+        (firstError?.detail ?? '').toLowerCase().includes('already exists with one of these identifiers');
+
+      if (!isDuplicateProfile) {
+        console.error('Klaviyo profile creation error:', errorData);
+        const rawMessage = extractKlaviyoErrorText(errorData);
+        return {
+          success: false,
+          error: mapKlaviyoErrorToUserMessage(rawMessage, 'We could not save your email right now. Please try again.'),
+        };
+      }
+
+      // Profile already exists: fetch it and continue with list add / consent steps.
+      const profileLookupResponse = await fetch(
+        `https://a.klaviyo.com/api/profiles/?filter=${encodeURIComponent(`equals(email,"${result.data.email}")`)}`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Klaviyo-API-Key ${KLAVIYO_API_KEY}`,
+            revision: KLAVIYO_API_VERSION,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      const profileLookupBody = await parseJsonSafe(profileLookupResponse);
+      console.info('[klaviyo][profile-lookup][response]', {
+        requestId,
+        status: profileLookupResponse.status,
+        ok: profileLookupResponse.ok,
+        body: profileLookupBody,
+      });
+
+      if (!profileLookupResponse.ok) {
+        console.error('Klaviyo profile lookup after duplicate error failed:', profileLookupBody);
+        return { success: false, error: 'We could not find your profile right now. Please try again.' };
+      }
+
+      const existingProfile = profileLookupBody as { data?: Array<{ id?: string }> } | null;
+      profileId = existingProfile?.data?.[0]?.id;
     }
 
-    const profileData = profileResponseBody as { data?: { id?: string } } | null;
-    const profileId = profileData?.data?.id;
     if (!profileId) {
       console.error('[klaviyo] missing profile id in profile response', {
         requestId,
