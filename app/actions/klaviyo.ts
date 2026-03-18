@@ -70,6 +70,66 @@ function maskEmail(email: string): string {
   return `${local.slice(0, 2)}***@${domain}`;
 }
 
+function getHostnameSafe(url: string): string {
+  try {
+    return new URL(url).hostname.toLowerCase();
+  } catch {
+    return '';
+  }
+}
+
+type AcquisitionChannel =
+  | 'instagram'
+  | 'tiktok'
+  | 'facebook'
+  | 'google'
+  | 'email'
+  | 'direct'
+  | 'referral'
+  | 'other';
+
+function normalizeAcquisitionChannel({
+  utmSource,
+  utmMedium,
+  utmCampaign,
+  gclid,
+  fbclid,
+  ttclid,
+  referrerUrl,
+}: {
+  utmSource: string;
+  utmMedium: string;
+  utmCampaign: string;
+  gclid: string;
+  fbclid: string;
+  ttclid: string;
+  referrerUrl: string;
+}): AcquisitionChannel {
+  const source = utmSource.toLowerCase();
+  const medium = utmMedium.toLowerCase();
+  const campaign = utmCampaign.toLowerCase();
+  const host = getHostnameSafe(referrerUrl);
+  const combined = `${source} ${medium} ${campaign} ${host}`;
+
+  if (ttclid || combined.includes('tiktok') || combined.includes('tt')) return 'tiktok';
+  if (combined.includes('instagram') || combined.includes('insta') || combined.includes(' ig ')) return 'instagram';
+  if (fbclid || combined.includes('facebook') || combined.includes('meta')) return 'facebook';
+  if (
+    gclid ||
+    combined.includes('google') ||
+    combined.includes('adwords') ||
+    combined.includes('paidsearch') ||
+    medium === 'cpc' ||
+    medium === 'ppc'
+  ) {
+    return 'google';
+  }
+  if (medium.includes('email') || source.includes('newsletter')) return 'email';
+  if (!utmSource && !utmMedium && !utmCampaign && !gclid && !fbclid && !ttclid && !referrerUrl) return 'direct';
+  if (host) return 'referral';
+  return 'other';
+}
+
 async function parseJsonSafe(response: Response): Promise<unknown> {
   try {
     return await response.json();
@@ -99,6 +159,16 @@ export async function subscribeToKlaviyo(
   const ttclid = formData.get('ttclid')?.toString() ?? '';
   const landingPath = formData.get('landing_path')?.toString() ?? '';
   const referrerUrl = formData.get('referrer_url')?.toString() ?? '';
+  const acquisitionChannel = normalizeAcquisitionChannel({
+    utmSource,
+    utmMedium,
+    utmCampaign,
+    gclid,
+    fbclid,
+    ttclid,
+    referrerUrl,
+  });
+  const acquisitionSourceDetail = utmSource || getHostnameSafe(referrerUrl) || 'unknown';
 
   const result = subscribeSchema.safeParse({ email, listId });
 
@@ -133,6 +203,8 @@ export async function subscribeToKlaviyo(
         gclid: gclid || null,
         fbclid: fbclid || null,
         ttclid: ttclid || null,
+        acquisitionChannel,
+        acquisitionSourceDetail,
       },
     });
 
@@ -147,6 +219,8 @@ export async function subscribeToKlaviyo(
     if (ttclid) attributionProperties.ttclid = ttclid;
     if (landingPath) attributionProperties.landing_path = landingPath;
     if (referrerUrl) attributionProperties.referrer_url = referrerUrl;
+    attributionProperties.acquisition_channel = acquisitionChannel;
+    attributionProperties.acquisition_source_detail = acquisitionSourceDetail;
 
     const profileResponse = await fetch('https://a.klaviyo.com/api/profiles/', {
       method: 'POST',
