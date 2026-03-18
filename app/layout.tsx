@@ -12,6 +12,9 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://bombom.au";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
+  alternates: {
+    canonical: "/",
+  },
   title: {
     default: "BomBom Treats | Wagga Wagga",
     template: "%s | BomBom Treats",
