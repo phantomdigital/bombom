@@ -14,10 +14,12 @@ const DEFAULT_PLACEHOLDER_CYCLE = [
 ];
 
 /** Flavour colours with correct text contrast per brand guidelines */
-const FLAVOUR_BUTTON_STYLES = [
+export const FLAVOUR_BUTTON_STYLES = [
   { bg: 'bg-bom-lemon', text: 'text-bom-black', hoverBg: 'hover:!bg-bom-lemon' },
   { bg: 'bg-bom-musk', text: 'text-bom-black', hoverBg: 'hover:!bg-bom-musk' },
 ] as const;
+
+export type FlavourStyle = (typeof FLAVOUR_BUTTON_STYLES)[number];
 
 /** Duration (ms) based on average reading speed ~200 wpm + base + padding for comfort */
 function getReadingDuration(text: string): number {
@@ -36,6 +38,8 @@ interface KlaviyoEmailCaptureProps {
   buttonText?: string;
   successMessage?: string;
   variant?: 'default' | 'inline' | 'stacked';
+  /** Pre-chosen flavour for button (avoids client-side flash). Pass from server for random; omit for default. */
+  flavourStyle?: FlavourStyle;
 }
 
 export default function KlaviyoEmailCapture({
@@ -45,18 +49,15 @@ export default function KlaviyoEmailCapture({
   placeholderCycle,
   buttonText = 'Subscribe',
   successMessage = 'Thanks for subscribing!',
-  variant = 'inline'
+  variant = 'inline',
+  flavourStyle: flavourStyleProp,
 }: KlaviyoEmailCaptureProps) {
   const [state, formAction, isPending] = useActionState(subscribeToKlaviyo, null);
   const [email, setEmail] = useState('');
   const cycles = placeholderCycle ?? DEFAULT_PLACEHOLDER_CYCLE;
   const [cycleIndex, setCycleIndex] = useState(0);
   const displayPlaceholder = placeholder ?? cycles[cycleIndex];
-  const [flavourStyle, setFlavourStyle] = useState<(typeof FLAVOUR_BUTTON_STYLES)[number]>(() => FLAVOUR_BUTTON_STYLES[0]);
-
-  useEffect(() => {
-    setFlavourStyle(FLAVOUR_BUTTON_STYLES[Math.floor(Math.random() * FLAVOUR_BUTTON_STYLES.length)]);
-  }, []);
+  const flavourStyle = flavourStyleProp ?? FLAVOUR_BUTTON_STYLES[0];
 
   useEffect(() => {
     if (state?.success) {
