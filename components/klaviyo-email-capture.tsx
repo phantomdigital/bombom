@@ -6,6 +6,7 @@ import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { HiChevronRight } from 'react-icons/hi2';
 import { subscribeToKlaviyo } from '@/app/actions/klaviyo';
 import { Button } from '@/components/ui/button';
+import TimedPopover from '@/components/ui/timed-popover';
 import { cn } from '@/lib/utils';
 
 const PLACEHOLDER_PREFIX = 'Hey you,';
@@ -111,8 +112,7 @@ export default function KlaviyoEmailCapture({
   const [isSuccessFading, setIsSuccessFading] = useState(false);
   const [errorToastMessage, setErrorToastMessage] = useState('');
   const [showErrorToast, setShowErrorToast] = useState(false);
-  const [isErrorFading, setIsErrorFading] = useState(false);
-  const [errorToastSeq, setErrorToastSeq] = useState(0);
+  const [errorToastKey, setErrorToastKey] = useState(0);
 
   useLayoutEffect(() => {
     setFlavourStyle(FLAVOUR_BUTTON_STYLES[Math.floor(Math.random() * FLAVOUR_BUTTON_STYLES.length)]);
@@ -123,7 +123,6 @@ export default function KlaviyoEmailCapture({
       setShowSuccess(true);
       setIsSuccessFading(false);
       setShowErrorToast(false);
-      setIsErrorFading(false);
       setErrorToastMessage('');
       setEmail('');
       return;
@@ -132,8 +131,7 @@ export default function KlaviyoEmailCapture({
     if (state?.success === false) {
       setErrorToastMessage(state.error || 'Something went wrong. Please try again.');
       setShowErrorToast(true);
-      setIsErrorFading(false);
-      setErrorToastSeq((prev) => prev + 1);
+      setErrorToastKey((prev) => prev + 1);
     }
   }, [state]);
 
@@ -160,27 +158,6 @@ export default function KlaviyoEmailCapture({
       clearTimeout(hideTimeoutId);
     };
   }, [showSuccess]);
-
-  useEffect(() => {
-    if (!showErrorToast) return;
-
-    const durationMs = 5000;
-    const fadeMs = 350;
-    const fadeTimeoutId = setTimeout(() => {
-      setIsErrorFading(true);
-    }, durationMs);
-
-    const hideTimeoutId = setTimeout(() => {
-      setShowErrorToast(false);
-      setIsErrorFading(false);
-      setErrorToastMessage('');
-    }, durationMs + fadeMs);
-
-    return () => {
-      clearTimeout(fadeTimeoutId);
-      clearTimeout(hideTimeoutId);
-    };
-  }, [showErrorToast, errorToastSeq]);
 
   useEffect(() => {
     if (placeholder) return;
@@ -382,28 +359,17 @@ export default function KlaviyoEmailCapture({
           </Button>
         </motion.form>
       )}
-      <AnimatePresence>
-        {showErrorToast && (
-          <motion.div
-            key={`error-toast-${errorToastSeq}`}
-            id="klaviyo-email-error-popover"
-            role="alert"
-            aria-live="polite"
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: isErrorFading ? 0 : 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.28, ease: 'easeOut' }}
-            className="pointer-events-none absolute left-0 right-0 top-full z-20 mt-2 overflow-hidden rounded-t-sm rounded-b-none border border-bom-black/20 bg-bom-musk/95 shadow-lg"
-          >
-            <div className="px-5 py-3 text-center">
-              <p className="text-sm font-medium font-sans text-bom-black">{errorToastMessage}</p>
-            </div>
-            <div className="h-1 w-full bg-bom-black/10">
-              <div className="h-full w-0 bg-bom-black/45 animate-success-progress" aria-hidden />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <TimedPopover
+        key={`error-toast-${errorToastKey}`}
+        open={showErrorToast}
+        id="klaviyo-email-error-popover"
+        tone="error"
+        message={errorToastMessage}
+        onDismiss={() => {
+          setShowErrorToast(false);
+          setErrorToastMessage('');
+        }}
+      />
     </div>
   );
 }
