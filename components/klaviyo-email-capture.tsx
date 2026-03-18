@@ -174,7 +174,7 @@ export default function KlaviyoEmailCapture({
                     {PLACEHOLDER_PREFIX}
                   </span>
                   <span
-                    className="relative inline-block h-[1em] overflow-hidden text-left align-middle"
+                    className="relative inline-block h-[1.2em] overflow-hidden text-left align-middle"
                     style={{ width: `${rotatingTextWidthCh}ch` }}
                   >
                     <AnimatePresence mode="wait">
@@ -211,7 +211,7 @@ export default function KlaviyoEmailCapture({
               placeholder={nativePlaceholder}
               disabled={isPending}
               className={cn(
-                'h-14 min-h-14 py-2.5 pl-3 pr-10 sm:py-3 sm:pl-6 sm:pr-12 rounded-sm text-sm sm:text-base font-medium font-sans uppercase tracking-wider w-full min-w-0 box-border',
+                'h-14 min-h-14 py-2.5 pl-3 pr-10 sm:py-3 sm:pl-6 sm:pr-12 rounded-sm text-sm sm:text-base font-medium font-sans w-full min-w-0 box-border',
                 'bg-background border border-bom-black shadow-none',
                 'transition-all outline-none',
                 'focus:border-bom-darkred focus:ring-[3px] focus:ring-bom-red/20 focus:ring-offset-0',
