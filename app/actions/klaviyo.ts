@@ -56,6 +56,11 @@ export async function subscribeToKlaviyo(
 ): Promise<SubscribeResult> {
   const email = formData.get('email')?.toString() ?? '';
   const listId = formData.get('listId')?.toString() ?? undefined;
+  const marketingConsentValue = formData.get('marketingConsent')?.toString();
+  const marketingConsent =
+    marketingConsentValue === 'yes' ||
+    marketingConsentValue === 'on' ||
+    marketingConsentValue === 'true';
 
   const result = subscribeSchema.safeParse({ email, listId });
 
@@ -90,6 +95,12 @@ export async function subscribeToKlaviyo(
             properties: {
               source: 'bombom-website',
               signup_date: new Date().toISOString(),
+              signup_page: 'coming-soon',
+              signup_type: 'waitlist',
+              marketing_consent: marketingConsent,
+              marketing_consent_captured_at: marketingConsent ? new Date().toISOString() : null,
+              marketing_consent_text:
+                'I agree to receive marketing emails from BomBom.',
             },
           },
         },
@@ -106,11 +117,73 @@ export async function subscribeToKlaviyo(
       };
     }
 
-    const profileData = await profileResponse.json();
-    const profileId = profileData.data.id;
+    // When we have explicit checkbox consent, use the subscriptions endpoint so
+    // Klaviyo sets email marketing consent to SUBSCRIBED (not NEVER_SUBSCRIBED).
+    if (marketingConsent) {
+      const subscribeJobPayload: Record<string, unknown> = {
+        data: {
+          type: 'profile-subscription-bulk-create-job',
+          attributes: {
+            profiles: {
+              data: [
+                {
+                  type: 'profile',
+                  attributes: {
+                    email: result.data.email,
+                    subscriptions: {
+                      email: {
+                        marketing: {
+                          consent: 'SUBSCRIBED',
+                        },
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      };
 
-    if (result.data.listId) {
+      if (result.data.listId) {
+        (subscribeJobPayload.data as Record<string, unknown>).relationships = {
+          list: {
+            data: {
+              type: 'list',
+              id: result.data.listId,
+            },
+          },
+        };
+      }
+
       const subscribeResponse = await fetch(
+        'https://a.klaviyo.com/api/profile-subscription-bulk-create-jobs/',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Klaviyo-API-Key ${KLAVIYO_API_KEY}`,
+            revision: KLAVIYO_API_VERSION,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(subscribeJobPayload),
+        }
+      );
+
+      if (!subscribeResponse.ok) {
+        const errorData = await subscribeResponse.json();
+        console.error('Klaviyo consent subscription error:', errorData);
+        const rawMessage = extractKlaviyoErrorText(errorData);
+        return {
+          success: false,
+          error: mapKlaviyoErrorToUserMessage(rawMessage, 'We could not subscribe you right now. Please try again.'),
+        };
+      }
+    } else if (result.data.listId) {
+      // Fallback for non-consented submissions: add profile to list only.
+      const profileData = await profileResponse.json();
+      const profileId = profileData.data.id;
+
+      const listResponse = await fetch(
         `https://a.klaviyo.com/api/lists/${result.data.listId}/relationships/profiles/`,
         {
           method: 'POST',
@@ -125,13 +198,13 @@ export async function subscribeToKlaviyo(
         }
       );
 
-      if (!subscribeResponse.ok) {
-        const errorData = await subscribeResponse.json();
-        console.error('Klaviyo list subscription error:', errorData);
+      if (!listResponse.ok) {
+        const errorData = await listResponse.json();
+        console.error('Klaviyo list add error:', errorData);
         const rawMessage = extractKlaviyoErrorText(errorData);
         return {
           success: false,
-          error: mapKlaviyoErrorToUserMessage(rawMessage, 'We could not subscribe you right now. Please try again.'),
+          error: mapKlaviyoErrorToUserMessage(rawMessage, 'We could not save your email right now. Please try again.'),
         };
       }
     }

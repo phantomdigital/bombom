@@ -324,8 +324,8 @@
 
 /* Centralized interactive cursor mapping */
 :root {
-  --cursor-default: url('/images/pointer.svg') 12 12, auto;
-  --cursor-interactive: url('/images/cursor.svg') 12 12, pointer;
+  --cursor-default: url('/images/pointer.svg') 2 2, auto;
+  --cursor-interactive: url('/images/cursor.svg') 2 2, pointer;
   --cursor-text: url('/images/i_bar.svg') 12 12, text;
 }
 

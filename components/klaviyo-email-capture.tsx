@@ -1,11 +1,12 @@
 'use client';
 
-import { useActionState, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useActionState, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { HiChevronRight, HiXMark } from 'react-icons/hi2';
 import { subscribeToKlaviyo } from '@/app/actions/klaviyo';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import TimedPopover from '@/components/ui/timed-popover';
 import { cn } from '@/lib/utils';
 
@@ -113,6 +114,8 @@ export default function KlaviyoEmailCapture({
   const [errorToastMessage, setErrorToastMessage] = useState('');
   const [showErrorToast, setShowErrorToast] = useState(false);
   const [errorToastKey, setErrorToastKey] = useState(0);
+  const [marketingConsent, setMarketingConsent] = useState(false);
+  const marketingConsentId = useId();
 
   useLayoutEffect(() => {
     setFlavourStyle(FLAVOUR_BUTTON_STYLES[Math.floor(Math.random() * FLAVOUR_BUTTON_STYLES.length)]);
@@ -124,6 +127,7 @@ export default function KlaviyoEmailCapture({
       setIsSuccessFading(false);
       setShowErrorToast(false);
       setErrorToastMessage('');
+      setMarketingConsent(false);
       setEmail('');
       setIsFocused(false);
       if (typeof document !== 'undefined') {
@@ -164,6 +168,15 @@ export default function KlaviyoEmailCapture({
       clearTimeout(hideTimeoutId);
     };
   }, [showSuccess]);
+
+  const hasEmailDomainDot = /.+@.+\./.test(email.trim());
+  const showMarketingConsentField = hasEmailDomainDot;
+
+  useEffect(() => {
+    if (!showMarketingConsentField) {
+      setMarketingConsent(false);
+    }
+  }, [showMarketingConsentField]);
 
   useEffect(() => {
     if (placeholder) return;
@@ -214,6 +227,7 @@ export default function KlaviyoEmailCapture({
 
   const status = showSuccess ? 'success' : isPending ? 'loading' : 'idle';
   const hasError = showErrorToast;
+  const canSubmit = !isPending && (!showMarketingConsentField || marketingConsent);
 
   const isInline = variant === 'inline';
   const isStacked = variant === 'stacked';
@@ -246,138 +260,174 @@ export default function KlaviyoEmailCapture({
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, ease: 'easeOut' }}
-          className={cn(
-            'flex gap-1.5 sm:gap-2',
-            isStacked && 'flex-col',
-            isInline && 'flex-col sm:flex-row sm:items-center',
-            variant === 'default' && 'flex-col sm:flex-row items-stretch sm:items-center'
-          )}
+          className="flex flex-col gap-2"
         >
           {listId && <input type="hidden" name="listId" value={listId} />}
-          <div className="group relative flex-1 min-w-0 cursor-pointer">
-            {email ? (
-              <button
-                type="button"
-                onClick={() => setEmail('')}
-                className="absolute right-2 top-1/2 z-10 -translate-y-1/2 flex items-center justify-center p-2 text-muted-foreground hover:text-foreground transition-colors sm:right-5 focus-visible:ring-2 focus-visible:ring-bom-black focus-visible:ring-offset-2 rounded-sm"
-                aria-label="Clear email"
-              >
-                <HiXMark className="size-5" />
-              </button>
-            ) : (
-              <div
-                className="pointer-events-none absolute right-3 top-1/2 z-10 -translate-y-1/2 text-muted-foreground opacity-0 transition-opacity duration-200 group-hover:opacity-100 sm:right-6"
-                aria-hidden
-              >
-                <HiChevronRight className="size-5" />
-              </div>
-            )}
-            {showPlaceholderOverlay && (
-              <div
-                ref={overlayRef}
-                className="pointer-events-none absolute inset-0 flex items-center overflow-hidden px-3 sm:px-6 text-muted-foreground"
-                aria-hidden
-              >
-                {/* Off-screen measurer - exact same structure for accurate width */}
-                <span
-                  ref={measurerRef}
-                  className="absolute left-[-9999px] top-0 inline-flex items-center gap-1 leading-none text-sm sm:text-base font-medium font-sans whitespace-nowrap invisible"
-                  aria-hidden
-                >
-                  <span className="shrink-0">{PLACEHOLDER_PREFIX}</span>
-                  <span>{rotatingText}</span>
-                </span>
-                <motion.span
-                  className="inline-flex items-center gap-1 leading-none"
-                  animate={{ x: centerOffset }}
-                  transition={
-                    hasCycled
-                      ? { type: 'tween', ease: 'easeOut', duration: 0.35 }
-                      : { duration: 0 }
-                  }
-                >
-                  <span className="shrink-0 text-sm sm:text-base font-medium font-sans">
-                    {PLACEHOLDER_PREFIX}
-                  </span>
-                  <span
-                    className="relative inline-block h-[1.2em] overflow-hidden text-left align-middle"
-                    style={{ width: `${rotatingTextWidthCh}ch` }}
-                  >
-                    <AnimatePresence mode="wait" initial={false}>
-                      <motion.span
-                        key={rotatingText}
-                        variants={LETTER_CONTAINER_VARIANTS}
-                        initial="initial"
-                        animate="animate"
-                        exit="exit"
-                        style={{ overflow: 'hidden' }}
-                        className="absolute inset-0 flex items-center justify-start font-medium font-sans text-sm sm:text-base leading-none whitespace-nowrap"
-                      >
-                        {Array.from(rotatingText).map((char, idx) => (
-                          <motion.span
-                            key={`${char}-${idx}`}
-                            variants={LETTER_VARIANTS}
-                            className="inline-block"
-                          >
-                            {char === ' ' ? '\u00A0' : char}
-                          </motion.span>
-                        ))}
-                      </motion.span>
-                    </AnimatePresence>
-                  </span>
-                </motion.span>
-              </div>
-            )}
-            <input
-              type="email"
-              name="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              placeholder={nativePlaceholder}
-              disabled={isPending}
-              className={cn(
-                'h-14 min-h-14 py-2.5 px-10 sm:py-3 sm:pl-6 sm:pr-12 rounded-sm text-base font-medium font-sans w-full min-w-0 box-border',
-                'bg-background border border-bom-black shadow-none',
-                'transition-all outline-none',
-                'focus:border-bom-black focus:ring-[1px] focus:ring-bom-black/20 focus:ring-offset-0',
-                hasError && 'border-bom-darkred focus:border-bom-darkred focus:ring-bom-darkred/20',
-                'disabled:opacity-50 disabled:cursor-not-allowed',
-                'text-center sm:text-left placeholder:text-center sm:placeholder:text-left',
-                'placeholder:text-muted-foreground placeholder:font-normal placeholder:normal-case placeholder:tracking-normal'
-              )}
-              aria-label="Email address"
-              aria-invalid={hasError}
-              aria-describedby={hasError ? 'klaviyo-email-error-popover' : undefined}
-              required
-            />
-          </div>
-          <Button
-            type="submit"
-            disabled={isPending}
-            aria-busy={isPending}
-            size={isInline ? 'default' : 'lg'}
+          <div
             className={cn(
-              'rounded-sm hover:underline',
-              flavourStyle.bg,
-              flavourStyle.hoverBg,
-              flavourStyle.text,
-              'focus-visible:ring-bom-red/30 focus-visible:ring-[3px]',
-              'text-sm sm:text-base font-sans font-medium uppercase tracking-wider transition-all',
-              'h-14 py-0 px-5 sm:px-8 border border-bom-black',
-              'w-full sm:w-auto sm:whitespace-nowrap items-stretch'
+              'flex gap-1.5 sm:gap-2',
+              isStacked && 'flex-col',
+              isInline && 'flex-col sm:flex-row sm:items-center',
+              variant === 'default' && 'flex-col sm:flex-row items-stretch sm:items-center'
             )}
           >
-            {status === 'loading' ? (
-              <span className="inline-flex h-full items-center gap-2">
-                <AiOutlineLoading3Quarters className="size-4 animate-spin" aria-hidden />
-                <span>Subscribing...</span>
-              </span>
-            ) : (
-              <span className="inline-flex h-full items-center">{buttonText}</span>
+            <div className="group relative flex-1 min-w-0 cursor-pointer">
+              {email ? (
+                <button
+                  type="button"
+                  onClick={() => setEmail('')}
+                  className="absolute right-2 top-1/2 z-10 -translate-y-1/2 flex items-center justify-center p-2 text-muted-foreground hover:text-foreground transition-colors sm:right-5 focus-visible:ring-2 focus-visible:ring-bom-black focus-visible:ring-offset-2 rounded-sm"
+                  aria-label="Clear email"
+                >
+                  <HiXMark className="size-5" />
+                </button>
+              ) : (
+                <div
+                  className="pointer-events-none absolute right-3 top-1/2 z-10 -translate-y-1/2 text-muted-foreground opacity-0 transition-opacity duration-200 group-hover:opacity-100 sm:right-6"
+                  aria-hidden
+                >
+                  <HiChevronRight className="size-5" />
+                </div>
+              )}
+              {showPlaceholderOverlay && (
+                <div
+                  ref={overlayRef}
+                  className="pointer-events-none absolute inset-0 flex items-center overflow-hidden px-3 sm:px-6 text-muted-foreground"
+                  aria-hidden
+                >
+                  {/* Off-screen measurer - exact same structure for accurate width */}
+                  <span
+                    ref={measurerRef}
+                    className="absolute left-[-9999px] top-0 inline-flex items-center gap-1 leading-none text-sm sm:text-base font-medium font-sans whitespace-nowrap invisible"
+                    aria-hidden
+                  >
+                    <span className="shrink-0">{PLACEHOLDER_PREFIX}</span>
+                    <span>{rotatingText}</span>
+                  </span>
+                  <motion.span
+                    className="inline-flex items-center gap-1 leading-none"
+                    animate={{ x: centerOffset }}
+                    transition={
+                      hasCycled
+                        ? { type: 'tween', ease: 'easeOut', duration: 0.35 }
+                        : { duration: 0 }
+                    }
+                  >
+                    <span className="shrink-0 text-sm sm:text-base font-medium font-sans">
+                      {PLACEHOLDER_PREFIX}
+                    </span>
+                    <span
+                      className="relative inline-block h-[1.2em] overflow-hidden text-left align-middle"
+                      style={{ width: `${rotatingTextWidthCh}ch` }}
+                    >
+                      <AnimatePresence mode="wait" initial={false}>
+                        <motion.span
+                          key={rotatingText}
+                          variants={LETTER_CONTAINER_VARIANTS}
+                          initial="initial"
+                          animate="animate"
+                          exit="exit"
+                          style={{ overflow: 'hidden' }}
+                          className="absolute inset-0 flex items-center justify-start font-medium font-sans text-sm sm:text-base leading-none whitespace-nowrap"
+                        >
+                          {Array.from(rotatingText).map((char, idx) => (
+                            <motion.span
+                              key={`${char}-${idx}`}
+                              variants={LETTER_VARIANTS}
+                              className="inline-block"
+                            >
+                              {char === ' ' ? '\u00A0' : char}
+                            </motion.span>
+                          ))}
+                        </motion.span>
+                      </AnimatePresence>
+                    </span>
+                  </motion.span>
+                </div>
+              )}
+              <input
+                type="email"
+                name="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+                placeholder={nativePlaceholder}
+                disabled={isPending}
+                className={cn(
+                  'h-14 min-h-14 py-2.5 px-10 sm:py-3 sm:pl-6 sm:pr-12 rounded-sm text-base font-medium font-sans w-full min-w-0 box-border',
+                  'bg-background border border-bom-black shadow-none',
+                  'transition-all outline-none',
+                  'focus:border-bom-black focus:ring-[1px] focus:ring-bom-black/20 focus:ring-offset-0',
+                  hasError && 'border-bom-darkred focus:border-bom-darkred focus:ring-bom-darkred/20',
+                  'disabled:opacity-50 disabled:cursor-not-allowed',
+                  'text-center sm:text-left placeholder:text-center sm:placeholder:text-left',
+                  'placeholder:text-muted-foreground placeholder:font-normal placeholder:normal-case placeholder:tracking-normal'
+                )}
+                aria-label="Email address"
+                aria-invalid={hasError}
+                aria-describedby={hasError ? 'klaviyo-email-error-popover' : undefined}
+                required
+              />
+            </div>
+            <Button
+              type="submit"
+              disabled={!canSubmit}
+              aria-busy={isPending}
+              size={isInline ? 'default' : 'lg'}
+              className={cn(
+                'rounded-sm hover:underline',
+                flavourStyle.bg,
+                flavourStyle.hoverBg,
+                flavourStyle.text,
+                'focus-visible:ring-bom-red/30 focus-visible:ring-[3px]',
+                'text-sm sm:text-base font-sans font-medium uppercase tracking-wider transition-all',
+                'h-14 py-0 px-5 sm:px-8 border border-bom-black',
+                'w-full sm:w-auto sm:whitespace-nowrap items-stretch'
+              )}
+            >
+              {status === 'loading' ? (
+                <span className="inline-flex h-full items-center gap-2">
+                  <AiOutlineLoading3Quarters className="size-4 animate-spin" aria-hidden />
+                  <span>Subscribing...</span>
+                </span>
+              ) : (
+                <span className="inline-flex h-full items-center">{buttonText}</span>
+              )}
+            </Button>
+          </div>
+          <AnimatePresence initial={false}>
+            {showMarketingConsentField && (
+              <motion.div
+                key="marketing-consent"
+                initial={{ opacity: 0, y: 6, height: 0 }}
+                animate={{ opacity: 1, y: 0, height: 'auto' }}
+                exit={{ opacity: 0, y: -4, height: 0 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+                className="mt-2 sm:mt-3 overflow-hidden"
+              >
+                <label
+                  htmlFor={marketingConsentId}
+                  className="group -mx-1 flex w-full items-center justify-center gap-2.5 px-1 py-1 cursor-pointer select-none touch-manipulation"
+                >
+                  <span className="-m-1 inline-flex shrink-0 items-center justify-center rounded-sm p-1">
+                    <Checkbox
+                      id={marketingConsentId}
+                      name="marketingConsent"
+                      checked={marketingConsent}
+                      onCheckedChange={(checked) => setMarketingConsent(checked === true)}
+                      disabled={isPending}
+                      required={showMarketingConsentField}
+                      className="size-4"
+                    />
+                  </span>
+                  <span className="text-center font-sans text-[12px] sm:text-[13px] leading-snug text-bom-black/85">
+                    I agree to receive marketing emails from BomBom.
+                  </span>
+                </label>
+              </motion.div>
             )}
-          </Button>
+          </AnimatePresence>
         </motion.form>
       )}
       <TimedPopover
