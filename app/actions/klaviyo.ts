@@ -316,6 +316,51 @@ export async function subscribeToKlaviyo(
       return { success: false, error: 'We could not save your email right now. Please try again.' };
     }
 
+    // Ensure attribution + consent metadata are persisted even when the profile
+    // already existed (duplicate create path).
+    const profileUpdateResponse = await fetch(`https://a.klaviyo.com/api/profiles/${profileId}/`, {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Klaviyo-API-Key ${KLAVIYO_API_KEY}`,
+        revision: KLAVIYO_API_VERSION,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        data: {
+          type: 'profile',
+          id: profileId,
+          attributes: {
+            properties: {
+              source: 'bombom-website',
+              signup_date: new Date().toISOString(),
+              signup_page: 'coming-soon',
+              signup_type: 'waitlist',
+              ...attributionProperties,
+              marketing_consent: marketingConsent,
+              marketing_consent_captured_at: marketingConsent ? new Date().toISOString() : null,
+              marketing_consent_text:
+                'I agree to receive marketing emails from BomBom.',
+            },
+          },
+        },
+      }),
+    });
+    const profileUpdateBody = await parseJsonSafe(profileUpdateResponse);
+    console.info('[klaviyo][profile-update][response]', {
+      requestId,
+      status: profileUpdateResponse.status,
+      ok: profileUpdateResponse.ok,
+      profileId,
+      body: profileUpdateBody,
+    });
+    if (!profileUpdateResponse.ok) {
+      console.error('[klaviyo] profile metadata update failed', {
+        requestId,
+        profileId,
+        body: profileUpdateBody,
+      });
+    }
+
     // Always attach to list directly when listId exists. This restores deterministic
     // list membership even when consent jobs are asynchronous.
     if (result.data.listId) {
