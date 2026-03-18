@@ -39,7 +39,6 @@ export function middleware(request: NextRequest) {
 
   if (url.pathname !== "/coming-soon") {
     url.pathname = "/coming-soon";
-    url.search = "";
     return NextResponse.redirect(url);
   }
 

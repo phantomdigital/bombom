@@ -89,6 +89,16 @@ export async function subscribeToKlaviyo(
     marketingConsentValue === 'yes' ||
     marketingConsentValue === 'on' ||
     marketingConsentValue === 'true';
+  const utmSource = formData.get('utm_source')?.toString() ?? '';
+  const utmMedium = formData.get('utm_medium')?.toString() ?? '';
+  const utmCampaign = formData.get('utm_campaign')?.toString() ?? '';
+  const utmTerm = formData.get('utm_term')?.toString() ?? '';
+  const utmContent = formData.get('utm_content')?.toString() ?? '';
+  const gclid = formData.get('gclid')?.toString() ?? '';
+  const fbclid = formData.get('fbclid')?.toString() ?? '';
+  const ttclid = formData.get('ttclid')?.toString() ?? '';
+  const landingPath = formData.get('landing_path')?.toString() ?? '';
+  const referrerUrl = formData.get('referrer_url')?.toString() ?? '';
 
   const result = subscribeSchema.safeParse({ email, listId });
 
@@ -116,7 +126,27 @@ export async function subscribeToKlaviyo(
       listId: result.data.listId ?? null,
       marketingConsent,
       marketingConsentValue: marketingConsentValue ?? null,
+      attribution: {
+        utmSource: utmSource || null,
+        utmMedium: utmMedium || null,
+        utmCampaign: utmCampaign || null,
+        gclid: gclid || null,
+        fbclid: fbclid || null,
+        ttclid: ttclid || null,
+      },
     });
+
+    const attributionProperties: Record<string, string> = {};
+    if (utmSource) attributionProperties.utm_source = utmSource;
+    if (utmMedium) attributionProperties.utm_medium = utmMedium;
+    if (utmCampaign) attributionProperties.utm_campaign = utmCampaign;
+    if (utmTerm) attributionProperties.utm_term = utmTerm;
+    if (utmContent) attributionProperties.utm_content = utmContent;
+    if (gclid) attributionProperties.gclid = gclid;
+    if (fbclid) attributionProperties.fbclid = fbclid;
+    if (ttclid) attributionProperties.ttclid = ttclid;
+    if (landingPath) attributionProperties.landing_path = landingPath;
+    if (referrerUrl) attributionProperties.referrer_url = referrerUrl;
 
     const profileResponse = await fetch('https://a.klaviyo.com/api/profiles/', {
       method: 'POST',
@@ -135,6 +165,7 @@ export async function subscribeToKlaviyo(
               signup_date: new Date().toISOString(),
               signup_page: 'coming-soon',
               signup_type: 'waitlist',
+              ...attributionProperties,
               marketing_consent: marketingConsent,
               marketing_consent_captured_at: marketingConsent ? new Date().toISOString() : null,
               marketing_consent_text:

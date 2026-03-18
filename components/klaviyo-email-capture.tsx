@@ -21,6 +21,17 @@ const DEFAULT_PLACEHOLDER_CYCLE = [
   "we'll keep you posted",
 ];
 
+const ATTRIBUTION_QUERY_KEYS = [
+  'utm_source',
+  'utm_medium',
+  'utm_campaign',
+  'utm_term',
+  'utm_content',
+  'gclid',
+  'fbclid',
+  'ttclid',
+] as const;
+
 const LETTER_CONTAINER_VARIANTS = {
   initial: {},
   animate: {
@@ -115,6 +126,7 @@ export default function KlaviyoEmailCapture({
   const [showErrorToast, setShowErrorToast] = useState(false);
   const [errorToastKey, setErrorToastKey] = useState(0);
   const [marketingConsent, setMarketingConsent] = useState(false);
+  const [attributionFields, setAttributionFields] = useState<Record<string, string>>({});
   const marketingConsentId = useId();
 
   useLayoutEffect(() => {
@@ -177,6 +189,26 @@ export default function KlaviyoEmailCapture({
       setMarketingConsent(false);
     }
   }, [showMarketingConsentField]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const params = new URLSearchParams(window.location.search);
+    const nextAttribution: Record<string, string> = {};
+
+    for (const key of ATTRIBUTION_QUERY_KEYS) {
+      const value = params.get(key);
+      if (value) nextAttribution[key] = value;
+    }
+
+    nextAttribution.landing_path = `${window.location.pathname}${window.location.search}`;
+
+    if (document.referrer) {
+      nextAttribution.referrer_url = document.referrer;
+    }
+
+    setAttributionFields(nextAttribution);
+  }, []);
 
   useEffect(() => {
     if (placeholder) return;
@@ -266,6 +298,9 @@ export default function KlaviyoEmailCapture({
           {marketingConsent && (
             <input type="hidden" name="marketingConsent" value="yes" />
           )}
+          {Object.entries(attributionFields).map(([key, value]) => (
+            <input key={key} type="hidden" name={key} value={value} />
+          ))}
           <div
             className={cn(
               'flex gap-1.5 sm:gap-2',
