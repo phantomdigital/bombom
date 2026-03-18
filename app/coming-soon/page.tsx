@@ -5,6 +5,8 @@ import KlaviyoEmailCapture, {
 } from "@/components/klaviyo-email-capture";
 import { SiInstagram, SiTiktok } from "react-icons/si";
 
+export const dynamic = "force-dynamic";
+
 function pickFlavour() {
   return FLAVOUR_BUTTON_STYLES[
     Math.floor(Math.random() * FLAVOUR_BUTTON_STYLES.length)
@@ -48,26 +50,26 @@ export default function ComingSoonPage() {
             Shop 1, 117 Baylis St, Wagga
           </address>
         </div>
-        <nav className="flex items-center gap-5 sm:gap-6">
+        <nav className="flex items-center gap-2 sm:gap-3">
           <Link
             href="https://instagram.com/bombom.au"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-bom-white hover:text-bom-musk transition-colors cursor-pointer"
+            className="inline-flex items-center justify-center p-3 text-bom-white hover:text-bom-musk transition-colors cursor-pointer"
             style={{ cursor: "pointer" }}
             aria-label="Instagram"
           >
-            <SiInstagram className="size-8 sm:size-10" />
+            <SiInstagram className="size-8 sm:size-10 shrink-0" />
           </Link>
           <Link
             href="https://tiktok.com/@bombom_au"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-bom-white hover:text-bom-musk transition-colors cursor-pointer"
+            className="inline-flex items-center justify-center p-3 text-bom-white hover:text-bom-musk transition-colors cursor-pointer"
             style={{ cursor: "pointer" }}
             aria-label="TikTok"
           >
-            <SiTiktok className="size-8 sm:size-10" />
+            <SiTiktok className="size-8 sm:size-10 shrink-0" />
           </Link>
         </nav>
       </footer>
