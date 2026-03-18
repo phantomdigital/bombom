@@ -50,6 +50,21 @@ function mapKlaviyoErrorToUserMessage(rawMessage: string, fallback: string): str
   return fallback;
 }
 
+function maskEmail(email: string): string {
+  const [local, domain] = email.split('@');
+  if (!local || !domain) return email;
+  if (local.length <= 2) return `${local[0] ?? '*'}*@${domain}`;
+  return `${local.slice(0, 2)}***@${domain}`;
+}
+
+async function parseJsonSafe(response: Response): Promise<unknown> {
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
+}
+
 export async function subscribeToKlaviyo(
   _prevState: unknown,
   formData: FormData
@@ -80,6 +95,16 @@ export async function subscribeToKlaviyo(
   }
 
   try {
+    const requestId = crypto.randomUUID();
+    console.info('[klaviyo][subscribe][start]', {
+      requestId,
+      email: maskEmail(result.data.email),
+      hasListId: Boolean(result.data.listId),
+      listId: result.data.listId ?? null,
+      marketingConsent,
+      marketingConsentValue: marketingConsentValue ?? null,
+    });
+
     const profileResponse = await fetch('https://a.klaviyo.com/api/profiles/', {
       method: 'POST',
       headers: {
@@ -107,8 +132,16 @@ export async function subscribeToKlaviyo(
       }),
     });
 
+    const profileResponseBody = await parseJsonSafe(profileResponse);
+    console.info('[klaviyo][profile][response]', {
+      requestId,
+      status: profileResponse.status,
+      ok: profileResponse.ok,
+      body: profileResponseBody,
+    });
+
     if (!profileResponse.ok) {
-      const errorData = await profileResponse.json();
+      const errorData = profileResponseBody;
       console.error('Klaviyo profile creation error:', errorData);
       const rawMessage = extractKlaviyoErrorText(errorData);
       return {
@@ -117,8 +150,56 @@ export async function subscribeToKlaviyo(
       };
     }
 
-    // When we have explicit checkbox consent, use the subscriptions endpoint so
-    // Klaviyo sets email marketing consent to SUBSCRIBED (not NEVER_SUBSCRIBED).
+    const profileData = profileResponseBody as { data?: { id?: string } } | null;
+    const profileId = profileData?.data?.id;
+    if (!profileId) {
+      console.error('[klaviyo] missing profile id in profile response', {
+        requestId,
+        profileResponseBody,
+      });
+      return { success: false, error: 'We could not save your email right now. Please try again.' };
+    }
+
+    // Always attach to list directly when listId exists. This restores deterministic
+    // list membership even when consent jobs are asynchronous.
+    if (result.data.listId) {
+      const listResponse = await fetch(
+        `https://a.klaviyo.com/api/lists/${result.data.listId}/relationships/profiles/`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Klaviyo-API-Key ${KLAVIYO_API_KEY}`,
+            revision: KLAVIYO_API_VERSION,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            data: [{ type: 'profile', id: profileId }],
+          }),
+        }
+      );
+
+      const listResponseBody = await parseJsonSafe(listResponse);
+      console.info('[klaviyo][list-add][response]', {
+        requestId,
+        status: listResponse.status,
+        ok: listResponse.ok,
+        listId: result.data.listId,
+        profileId,
+        body: listResponseBody,
+      });
+
+      if (!listResponse.ok) {
+        const errorData = listResponseBody;
+        console.error('Klaviyo list add error:', errorData);
+        const rawMessage = extractKlaviyoErrorText(errorData);
+        return {
+          success: false,
+          error: mapKlaviyoErrorToUserMessage(rawMessage, 'We could not save your email right now. Please try again.'),
+        };
+      }
+    }
+
+    // When we have explicit checkbox consent, set marketing consent status too.
     if (marketingConsent) {
       const subscribeJobPayload: Record<string, unknown> = {
         data: {
@@ -169,8 +250,18 @@ export async function subscribeToKlaviyo(
         }
       );
 
+      const subscribeResponseBody = await parseJsonSafe(subscribeResponse);
+      console.info('[klaviyo][subscribe-job][response]', {
+        requestId,
+        status: subscribeResponse.status,
+        ok: subscribeResponse.ok,
+        listId: result.data.listId ?? null,
+        payload: subscribeJobPayload,
+        body: subscribeResponseBody,
+      });
+
       if (!subscribeResponse.ok) {
-        const errorData = await subscribeResponse.json();
+        const errorData = subscribeResponseBody;
         console.error('Klaviyo consent subscription error:', errorData);
         const rawMessage = extractKlaviyoErrorText(errorData);
         return {
@@ -178,36 +269,14 @@ export async function subscribeToKlaviyo(
           error: mapKlaviyoErrorToUserMessage(rawMessage, 'We could not subscribe you right now. Please try again.'),
         };
       }
-    } else if (result.data.listId) {
-      // Fallback for non-consented submissions: add profile to list only.
-      const profileData = await profileResponse.json();
-      const profileId = profileData.data.id;
-
-      const listResponse = await fetch(
-        `https://a.klaviyo.com/api/lists/${result.data.listId}/relationships/profiles/`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Klaviyo-API-Key ${KLAVIYO_API_KEY}`,
-            revision: KLAVIYO_API_VERSION,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            data: [{ type: 'profile', id: profileId }],
-          }),
-        }
-      );
-
-      if (!listResponse.ok) {
-        const errorData = await listResponse.json();
-        console.error('Klaviyo list add error:', errorData);
-        const rawMessage = extractKlaviyoErrorText(errorData);
-        return {
-          success: false,
-          error: mapKlaviyoErrorToUserMessage(rawMessage, 'We could not save your email right now. Please try again.'),
-        };
-      }
     }
+
+    console.info('[klaviyo][subscribe][success]', {
+      requestId,
+      email: maskEmail(result.data.email),
+      listId: result.data.listId ?? null,
+      marketingConsent,
+    });
 
     return { success: true };
   } catch (error) {

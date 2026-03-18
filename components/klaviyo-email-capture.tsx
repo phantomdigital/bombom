@@ -263,6 +263,9 @@ export default function KlaviyoEmailCapture({
           className="flex flex-col gap-2"
         >
           {listId && <input type="hidden" name="listId" value={listId} />}
+          {marketingConsent && (
+            <input type="hidden" name="marketingConsent" value="yes" />
+          )}
           <div
             className={cn(
               'flex gap-1.5 sm:gap-2',
