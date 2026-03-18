@@ -83,6 +83,12 @@ export default function RootLayout({
       <body
         className={`${geistMono.variable} antialiased bg-sky-100`}
       >
+        <a
+          href="#main-content"
+          className="sr-only focus-visible:not-sr-only focus-visible:absolute focus-visible:top-4 focus-visible:left-4 focus-visible:z-[100] focus-visible:px-4 focus-visible:py-2 focus-visible:bg-bom-black focus-visible:text-bom-white focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bom-black focus-visible:ring-offset-2"
+        >
+          Skip to main content
+        </a>
         <SmoothScroll />
         {children}
       </body>

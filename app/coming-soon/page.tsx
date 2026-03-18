@@ -10,7 +10,7 @@ export default function ComingSoonPage() {
   const [isSuccessVisible, setIsSuccessVisible] = useState(false);
 
   return (
-    <main className="min-h-screen flex flex-col">
+    <main id="main-content" className="min-h-screen flex flex-col" tabIndex={-1}>
       <div className="flex-1 flex flex-col items-center justify-center px-6 sm:px-10 lg:px-16 py-12">
         <div className="w-full max-w-5xl flex flex-col items-center">
           <div className="w-full px-2 sm:px-4 text-bom-white">
@@ -24,12 +24,12 @@ export default function ComingSoonPage() {
           />
 
           <div className="mx-auto w-full">
-            <p
+            <h2
               className={`bom-body1-heading-sm sm:bom-body1-sm text-bom-black text-center mb-5 transition-opacity duration-400 ${isSuccessVisible ? "opacity-0 pointer-events-none" : "opacity-100"}`}
               aria-hidden={isSuccessVisible}
             >
               Be first to know when we open.
-            </p>
+            </h2>
             <KlaviyoEmailCapture
               buttonText="Get Notified"
               successMessage="Thanks! We'll let you know when we launch."
@@ -56,7 +56,7 @@ export default function ComingSoonPage() {
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center p-3 text-bom-white hover:text-bom-musk transition-colors cursor-pointer"
-            aria-label="Instagram"
+            aria-label="Instagram (opens in new tab)"
           >
             <SiInstagram className="size-8 sm:size-10 shrink-0" />
           </Link>
@@ -65,7 +65,7 @@ export default function ComingSoonPage() {
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center p-3 text-bom-white hover:text-bom-musk transition-colors cursor-pointer"
-            aria-label="TikTok"
+            aria-label="TikTok (opens in new tab)"
           >
             <SiTiktok className="size-8 sm:size-10 shrink-0" />
           </Link>

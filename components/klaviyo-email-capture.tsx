@@ -3,7 +3,7 @@
 import { useActionState, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
-import { HiChevronRight } from 'react-icons/hi2';
+import { HiChevronRight, HiXMark } from 'react-icons/hi2';
 import { subscribeToKlaviyo } from '@/app/actions/klaviyo';
 import { Button } from '@/components/ui/button';
 import TimedPopover from '@/components/ui/timed-popover';
@@ -216,6 +216,8 @@ export default function KlaviyoEmailCapture({
     <div className={cn('relative w-full max-w-xl', className)}>
       {status === 'success' ? (
         <div
+          role="status"
+          aria-live="polite"
           className={cn(
             'overflow-hidden rounded-t-sm rounded-b-none bg-bom-white/10 text-center font-sans font-semibold transition-opacity duration-400',
             isSuccessFading ? 'opacity-0' : 'opacity-100'
@@ -234,6 +236,7 @@ export default function KlaviyoEmailCapture({
       ) : (
         <motion.form
           action={formAction}
+          aria-label="Email signup form"
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, ease: 'easeOut' }}
@@ -246,12 +249,23 @@ export default function KlaviyoEmailCapture({
         >
           {listId && <input type="hidden" name="listId" value={listId} />}
           <div className="group relative flex-1 min-w-0 cursor-pointer">
-            <div
-              className="pointer-events-none absolute right-3 top-1/2 z-10 -translate-y-1/2 text-muted-foreground opacity-0 transition-opacity duration-200 group-hover:opacity-100 sm:right-6"
-              aria-hidden
-            >
-              <HiChevronRight className="size-5" />
-            </div>
+            {email ? (
+              <button
+                type="button"
+                onClick={() => setEmail('')}
+                className="absolute right-2 top-1/2 z-10 -translate-y-1/2 flex items-center justify-center p-2 text-muted-foreground hover:text-foreground transition-colors sm:right-5 focus-visible:ring-2 focus-visible:ring-bom-black focus-visible:ring-offset-2 rounded-sm"
+                aria-label="Clear email"
+              >
+                <HiXMark className="size-5" />
+              </button>
+            ) : (
+              <div
+                className="pointer-events-none absolute right-3 top-1/2 z-10 -translate-y-1/2 text-muted-foreground opacity-0 transition-opacity duration-200 group-hover:opacity-100 sm:right-6"
+                aria-hidden
+              >
+                <HiChevronRight className="size-5" />
+              </div>
+            )}
             {showPlaceholderOverlay && (
               <div
                 ref={overlayRef}
@@ -336,6 +350,7 @@ export default function KlaviyoEmailCapture({
           <Button
             type="submit"
             disabled={isPending}
+            aria-busy={isPending}
             size={isInline ? 'default' : 'lg'}
             className={cn(
               'rounded-sm hover:underline',

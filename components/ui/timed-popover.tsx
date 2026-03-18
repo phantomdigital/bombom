@@ -108,7 +108,7 @@ export default function TimedPopover({
       {open && (
         <motion.div
           id={id}
-          role="alert"
+          role="status"
           aria-live="polite"
           initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: isFading ? 0 : 1, y: 0 }}
@@ -126,7 +126,7 @@ export default function TimedPopover({
               type="button"
               onClick={dismissEarly}
               className={cn(
-                'absolute right-1 top-1/2 -translate-y-1/2 rounded-sm p-2.5 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center',
+                'absolute right-1 top-1/2 -translate-y-1/2 rounded-sm p-2.5 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center focus-visible:ring-2 focus-visible:ring-bom-black focus-visible:ring-offset-2',
                 toneStyle.close
               )}
               aria-label="Dismiss message"
