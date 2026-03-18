@@ -47,7 +47,6 @@ export default function ComingSoonPage() {
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center p-3 text-bom-white hover:text-bom-musk transition-colors cursor-pointer"
-            style={{ cursor: "pointer" }}
             aria-label="Instagram"
           >
             <SiInstagram className="size-8 sm:size-10 shrink-0" />
@@ -57,7 +56,6 @@ export default function ComingSoonPage() {
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center p-3 text-bom-white hover:text-bom-musk transition-colors cursor-pointer"
-            style={{ cursor: "pointer" }}
             aria-label="TikTok"
           >
             <SiTiktok className="size-8 sm:size-10 shrink-0" />
