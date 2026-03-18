@@ -1,30 +1,66 @@
-import Image from "next/image";
+import Link from "next/link";
+import BomBomLogo from "@/components/bombom-logo";
+import KlaviyoEmailCapture from "@/components/klaviyo-email-capture";
+import { SiInstagram, SiTiktok } from "react-icons/si";
 
 export default function ComingSoonPage() {
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-6 sm:px-10 lg:px-16 py-12">
-      <div className="w-full max-w-5xl">
-        {/* <div className="flex items-center justify-between text-xs sm:text-sm lg:text-base font-medium text-gray-700 uppercase tracking-[0.3em] px-4 sm:px-8 mb-6 sm:mb-8 lg:mb-10">
-          <span>Frozen Yogurt</span>
-          <span>Soft Serve</span>
-          <span>Ice Cream</span>
-        </div> */}
+    <main className="min-h-screen flex flex-col">
+      <div className="flex-1 flex flex-col items-center justify-center px-6 sm:px-10 lg:px-16 py-12">
+        <div className="w-full max-w-5xl flex flex-col items-center">
+          <div className="w-full px-2 sm:px-4 text-bom-white">
+            <BomBomLogo className="max-w-3xl sm:max-w-4xl lg:max-w-5xl mx-auto" aria-label="BomBom Treats" />
+          </div>
 
-        <div className="w-full px-4 sm:px-8">
-          <Image
-            src="/images/logo/logo.png"
-            alt="BomBom Treats"
-            width={1200}
-            height={300}
-            className="w-full h-auto"
-            priority
+          {/* Spacer: full logo height on mobile, half on desktop */}
+          <div
+            className="w-full max-w-3xl sm:max-w-4xl lg:max-w-5xl mx-auto shrink-0 aspect-[1223.31/234.87] sm:aspect-[2446.62/234.87]"
+            aria-hidden
           />
-        </div>
 
-        <p className="mt-8 sm:mt-10 lg:mt-12 text-center text-sm sm:text-base lg:text-lg text-gray-600 max-w-2xl mx-auto px-4">
-          We're putting the finishing touches on something special. Coming Autumn 2026.
-        </p>
+          <div className="mx-auto w-full">
+            <KlaviyoEmailCapture
+              buttonText="Get Notified"
+              successMessage="Thanks! We'll let you know when we launch."
+              variant="inline"
+              className="mx-auto"
+            />
+          </div>
+        </div>
       </div>
+
+      <footer className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-6 sm:px-10 lg:px-16 py-8 pb-12 bg-bom-ice">
+        <div className="flex flex-col gap-2">
+          <span className="font-sans text-3xl sm:text-4xl lg:text-5xl font-medium text-bom-white tracking-tight">
+            Coming Autumn!
+          </span>
+          <address className="bom-body1-sm text-bom-white not-italic text-left">
+            Shop 1, 117 Baylis St, Wagga
+          </address>
+        </div>
+        <nav className="flex items-center gap-6">
+          <Link
+            href="https://instagram.com/bombom.au"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-bom-white hover:text-bom-musk transition-colors cursor-pointer"
+            style={{ cursor: "pointer" }}
+            aria-label="Instagram"
+          >
+            <SiInstagram className="size-8 sm:size-10" />
+          </Link>
+          <Link
+            href="https://tiktok.com/@bombom_au"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-bom-white hover:text-bom-musk transition-colors cursor-pointer"
+            style={{ cursor: "pointer" }}
+            aria-label="TikTok"
+          >
+            <SiTiktok className="size-8 sm:size-10" />
+          </Link>
+        </nav>
+      </footer>
     </main>
   );
 }

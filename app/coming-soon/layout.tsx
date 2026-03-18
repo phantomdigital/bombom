@@ -2,7 +2,7 @@ export default function ComingSoonLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <div className="min-h-screen bg-sky-100 flex flex-col">
+    <div className="min-h-screen bg-bom-ice flex flex-col">
       {children}
     </div>
   );
