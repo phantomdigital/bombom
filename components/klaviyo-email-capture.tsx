@@ -108,7 +108,6 @@ export default function KlaviyoEmailCapture({
   const [centerOffset, setCenterOffset] = useState(0);
   const [hasCycled, setHasCycled] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [successProgress, setSuccessProgress] = useState(0);
   const [isSuccessFading, setIsSuccessFading] = useState(false);
 
   useLayoutEffect(() => {
@@ -119,7 +118,6 @@ export default function KlaviyoEmailCapture({
     if (state?.success) {
       setShowSuccess(true);
       setIsSuccessFading(false);
-      setSuccessProgress(0);
       setEmail('');
     }
   }, [state]);
@@ -131,35 +129,20 @@ export default function KlaviyoEmailCapture({
   useEffect(() => {
     if (!showSuccess) return;
 
-    let rafId = 0;
-    let fadeTimeoutId: ReturnType<typeof setTimeout> | undefined;
     const durationMs = 5000;
     const fadeMs = 400;
-    const startTime = performance.now();
-
-    const tick = (now: number) => {
-      const elapsed = now - startTime;
-      const progress = Math.min(elapsed / durationMs, 1);
-      setSuccessProgress(progress * 100);
-
-      if (progress < 1) {
-        rafId = requestAnimationFrame(tick);
-        return;
-      }
-
+    const fadeTimeoutId = setTimeout(() => {
       setIsSuccessFading(true);
-      fadeTimeoutId = setTimeout(() => {
-        setShowSuccess(false);
-        setIsSuccessFading(false);
-        setSuccessProgress(0);
-      }, fadeMs);
-    };
+    }, durationMs);
 
-    rafId = requestAnimationFrame(tick);
+    const hideTimeoutId = setTimeout(() => {
+      setShowSuccess(false);
+      setIsSuccessFading(false);
+    }, durationMs + fadeMs);
 
     return () => {
-      if (rafId) cancelAnimationFrame(rafId);
-      if (fadeTimeoutId) clearTimeout(fadeTimeoutId);
+      clearTimeout(fadeTimeoutId);
+      clearTimeout(hideTimeoutId);
     };
   }, [showSuccess]);
 
@@ -223,7 +206,7 @@ export default function KlaviyoEmailCapture({
       {status === 'success' ? (
         <div
           className={cn(
-            'overflow-hidden rounded-sm bg-bom-white/10 text-center font-sans font-semibold transition-opacity duration-400',
+            'overflow-hidden rounded-t-sm rounded-b-none bg-bom-white/10 text-center font-sans font-semibold transition-opacity duration-400',
             isSuccessFading ? 'opacity-0' : 'opacity-100'
           )}
         >
@@ -232,15 +215,17 @@ export default function KlaviyoEmailCapture({
           </div>
           <div className="h-1 w-full bg-bom-white/15">
             <div
-              className="h-full bg-bom-white transition-[width] duration-100 ease-linear"
-              style={{ width: `${successProgress}%` }}
+              className="h-full w-0 bg-bom-white animate-success-progress"
               aria-hidden
             />
           </div>
         </div>
       ) : (
-        <form
+        <motion.form
           action={formAction}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: 'easeOut' }}
           className={cn(
             'flex gap-1.5 sm:gap-2',
             isStacked && 'flex-col',
@@ -371,7 +356,7 @@ export default function KlaviyoEmailCapture({
               <span className="inline-flex h-full items-center">{buttonText}</span>
             )}
           </Button>
-        </form>
+        </motion.form>
       )}
     </div>
   );

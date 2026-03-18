@@ -303,6 +303,19 @@
   animation: ticker-marquee 25s linear infinite;
 }
 
+@keyframes success-progress {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.animate-success-progress {
+  animation: success-progress 5s linear forwards;
+}
+
 /* Centralized interactive cursor mapping */
 :root {
   --cursor-default: url('/images/pointer.svg') 12 12, auto;

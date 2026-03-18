@@ -24,11 +24,12 @@ export default function ComingSoonPage() {
           />
 
           <div className="mx-auto w-full">
-            {!isSuccessVisible && (
-              <p className="bom-body1-heading-sm sm:bom-body1-sm text-bom-black text-center mb-5">
-                Be first to know when we open.
-              </p>
-            )}
+            <p
+              className={`bom-body1-heading-sm sm:bom-body1-sm text-bom-black text-center mb-5 transition-opacity duration-400 ${isSuccessVisible ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+              aria-hidden={isSuccessVisible}
+            >
+              Be first to know when we open.
+            </p>
             <KlaviyoEmailCapture
               buttonText="Get Notified"
               successMessage="Thanks! We'll let you know when we launch."
