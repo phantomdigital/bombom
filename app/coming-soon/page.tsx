@@ -38,7 +38,7 @@ export default function ComingSoonPage() {
             Coming Autumn!
           </span>
           <address className="bom-body1-sm text-bom-white not-italic text-left">
-            Shop 1, 117 Baylis St, Wagga
+            Shop 1, 117 Baylis St, Wagga Wagga
           </address>
         </div>
         <nav className="flex items-center gap-2 sm:gap-3">
