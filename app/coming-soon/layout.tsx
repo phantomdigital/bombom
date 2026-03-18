@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "BomBom Treats | Coming Autumn",
+  title: "Coming Autumn",
   description:
     "We're opening in Wagga this autumn. Be first to know when we open at Shop 1, 117 Baylis St, Wagga",
   openGraph: {
