@@ -14,6 +14,42 @@ export type SubscribeResult =
   | { success: true }
   | { success: false; error: string };
 
+function extractKlaviyoErrorText(errorData: unknown): string {
+  if (!errorData || typeof errorData !== 'object') return '';
+
+  const maybeErrors = (errorData as { errors?: Array<{ detail?: string; title?: string; code?: string }> }).errors;
+  if (Array.isArray(maybeErrors) && maybeErrors.length > 0) {
+    const first = maybeErrors[0];
+    return first?.detail || first?.title || first?.code || '';
+  }
+
+  const maybeMessage = (errorData as { message?: string }).message;
+  return typeof maybeMessage === 'string' ? maybeMessage : '';
+}
+
+function mapKlaviyoErrorToUserMessage(rawMessage: string, fallback: string): string {
+  const msg = rawMessage.toLowerCase();
+
+  if (
+    msg.includes('already exists') ||
+    msg.includes('already in this list') ||
+    msg.includes('already subscribed') ||
+    msg.includes('duplicate')
+  ) {
+    return "You're already on our list with this email.";
+  }
+
+  if (msg.includes('invalid') && msg.includes('email')) {
+    return 'Please enter a valid email address.';
+  }
+
+  if (msg.includes('rate limit') || msg.includes('too many requests')) {
+    return 'Too many attempts right now. Please wait a moment and try again.';
+  }
+
+  return fallback;
+}
+
 export async function subscribeToKlaviyo(
   _prevState: unknown,
   formData: FormData
@@ -63,7 +99,11 @@ export async function subscribeToKlaviyo(
     if (!profileResponse.ok) {
       const errorData = await profileResponse.json();
       console.error('Klaviyo profile creation error:', errorData);
-      return { success: false, error: 'Failed to create profile' };
+      const rawMessage = extractKlaviyoErrorText(errorData);
+      return {
+        success: false,
+        error: mapKlaviyoErrorToUserMessage(rawMessage, 'We could not save your email right now. Please try again.'),
+      };
     }
 
     const profileData = await profileResponse.json();
@@ -88,7 +128,11 @@ export async function subscribeToKlaviyo(
       if (!subscribeResponse.ok) {
         const errorData = await subscribeResponse.json();
         console.error('Klaviyo list subscription error:', errorData);
-        return { success: false, error: 'Failed to subscribe to list' };
+        const rawMessage = extractKlaviyoErrorText(errorData);
+        return {
+          success: false,
+          error: mapKlaviyoErrorToUserMessage(rawMessage, 'We could not subscribe you right now. Please try again.'),
+        };
       }
     }
 
