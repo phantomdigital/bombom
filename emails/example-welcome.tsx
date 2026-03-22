@@ -220,7 +220,7 @@ export default function ExampleWelcomeEmail() {
                     color: EMAIL_THEME.bomBlack,
                   }}
                 >
-                  {`Hey {{ person.first_name|default:'there' }},`}
+                  {`Hey {{ first_name|default:'there' }},`}
                 </Heading>
 
                 <Text
