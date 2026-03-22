@@ -233,11 +233,13 @@ export default function ExampleWelcomeEmail() {
                 height={112}
                 style={{
                   display: 'block',
-                  margin: 0,
+                  margin: '0 auto',
                   width: '100%',
                   maxWidth: '100%',
                   height: 'auto',
                   verticalAlign: 'bottom',
+                  /* Same as logo: many clients ignore SVG fill — force white silhouette */
+                  filter: 'brightness(0) invert(1)',
                 }}
               />
             </Section>
