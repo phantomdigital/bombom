@@ -31,7 +31,7 @@ const GAP_PX = 80;
 // Create items HTML where each item has equal padding on both sides
 const itemsHtml = ITEMS.map(text => `<span style="padding: 0 ${GAP_PX / 2}px">${text}</span>`).join('');
 
-// Marquee HTML: single text element + copies container (like the CodePen)
+// Marquee HTML: single text element + copies container 
 const HTML = `<!DOCTYPE html>
 <html><head><meta charset="UTF-8"><style>
 @font-face{font-family:"saans";src:url("https://bombomtreats.com.au/fonts/SaansRegular.otf")format("opentype");font-weight:400}
