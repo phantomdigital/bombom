@@ -37,7 +37,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (url.pathname !== "/coming-soon") {
+  if (url.pathname !== "/coming-soon" && url.pathname !== "/ticker-preview") {
     url.pathname = "/coming-soon";
     return NextResponse.redirect(url);
   }
