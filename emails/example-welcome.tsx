@@ -37,15 +37,30 @@ import { Tailwind } from '@react-email/tailwind';
  * 1. Ensure logo is deployed at /images/logo/logo.png (see EMAIL_LOGO_URL in theme.ts)
  *
  * Klaviyo merge tags: https://help.klaviyo.com/hc/en-us/articles/115005076267
+ *
+ * Preheader / inbox preview: CODE templates have no Klaviyo “preview text” field — it must
+ * come from HTML. `<Preview>` below injects hidden text at the top of `<body>` (~150 char max).
  */
+
+/** Next to the subject line in inbox clients (not the `<title>`). */
+const INBOX_PREVIEW_TEXT =
+  "You're on the BomBom waitlist, we'll let you know when we open in Wagga.";
 
 const emailResponsiveCss = `
 @media only screen and (max-width: 600px) {
-  .email-container { padding: 24px 12px !important; }
-  .email-hero-logo { padding: 30px 24px 16px !important; }
-  .email-main { padding: 36px 24px 28px !important; }
-  .email-footer { padding: 20px 16px !important; }
+  .email-container { padding: 22px 14px !important; width: 100% !important; max-width: 100% !important; }
+  .email-hero-logo { padding: 28px 20px 14px !important; }
+  .email-main { padding: 32px 20px 26px !important; }
+  .email-footer { padding: 22px 18px !important; }
   .email-fluid-img { max-width: 100% !important; width: 100% !important; height: auto !important; }
+  .email-heading { font-size: 22px !important; line-height: 28px !important; }
+}
+@media only screen and (max-width: 420px) {
+  .email-container { padding: 18px 12px !important; }
+  .email-hero-logo { padding: 24px 16px 12px !important; }
+  .email-main { padding: 28px 16px 22px !important; }
+  .email-footer { padding: 20px 14px !important; }
+  .email-heading { font-size: 20px !important; line-height: 26px !important; }
 }
 `;
 
@@ -78,10 +93,11 @@ export default function ExampleWelcomeEmail() {
             fontWeight={500}
           />
         </Head>
-        <Preview>You're on the list — welcome to BomBom</Preview>
+        <Preview>{INBOX_PREVIEW_TEXT}</Preview>
 
         {/* Outer frame: light grey */}
         <Body
+          className="email-body"
           style={{
             margin: 0,
             padding: 0,
@@ -95,7 +111,7 @@ export default function ExampleWelcomeEmail() {
             style={{
               maxWidth: '600px',
               margin: '0 auto',
-              padding: '32px 16px',
+              padding: '28px 14px',
             }}
           >
             {/* White card — top corners only; bottom edge is completed by bleed SVG below */}
@@ -117,7 +133,7 @@ export default function ExampleWelcomeEmail() {
                   className="email-hero-logo"
                   style={{
                     margin: 0,
-                    padding: '40px 40px 20px',
+                    padding: '40px 28px 20px',
                     textAlign: 'center',
                   }}
                 >
@@ -175,10 +191,11 @@ export default function ExampleWelcomeEmail() {
               {/* Main content */}
               <Section
                 className="email-main"
-                style={{ padding: '48px 40px 36px' }}
+                style={{ padding: '48px 28px 32px' }}
               >
                 <Heading
                   as="h1"
+                  className="email-heading"
                   style={{
                     margin: '0 0 16px',
                     fontSize: '24px',
@@ -199,7 +216,7 @@ export default function ExampleWelcomeEmail() {
                   }}
                 >
                   You're officially on the BomBom waitlist. We're putting the
-                  finishing touches on our Wagga Wagga store and you'll be the first
+                  finishing touches on our Wagga store and you'll be the first
                   to know when we open.
                 </Text>
 
@@ -211,7 +228,7 @@ export default function ExampleWelcomeEmail() {
                     color: EMAIL_THEME.bomBlack,
                   }}
                 >
-                  We'll let you know when we're ready to open the doors.
+                  Thanks for getting in this early!
                 </Text>
               </Section>
             </Section>

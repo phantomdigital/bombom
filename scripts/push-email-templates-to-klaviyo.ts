@@ -29,6 +29,15 @@ type Manifest = Record<string, { klaviyoTemplateId?: string }>;
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const MANIFEST_PATH = resolve(ROOT, 'emails/klaviyo-manifest.json');
 
+/**
+ * React 19 streaming render injects <link rel="preload" as="image" href="..."> for
+ * discovered images. Klaviyo's template validator rejects <link> and can mis-parse the
+ * following markup as `as` on a <span>.
+ */
+function stripEmailImagePreloadHints(html: string): string {
+  return html.replace(/<link\b[\s\S]*?rel=["']preload["'][\s\S]*?\/>/gi, '');
+}
+
 function loadManifest(): Manifest {
   try {
     const raw = readFileSync(MANIFEST_PATH, 'utf8');
@@ -97,7 +106,8 @@ async function main() {
 
   for (const key of keys) {
     const entry = emailTemplates[key];
-    const html = await render(createElement(entry.component), { pretty: true });
+    const rawHtml = await render(createElement(entry.component), { pretty: true });
+    const html = stripEmailImagePreloadHints(rawHtml);
     const text = await render(createElement(entry.component), {
       plainText: true,
     });
