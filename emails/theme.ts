@@ -40,10 +40,12 @@ export const EMAIL_SITE_URL = SITE_URL_PRODUCTION;
 /** Ticker GIF — record from /ticker-preview, save to public/email/ticker.gif */
 export const TICKER_GIF_URL = `${SITE_URL_PRODUCTION}/email/ticker.gif`;
 
-export const EMAIL_BLEED_URL = `${SITE_URL_PRODUCTION}/email/bleed.svg`;
+export const EMAIL_BLEED_URL = `${SITE_URL_PRODUCTION}/email/bleed-white.png`;
 
 /** Absolute logo URL for sent email / Klaviyo (must exist on the live site). */
-export const EMAIL_LOGO_URL = `${SITE_URL_PRODUCTION}/images/logo/logo.png`;
+export const EMAIL_LOGO_URL = `${SITE_URL_PRODUCTION}/email/logo-white.png`;
+export const EMAIL_INSTAGRAM_ICON_URL = `${SITE_URL_PRODUCTION}/email/instagram.png`;
+export const EMAIL_TIKTOK_ICON_URL = `${SITE_URL_PRODUCTION}/email/tiktok.png`;
 
 /**
  * React Email `email dev` serves `emails/static/` at `/static/*` on the preview port.
@@ -58,7 +60,7 @@ const emailPreviewStatic =
   process.env.EMAIL_PREVIEW_STATIC === 'true';
 
 export const EMAIL_LOGO_SRC = emailPreviewStatic
-  ? '/static/images/logo.png'
+  ? '/static/images/logo-white.png'
   : EMAIL_LOGO_URL;
 
 /**
@@ -82,12 +84,35 @@ export const TICKER_GIF_SRC = resolveTickerGifSrc();
 
 function resolveBleedSrc(): string {
   if (emailPreviewStatic) {
-    return '/static/email/bleed.svg';
+    return '/static/email/bleed-white.png';
   }
   if (isPublicSiteUrlLocalhost()) {
-    return `${getPublicSiteUrl()}/email/bleed.svg`;
+    return `${getPublicSiteUrl()}/email/bleed-white.png`;
   }
   return EMAIL_BLEED_URL;
 }
 
 export const EMAIL_BLEED_SRC = resolveBleedSrc();
+
+function resolveInstagramIconSrc(): string {
+  if (emailPreviewStatic) {
+    return '/static/images/instagram.png';
+  }
+  if (isPublicSiteUrlLocalhost()) {
+    return `${getPublicSiteUrl()}/email/instagram.png`;
+  }
+  return EMAIL_INSTAGRAM_ICON_URL;
+}
+
+function resolveTikTokIconSrc(): string {
+  if (emailPreviewStatic) {
+    return '/static/images/tiktok.png';
+  }
+  if (isPublicSiteUrlLocalhost()) {
+    return `${getPublicSiteUrl()}/email/tiktok.png`;
+  }
+  return EMAIL_TIKTOK_ICON_URL;
+}
+
+export const EMAIL_INSTAGRAM_ICON_SRC = resolveInstagramIconSrc();
+export const EMAIL_TIKTOK_ICON_SRC = resolveTikTokIconSrc();

@@ -149,8 +149,6 @@ export default function ExampleWelcomeEmail() {
                         margin: '0 auto',
                         maxWidth: '100%',
                         height: 'auto',
-                        /* White wordmark on bomIce; Outlook often ignores filter — use a white PNG if that matters */
-                        filter: 'brightness(0) invert(1)',
                       }}
                     />
                   </Link>
@@ -193,6 +191,24 @@ export default function ExampleWelcomeEmail() {
                 className="email-main"
                 style={{ padding: '48px 28px 32px' }}
               >
+                <Text
+                  style={{
+                    display: 'inline-block',
+                    margin: '0 0 18px',
+                    padding: '3px 16px 4px',
+                    fontSize: '13px',
+                    lineHeight: '1.1',
+                    fontWeight: 400,
+                    letterSpacing: '0.01em',
+                    textTransform: 'none',
+                    color: EMAIL_THEME.bomWhite,
+                    backgroundColor: EMAIL_THEME.bomMusk,
+                    borderRadius: '999px',
+                  }}
+                >
+                  Welcome
+                </Text>
+
                 <Heading
                   as="h1"
                   className="email-heading"
@@ -228,7 +244,7 @@ export default function ExampleWelcomeEmail() {
                     color: EMAIL_THEME.bomBlack,
                   }}
                 >
-                  Thanks for getting in this early!
+                  Thanks for getting in this early! ♥
                 </Text>
               </Section>
             </Section>
@@ -255,8 +271,6 @@ export default function ExampleWelcomeEmail() {
                   maxWidth: '100%',
                   height: 'auto',
                   verticalAlign: 'bottom',
-                  /* Same as logo: many clients ignore SVG fill — force white silhouette */
-                  filter: 'brightness(0) invert(1)',
                 }}
               />
             </Section>

@@ -421,6 +421,7 @@ export default function KlaviyoEmailCapture({
                 'focus-visible:ring-bom-red/30 focus-visible:ring-[3px]',
                 'text-sm sm:text-base font-sans font-medium uppercase tracking-wider transition-all',
                 'h-14 py-0 px-5 sm:px-8 border border-bom-black',
+                'translate-y-0 shadow-none hover:-translate-y-1 hover:shadow-[0_8px_0_0_theme(colors.bom.black)] active:translate-y-0 active:shadow-none disabled:translate-y-0 disabled:shadow-none',
                 'w-full sm:w-auto sm:whitespace-nowrap items-stretch'
               )}
             >

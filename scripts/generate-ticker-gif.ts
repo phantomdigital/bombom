@@ -7,9 +7,10 @@
 import { copyFileSync, createWriteStream, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import sharp from 'sharp';
+
 const puppeteer = require('puppeteer');
 const GIFEncoder = require('gif-encoder');
-const PNG = require('png-js');
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -19,7 +20,8 @@ const EMAIL_PREVIEW_TICKER = resolve(ROOT, 'emails/static/images/ticker.gif');
 
 const WIDTH = 600;
 const HEIGHT = 32;
-const FPS = 20;
+/** 12–16 fps is enough for text marquee; fewer frames = much faster runs. */
+const FPS = 14;
 const DURATION_SEC = 12;
 const FRAME_COUNT = FPS * DURATION_SEC;
 
@@ -48,15 +50,31 @@ html,body{background:#91c4ff;width:${WIDTH}px;height:${HEIGHT}px;overflow:hidden
 </div>
 </body></html>`;
 
-function decodePng(buf: Buffer): Promise<Buffer> {
-  return new Promise((r) => new PNG(buf).decode((p: Buffer) => r(p)));
+/** Native decode/resize — `png-js` per frame was the main cost (minutes on long GIFs). */
+async function screenshotToRgba(buf: Buffer): Promise<Buffer> {
+  const { data, info } = await sharp(buf)
+    .resize(WIDTH, HEIGHT, { fit: 'fill' })
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  if (info.channels !== 4) {
+    throw new Error(`Expected RGBA from sharp, got ${info.channels} channels`);
+  }
+  return Buffer.from(data);
 }
 
 async function main() {
   console.log('Launching browser...');
-  const browser = await puppeteer.launch({ headless: 'new' });
+  const browser = await puppeteer.launch({
+    headless: 'new',
+    args: ['--disable-dev-shm-usage', '--disable-gpu', '--no-sandbox'],
+  });
   const page = await browser.newPage();
-  await page.setViewport({ width: WIDTH, height: HEIGHT });
+  await page.setViewport({
+    width: WIDTH,
+    height: HEIGHT,
+    deviceScaleFactor: 1,
+  });
   await page.setContent(HTML);
   await page.evaluateOnNewDocument(() => document.fonts?.ready);
   await new Promise(r => setTimeout(r, 500));
@@ -103,8 +121,11 @@ async function main() {
       content.style.transform = `translateX(${x}px)`;
     }, translateX);
     
-    const buf = await page.screenshot({ type: 'png' });
-    const pixels = await decodePng(Buffer.from(buf));
+    const buf = (await page.screenshot({
+      type: 'png',
+      omitBackground: false,
+    })) as Buffer;
+    const pixels = await screenshotToRgba(buf);
     enc.addFrame(pixels);
     
     if ((i + 1) % 20 === 0 || i === FRAME_COUNT - 1) {

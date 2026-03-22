@@ -1,5 +1,10 @@
 import { Img, Link, Section, Text } from '@react-email/components';
-import { EMAIL_THEME, SHOP_ADDRESS } from '../theme';
+import {
+  EMAIL_INSTAGRAM_ICON_SRC,
+  EMAIL_THEME,
+  EMAIL_TIKTOK_ICON_SRC,
+  SHOP_ADDRESS,
+} from '../theme';
 
 const INSTAGRAM_URL = 'https://instagram.com/bombom.au';
 const TIKTOK_URL = 'https://tiktok.com/@bombom_au';
@@ -29,7 +34,7 @@ export default function DefaultFooter() {
         aria-label="Instagram"
       >
         <Img
-          src="https://cdn.simpleicons.org/instagram/262626"
+          src={EMAIL_INSTAGRAM_ICON_SRC}
           alt="Instagram"
           width={32}
           height={32}
@@ -46,7 +51,7 @@ export default function DefaultFooter() {
         aria-label="TikTok"
       >
         <Img
-          src="https://cdn.simpleicons.org/tiktok/262626"
+          src={EMAIL_TIKTOK_ICON_SRC}
           alt="TikTok"
           width={32}
           height={32}
