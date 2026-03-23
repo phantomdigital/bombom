@@ -19,7 +19,7 @@ export default function DefaultFooter() {
       className="email-footer"
       style={{
         padding: '24px',
-        marginTop: '16px',
+        marginTop: 0,
         backgroundColor: EMAIL_THEME.emailOuterBg,
         textAlign: 'center',
       }}

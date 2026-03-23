@@ -1,271 +1,345 @@
 import {
-  Body,
-  Container,
-  Head,
-  Hr,
-  Html,
-  Img,
-  Link,
-  Section,
-  Text,
-} from '@react-email/components';
-import DefaultFooter from './components/default-footer';
-import {
-  EMAIL_BLEED_SRC,
-  EMAIL_LOGO_SRC,
+  EMAIL_BLEED_URL,
+  EMAIL_INSTAGRAM_ICON_URL,
   EMAIL_SITE_URL,
   EMAIL_THEME,
-  FONT_CSS,
-  TICKER_GIF_SRC,
+  EMAIL_TIKTOK_ICON_URL,
+  EMAIL_LOGO_URL,
+  TICKER_GIF_URL,
 } from './theme';
 
 /**
- * BomBom welcome email — sent after waitlist signup.
+ * BomBom waitlist welcome — HTML shaped for Klaviyo CODE templates.
  *
- * Layout follows transactional email best practices:
- * - Traditional header (logo as highest element, anchor of trust)
- * - Single-column 600px content area
- * - Outer frame color for depth and focus
+ * Structure, `<head>` CSS classes, and table markup follow the exact pattern Klaviyo
+ * accepts. Do not use `@react-email` `<Html>` / `<Head>` / `<Body>` / `<Tailwind>`: they add
+ * lang/dir, meta, preload links, and wrapper tables. Use lowercase `<html>`, `<head>`, `<body>`.
  *
- * Colors from app/globals.css via emails/theme.ts.
- *
- * TODO before launch:
- * 1. Ensure logo is deployed at /images/logo/logo.png (see EMAIL_LOGO_URL in theme.ts)
- *
- * Klaviyo merge tags: https://help.klaviyo.com/hc/en-us/articles/115005076267
- *
- * Preheader / inbox preview: CODE templates have no Klaviyo “preview text” field — it must
- * come from hidden HTML near the top of `<body>` (~150 char max).
+ * Merge tags: Klaviyo Django-style `{{ }}` and `{% %}` must appear verbatim in JSX strings.
  */
 
-/** Next to the subject line in inbox clients (not the `<title>`). */
-const INBOX_PREVIEW_TEXT =
-  "You're on the BomBom waitlist, we'll let you know when we open in Wagga.";
+const FONT_REGULAR = `${EMAIL_SITE_URL}/fonts/SaansRegular.otf`;
+const FONT_MEDIUM = `${EMAIL_SITE_URL}/fonts/SaansMedium.otf`;
+const TICKER_STATIC_URL = `${EMAIL_SITE_URL}/email/ticker-static.png`;
 
-const emailResponsiveCss = `
-@media only screen and (max-width: 600px) {
-  .email-container { padding: 22px 14px !important; width: 100% !important; max-width: 100% !important; }
-  .email-hero-logo { padding: 28px 20px 14px !important; }
-  .email-main { padding: 32px 20px 26px !important; }
-  .email-footer { padding: 22px 18px !important; }
-  .email-fluid-img { max-width: 100% !important; width: 100% !important; height: auto !important; }
-  .email-heading { font-size: 22px !important; line-height: 28px !important; }
+const headCss = `
+@font-face {
+  font-family: saans;
+  font-style: normal;
+  font-weight: 400;
+  src: url(${FONT_REGULAR}) format(opentype);
 }
-@media only screen and (max-width: 420px) {
-  .email-container { padding: 18px 12px !important; }
-  .email-hero-logo { padding: 24px 16px 12px !important; }
-  .email-main { padding: 28px 16px 22px !important; }
-  .email-footer { padding: 20px 14px !important; }
-  .email-heading { font-size: 20px !important; line-height: 26px !important; }
+@font-face {
+  font-family: saans;
+  font-style: normal;
+  font-weight: 500;
+  src: url(${FONT_MEDIUM}) format(opentype);
 }
-`;
+body {
+  background-color: ${EMAIL_THEME.emailOuterBg};
+  font-family: saans, Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+.badge {
+  display: inline-block;
+  margin: 0 0 18px;
+  padding: 3px 16px 4px;
+  font-size: 13px;
+  line-height: 1.1;
+  font-weight: 400;
+  color: #ffffff;
+  background-color: ${EMAIL_THEME.bomMusk};
+  border-radius: 999px;
+}
+.heading {
+  margin: 0 0 16px;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 32px;
+  color: #000000;
+}
+.body-text {
+  margin: 0 0 20px;
+  font-size: 16px;
+  line-height: 26px;
+  color: #000000;
+}
+.body-text.last {
+  margin: 0;
+}
+`.trim();
 
 export default function ExampleWelcomeEmail() {
+  const year = new Date().getFullYear();
+
   return (
-    <Html lang="en">
-      <Head>
-          <meta name="viewport" content="width=device-width, initial-scale=1" />
-          <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-          <meta name="color-scheme" content="light" />
-          <meta name="supported-color-schemes" content="light" />
-          <style>{FONT_CSS}</style>
-          <style>{emailResponsiveCss}</style>
-        </Head>
-      {/* Outer frame: light grey */}
-      <Body
-          className="email-body"
-          style={{
-            margin: 0,
-            padding: 0,
-            backgroundColor: EMAIL_THEME.emailOuterBg,
-            fontFamily:
-              'saans, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif',
-          }}
+    <html>
+      <head>
+        <title>{''}</title>
+        <style type="text/css">{headCss}</style>
+      </head>
+      <body
+        style={{
+          backgroundColor: EMAIL_THEME.emailOuterBg,
+          margin: 0,
+          padding: 0,
+        }}
       >
-        <div
-            style={{
-              display: 'none',
-              overflow: 'hidden',
-              lineHeight: '1px',
-              opacity: 0,
-              maxHeight: '0',
-              maxWidth: '0',
-            }}
-            data-skip-in-text="true"
-          >
-            {INBOX_PREVIEW_TEXT}
-          </div>
-        <Container
-            className="email-container"
-            style={{
-              maxWidth: '600px',
-              margin: '0 auto',
-              padding: '28px 14px',
-            }}
-          >
-            {/* White card — top corners only; bottom edge is completed by bleed SVG below */}
-            <Section
-              style={{
-                backgroundColor: EMAIL_THEME.bomWhite,
-                borderRadius: '8px 8px 0 0',
-                overflow: 'hidden',
-              }}
-            >
-              {/* Logo + ticker share one ice block — avoids <hr> gap showing white card behind */}
-              <Section
+        <table
+          border={0}
+          cellPadding={0}
+          cellSpacing={0}
+          width="100%"
+          style={{ backgroundColor: EMAIL_THEME.emailOuterBg }}
+        >
+          <tr>
+            <td align="center" style={{ padding: '28px 0' }}>
+              {/* White card */}
+              <table
+                border={0}
+                cellPadding={0}
+                cellSpacing={0}
+                width={600}
                 style={{
-                  backgroundColor: EMAIL_THEME.bomIce,
-                  textAlign: 'center',
+                  maxWidth: '600px',
+                  width: '95%',
+                  backgroundColor: EMAIL_THEME.bomWhite,
+                  borderRadius: '8px 8px 0 0',
                 }}
               >
-                <Section
-                  className="email-hero-logo"
-                  style={{
-                    margin: 0,
-                    padding: '40px 28px 20px',
-                    textAlign: 'center',
-                  }}
-                >
-                  <Link href={EMAIL_SITE_URL} style={{ textDecoration: 'none' }}>
-                    <Img
-                      className="email-fluid-img"
-                      src={EMAIL_LOGO_SRC}
-                      alt="BomBom"
-                      width={520}
-                      height={100}
+                {/* Hero logo */}
+                <tr>
+                  <td
+                    style={{
+                      backgroundColor: EMAIL_THEME.bomIce,
+                      textAlign: 'center',
+                      padding: '40px 28px 20px',
+                    }}
+                  >
+                    <a
+                      href={EMAIL_SITE_URL}
+                      target="_blank"
+                      style={{ textDecoration: 'none' }}
+                    >
+                      <img
+                        alt="BomBom"
+                        height={100}
+                        src={EMAIL_LOGO_URL}
+                        width={520}
+                        style={{
+                          display: 'block',
+                          margin: '0 auto',
+                          maxWidth: '100%',
+                          width: '520px',
+                          height: '100px',
+                          border: 'none',
+                          outline: 'none',
+                        }}
+                      />
+                    </a>
+                  </td>
+                </tr>
+                {/* Ticker full width */}
+                <tr>
+                  <td
+                    style={{
+                      backgroundColor: EMAIL_THEME.bomIce,
+                      padding: 0,
+                      lineHeight: 0,
+                      fontSize: 0,
+                      textAlign: 'center',
+                    }}
+                    dangerouslySetInnerHTML={{
+                      __html: `<img alt="Frozen Yoghurt - Soft Serve - Ice cream" height="32" src="${TICKER_GIF_URL}" width="600" style="display:block;width:600px;max-width:100%;height:32px;border:none;outline:none;mso-hide:all;" />
+<!--[if mso]>
+<img alt="Frozen Yoghurt - Soft Serve - Ice cream" height="32" src="${TICKER_STATIC_URL}" width="600" style="display:block;width:600px;height:32px;border:none;outline:none;-ms-interpolation-mode:bicubic;" />
+<![endif]-->`,
+                    }}
+                  >
+                  </td>
+                </tr>
+                {/* Divider */}
+                <tr>
+                  <td>
+                    <hr
                       style={{
-                        display: 'block',
-                        margin: '0 auto',
-                        maxWidth: '100%',
-                        height: 'auto',
+                        border: 'none',
+                        borderTop: `1px solid ${EMAIL_THEME.emailDivider}`,
+                        margin: 0,
                       }}
                     />
-                  </Link>
-                </Section>
-                <Section
-                  style={{
-                    margin: 0,
-                    padding: '12px 0 8px',
-                    textAlign: 'center',
-                  }}
-                >
-                  <Img
-                    className="email-fluid-img"
-                    src={TICKER_GIF_SRC}
-                    alt="Frozen Yoghurt • Soft Serve • Ice cream"
-                    width={600}
-                    height={32}
-                    style={{
-                      display: 'block',
-                      margin: 0,
-                      lineHeight: 0,
-                      maxWidth: '100%',
-                      width: '100%',
-                      height: 'auto',
-                    }}
-                  />
-                </Section>
-              </Section>
-
-              <Hr
-                style={{
-                  margin: 0,
-                  borderTop: `1px solid ${EMAIL_THEME.emailDivider}`,
-                  borderBottom: 'none',
-                }}
-              />
-
-              {/* Main content */}
-              <Section
-                className="email-main"
-                style={{ padding: '48px 28px 32px' }}
-              >
-                <Text
-                  style={{
-                    display: 'inline-block',
-                    margin: '0 0 18px',
-                    padding: '3px 16px 4px',
-                    fontSize: '13px',
-                    lineHeight: '1.1',
-                    fontWeight: 400,
-                    letterSpacing: '0.01em',
-                    textTransform: 'none',
-                    color: EMAIL_THEME.bomWhite,
-                    backgroundColor: EMAIL_THEME.bomMusk,
-                    borderRadius: '999px',
-                  }}
-                >
-                  Welcome
-                </Text>
-
-                <Text
-                  className="email-heading"
-                  style={{
-                    margin: '0 0 16px',
-                    fontSize: '24px',
-                    fontWeight: 600,
-                    lineHeight: '32px',
-                    color: EMAIL_THEME.bomBlack,
-                  }}
-                  dangerouslySetInnerHTML={{
-                    __html: 'Hey {{ first_name|default:"there" }},',
-                  }}
-                />
-
-                <Text
-                  style={{
-                    margin: '0 0 20px',
-                    fontSize: '16px',
-                    lineHeight: '26px',
-                    color: EMAIL_THEME.bomBlack,
-                  }}
-                >
-                  You're officially on the BomBom waitlist. We're putting the
-                  finishing touches on our Wagga store and you'll be the first
-                  to know when we open.
-                </Text>
-
-                <Text
-                  style={{
-                    margin: '0',
-                    fontSize: '16px',
-                    lineHeight: '26px',
-                    color: EMAIL_THEME.bomBlack,
-                  }}
-                >
-                  Thanks for getting in this early! ♥
-                </Text>
-              </Section>
-            </Section>
-
-            {/* Custom bottom silhouette — sits on outer grey so the shape reads as card + drip */}
-            <Section
-              style={{
-                margin: 0,
-                padding: 0,
-                lineHeight: 0,
-                backgroundColor: EMAIL_THEME.emailOuterBg,
-              }}
-            >
-              <Img
-                className="email-fluid-img"
-                src={EMAIL_BLEED_SRC}
-                alt=""
+                  </td>
+                </tr>
+                {/* Content */}
+                <tr>
+                  <td style={{ padding: '48px 28px 32px' }}>
+                    <table
+                      border={0}
+                      cellPadding={0}
+                      cellSpacing={0}
+                      style={{ margin: '0 0 18px' }}
+                    >
+                      <tr>
+                        <td
+                          align="left"
+                          style={{
+                            padding: '3px 16px 4px',
+                            fontSize: '13px',
+                            lineHeight: '1.1',
+                            fontWeight: 400,
+                            color: EMAIL_THEME.bomWhite,
+                            backgroundColor: EMAIL_THEME.bomMusk,
+                            borderRadius: '999px',
+                          }}
+                        >
+                          Welcome
+                        </td>
+                      </tr>
+                    </table>
+                    <p className="heading">
+                      {'Hey {{ first_name|default:"there" }},'}
+                    </p>
+                    <p className="body-text">
+                      You&apos;re officially on the BomBom waitlist. We&apos;re putting the
+                      finishing touches on our Wagga store and you&apos;ll be the first to
+                      know when we open.
+                    </p>
+                    <p className="body-text last">
+                      Thanks for getting in this early!
+                    </p>
+                  </td>
+                </tr>
+              </table>
+              {/* Bleed drip */}
+              <table
+                border={0}
+                cellPadding={0}
+                cellSpacing={0}
                 width={600}
-                height={112}
-                style={{
-                  display: 'block',
-                  margin: '0 auto',
-                  width: '100%',
-                  maxWidth: '100%',
-                  height: 'auto',
-                }}
-              />
-            </Section>
-
-          <DefaultFooter />
-        </Container>
-      </Body>
-    </Html>
+                style={{ maxWidth: '600px', width: '95%' }}
+              >
+                <tr>
+                  <td style={{ padding: 0, lineHeight: 0 }}>
+                    <img
+                      alt=""
+                      height={112}
+                      src={EMAIL_BLEED_URL}
+                      width={600}
+                      style={{
+                        display: 'block',
+                        width: '100%',
+                        maxWidth: '100%',
+                        height: 'auto',
+                        border: 'none',
+                        outline: 'none',
+                      }}
+                    />
+                  </td>
+                </tr>
+              </table>
+              {/* Footer */}
+              <table
+                border={0}
+                cellPadding={0}
+                cellSpacing={0}
+                width={600}
+                style={{ maxWidth: '600px', width: '95%' }}
+              >
+                <tr>
+                  <td
+                    align="center"
+                    style={{ padding: '16px 0 28px', textAlign: 'center' }}
+                  >
+                    <a
+                      href="https://instagram.com/bombom.au"
+                      target="_blank"
+                      style={{
+                        display: 'inline-block',
+                        margin: '0 6px',
+                        textDecoration: 'none',
+                      }}
+                    >
+                      <img
+                        alt="Instagram"
+                        height={32}
+                        src={EMAIL_INSTAGRAM_ICON_URL}
+                        width={32}
+                        style={{
+                          display: 'inline-block',
+                          border: 'none',
+                          outline: 'none',
+                        }}
+                      />
+                    </a>
+                    <a
+                      href="https://tiktok.com/@bombom_au"
+                      target="_blank"
+                      style={{
+                        display: 'inline-block',
+                        margin: '0 6px',
+                        textDecoration: 'none',
+                      }}
+                    >
+                      <img
+                        alt="TikTok"
+                        height={32}
+                        src={EMAIL_TIKTOK_ICON_URL}
+                        width={32}
+                        style={{
+                          display: 'inline-block',
+                          border: 'none',
+                          outline: 'none',
+                        }}
+                      />
+                    </a>
+                    <p
+                      style={{
+                        fontSize: '11px',
+                        lineHeight: 1.45,
+                        margin: '16px 0 8px',
+                        color: EMAIL_THEME.footerMuted,
+                      }}
+                    >
+                      If you no longer wish to receive emails,{' '}
+                      <a
+                        href="{% unsubscribe_link %}"
+                        style={{
+                          color: EMAIL_THEME.footerMuted,
+                          textDecoration: 'underline',
+                        }}
+                      >
+                        click here
+                      </a>
+                      .
+                    </p>
+                    <p
+                      style={{
+                        fontSize: '11px',
+                        lineHeight: 1.4,
+                        margin: '0 0 4px',
+                        color: EMAIL_THEME.footerMuted,
+                      }}
+                    >
+                      Shop 1, 117 Baylis St, Wagga Wagga
+                    </p>
+                    <p
+                      style={{
+                        fontSize: '10px',
+                        lineHeight: 1.35,
+                        margin: 0,
+                        color: EMAIL_THEME.footerSubtle,
+                      }}
+                    >
+                      © {year} BomBom. All rights reserved.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
   );
 }
