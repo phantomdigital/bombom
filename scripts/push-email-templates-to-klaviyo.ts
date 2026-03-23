@@ -38,6 +38,48 @@ function stripEmailImagePreloadHints(html: string): string {
   return html.replace(/<link\b[\s\S]*?rel=["']preload["'][\s\S]*?\/>/gi, '');
 }
 
+/**
+ * Strip React stream markers that can appear in rendered output and confuse
+ * Klaviyo's template parser.
+ */
+function stripReactRenderMarkers(html: string): string {
+  return html.replace(/<!--(?:\$|\/\$|\d+|\s*)-->/g, '');
+}
+
+/**
+ * React render escapes apostrophes in text nodes (`&#x27;` / `&#39;`).
+ * Normalize these for cleaner Klaviyo CODE HTML.
+ */
+function normalizeHtmlEntities(html: string): string {
+  return html.replace(/&#x27;|&#39;/g, "'");
+}
+
+/**
+ * Normalize table attributes to lowercase HTML attribute names for stricter parsers.
+ */
+function normalizeTableAttributes(html: string): string {
+  return html
+    .replace(/\bcellPadding=/g, 'cellpadding=')
+    .replace(/\bcellSpacing=/g, 'cellspacing=');
+}
+
+/**
+ * React Email plain-text render can uppercase heading lines, which may uppercase
+ * Klaviyo merge syntax (e.g. FIRST_NAME|DEFAULT) and break parsing.
+ */
+function normalizePlainTextTemplateTags(text: string): string {
+  return text
+    .replace(
+      /\{\{\s*FIRST_NAME\|DEFAULT:"THERE"\s*\}\}/g,
+      '{{ first_name|default:"there" }}'
+    )
+    .replace(
+      /\{\{\s*FIRST_NAME\|DEFAULT:'THERE'\s*\}\}/g,
+      '{{ first_name|default:"there" }}'
+    )
+    .replace(/\{%\s*UNSUBSCRIBE_LINK\s*%\}/g, '{% unsubscribe_link %}');
+}
+
 function loadManifest(): Manifest {
   try {
     const raw = readFileSync(MANIFEST_PATH, 'utf8');
@@ -106,11 +148,16 @@ async function main() {
 
   for (const key of keys) {
     const entry = emailTemplates[key];
-    const rawHtml = await render(createElement(entry.component), { pretty: true });
-    const html = stripEmailImagePreloadHints(rawHtml);
-    const text = await render(createElement(entry.component), {
+    const rawHtml = await render(createElement(entry.component), { pretty: false });
+    const html = normalizeTableAttributes(
+      normalizeHtmlEntities(
+        stripReactRenderMarkers(stripEmailImagePreloadHints(rawHtml))
+      )
+    );
+    const rawText = await render(createElement(entry.component), {
       plainText: true,
     });
+    const text = normalizePlainTextTemplateTags(rawText);
 
     console.info(`\n[${key}] ${entry.klaviyoName}`);
     console.info(`  HTML length: ${html.length} chars, text length: ${text.length} chars`);

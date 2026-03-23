@@ -34,6 +34,23 @@ export const SHOP_ADDRESS = 'Shop 1, 117 Baylis St, Wagga Wagga';
 const fontBaseOverride = process.env.EMAIL_FONT_BASE_URL?.trim()?.replace(/\/$/, '');
 export const FONT_BASE_URL = fontBaseOverride || SITE_URL_PRODUCTION;
 
+/**
+ * Raw @font-face CSS for Klaviyo-compatible templates.
+ * Keep font-family unquoted to avoid Klaviyo parser issues.
+ */
+export const FONT_CSS = `@font-face {
+  font-family: saans;
+  font-style: normal;
+  font-weight: 400;
+  src: url(${FONT_BASE_URL}/fonts/SaansRegular.otf) format(opentype);
+}
+@font-face {
+  font-family: saans;
+  font-style: normal;
+  font-weight: 500;
+  src: url(${FONT_BASE_URL}/fonts/SaansMedium.otf) format(opentype);
+}`;
+
 /** Shipped links (logo, CTAs) always use production — never localhost. */
 export const EMAIL_SITE_URL = SITE_URL_PRODUCTION;
 

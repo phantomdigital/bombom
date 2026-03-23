@@ -1,14 +1,11 @@
 import {
   Body,
   Container,
-  Font,
   Head,
-  Heading,
   Hr,
   Html,
   Img,
   Link,
-  Preview,
   Section,
   Text,
 } from '@react-email/components';
@@ -18,10 +15,9 @@ import {
   EMAIL_LOGO_SRC,
   EMAIL_SITE_URL,
   EMAIL_THEME,
-  FONT_BASE_URL,
+  FONT_CSS,
   TICKER_GIF_SRC,
 } from './theme';
-import { Tailwind } from '@react-email/tailwind';
 
 /**
  * BomBom welcome email — sent after waitlist signup.
@@ -39,7 +35,7 @@ import { Tailwind } from '@react-email/tailwind';
  * Klaviyo merge tags: https://help.klaviyo.com/hc/en-us/articles/115005076267
  *
  * Preheader / inbox preview: CODE templates have no Klaviyo “preview text” field — it must
- * come from HTML. `<Preview>` below injects hidden text at the top of `<body>` (~150 char max).
+ * come from hidden HTML near the top of `<body>` (~150 char max).
  */
 
 /** Next to the subject line in inbox clients (not the `<title>`). */
@@ -66,47 +62,40 @@ const emailResponsiveCss = `
 
 export default function ExampleWelcomeEmail() {
   return (
-    <Tailwind>
-      <Html lang="en">
-        <Head>
+    <Html lang="en">
+      <Head>
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
           <meta name="color-scheme" content="light" />
           <meta name="supported-color-schemes" content="light" />
+          <style>{FONT_CSS}</style>
           <style>{emailResponsiveCss}</style>
-          <Font
-            fontFamily="saans"
-            fallbackFontFamily={['Arial', 'Helvetica', 'sans-serif']}
-            webFont={{
-              url: `${FONT_BASE_URL}/fonts/SaansRegular.otf`,
-              format: 'opentype',
-            }}
-            fontWeight={400}
-          />
-          <Font
-            fontFamily="saans"
-            fallbackFontFamily={['Arial', 'Helvetica', 'sans-serif']}
-            webFont={{
-              url: `${FONT_BASE_URL}/fonts/SaansMedium.otf`,
-              format: 'opentype',
-            }}
-            fontWeight={500}
-          />
         </Head>
-        <Preview>{INBOX_PREVIEW_TEXT}</Preview>
-
-        {/* Outer frame: light grey */}
-        <Body
+      {/* Outer frame: light grey */}
+      <Body
           className="email-body"
           style={{
             margin: 0,
             padding: 0,
             backgroundColor: EMAIL_THEME.emailOuterBg,
             fontFamily:
-              '"saans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+              'saans, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif',
           }}
-        >
-          <Container
+      >
+        <div
+            style={{
+              display: 'none',
+              overflow: 'hidden',
+              lineHeight: '1px',
+              opacity: 0,
+              maxHeight: '0',
+              maxWidth: '0',
+            }}
+            data-skip-in-text="true"
+          >
+            {INBOX_PREVIEW_TEXT}
+          </div>
+        <Container
             className="email-container"
             style={{
               maxWidth: '600px',
@@ -209,8 +198,7 @@ export default function ExampleWelcomeEmail() {
                   Welcome
                 </Text>
 
-                <Heading
-                  as="h1"
+                <Text
                   className="email-heading"
                   style={{
                     margin: '0 0 16px',
@@ -219,9 +207,10 @@ export default function ExampleWelcomeEmail() {
                     lineHeight: '32px',
                     color: EMAIL_THEME.bomBlack,
                   }}
-                >
-                  {`Hey {{ first_name|default:'there' }},`}
-                </Heading>
+                  dangerouslySetInnerHTML={{
+                    __html: 'Hey {{ first_name|default:"there" }},',
+                  }}
+                />
 
                 <Text
                   style={{
@@ -270,15 +259,13 @@ export default function ExampleWelcomeEmail() {
                   width: '100%',
                   maxWidth: '100%',
                   height: 'auto',
-                  verticalAlign: 'bottom',
                 }}
               />
             </Section>
 
-            <DefaultFooter />
-          </Container>
-        </Body>
-      </Html>
-    </Tailwind>
+          <DefaultFooter />
+        </Container>
+      </Body>
+    </Html>
   );
 }

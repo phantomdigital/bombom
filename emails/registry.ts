@@ -16,6 +16,10 @@ export const emailTemplates = {
     klaviyoName: 'BomBom Treats — Waitlist welcome',
     component: ExampleWelcomeEmail,
   },
+  'example-welcome-v2': {
+    klaviyoName: 'BomBom Treats — Waitlist welcome (v2)',
+    component: ExampleWelcomeEmail,
+  },
 } satisfies Record<string, EmailTemplateEntry>;
 
 export type EmailTemplateKey = keyof typeof emailTemplates;

@@ -61,14 +61,20 @@ export default function DefaultFooter() {
       <Text
         style={{
           margin: '16px 0 8px',
-          fontSize: '12px',
+          fontSize: '11px',
           lineHeight: '1.45',
           fontWeight: 400,
-          color: EMAIL_THEME.bomBlack,
+          color: EMAIL_THEME.footerMuted,
         }}
       >
-        We sent you this because you joined the BomBom waitlist.{' '}
-        <span dangerouslySetInnerHTML={{ __html: '{% unsubscribe %}' }} />
+        {"If you'd no longer like to receive emails, "}
+        <span
+          dangerouslySetInnerHTML={{
+            __html:
+              '<a href="{% unsubscribe_link %}" style="color:#5c6168;text-decoration:underline">click here</a>',
+          }}
+        />
+        .
       </Text>
       <Text
         style={{

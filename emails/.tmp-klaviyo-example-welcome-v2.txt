@@ -1,0 +1,24 @@
+https://bombomtreats.com.au
+
+
+
+----------------------------------------
+
+Welcome
+
+
+HEY {{ first_name|default:"there" }},
+
+You're officially on the BomBom waitlist. We're putting the finishing touches on our Wagga store and you'll be the first to know when we open.
+
+Thanks for getting in this early! ♥
+
+
+
+https://instagram.com/bombom.auhttps://tiktok.com/@bombom_au
+
+If you'd no longer like to receive emails, click here {% unsubscribe_link %}.
+
+Shop 1, 117 Baylis St, Wagga Wagga
+
+© 2026 BomBom. All rights reserved.
