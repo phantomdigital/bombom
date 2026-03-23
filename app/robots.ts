@@ -8,7 +8,12 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: siteOpen
       ? { userAgent: "*", allow: "/", disallow: [] }
-      : { userAgent: "*", allow: "/coming-soon", disallow: "/" },
+      : {
+          userAgent: "*",
+          // Disallow "/" but allow what crawlers need to index and render /coming-soon.
+          allow: ["/coming-soon", "/coming-soon/", "/sitemap.xml", "/_next/"],
+          disallow: "/",
+        },
     sitemap: `${siteUrl}/sitemap.xml`,
   };
 }
