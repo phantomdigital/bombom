@@ -17,7 +17,7 @@ const OUT_DIR = resolve(ROOT, 'emails/rendered');
 const OUT_FILE = resolve(OUT_DIR, 'example-welcome.html');
 
 void (async () => {
-  const raw = await render(createElement(ExampleWelcomeEmail), { pretty: true });
+  const raw = await render(createElement(ExampleWelcomeEmail), { pretty: false });
   const html = sanitizeKlaviyoEmailHtml(raw);
   mkdirSync(OUT_DIR, { recursive: true });
   writeFileSync(OUT_FILE, html, 'utf8');

@@ -151,10 +151,11 @@ export default function ExampleWelcomeEmail() {
                       textAlign: 'center',
                     }}
                     dangerouslySetInnerHTML={{
-                      __html: `<img alt="Frozen Yoghurt - Soft Serve - Ice cream" height="32" src="${TICKER_GIF_URL}" width="600" style="display:block;width:600px;max-width:100%;height:32px;border:none;outline:none;mso-hide:all;" />
-<!--[if mso]>
+                      __html: `<!--[if mso]>
 <img alt="Frozen Yoghurt - Soft Serve - Ice cream" height="32" src="${TICKER_STATIC_URL}" width="600" style="display:block;width:600px;height:32px;border:none;outline:none;-ms-interpolation-mode:bicubic;" />
-<![endif]-->`,
+<![endif]--><!--[if !mso]><!-->
+<img alt="Frozen Yoghurt - Soft Serve - Ice cream" height="32" src="${TICKER_GIF_URL}" width="600" style="display:block;width:600px;max-width:100%;height:32px;border:none;outline:none;" />
+<!--<![endif]-->`,
                     }}
                   >
                   </td>
@@ -183,18 +184,10 @@ export default function ExampleWelcomeEmail() {
                       <tr>
                         <td
                           align="left"
-                          style={{
-                            padding: '3px 16px 4px',
-                            fontSize: '13px',
-                            lineHeight: '1.1',
-                            fontWeight: 400,
-                            color: EMAIL_THEME.bomWhite,
-                            backgroundColor: EMAIL_THEME.bomMusk,
-                            borderRadius: '999px',
+                          dangerouslySetInnerHTML={{
+                            __html: `<span style="display:inline-block;padding:3px 16px 3px;font-size:13px;line-height:13px;mso-line-height-rule:exactly;font-weight:400;color:${EMAIL_THEME.bomWhite};background-color:${EMAIL_THEME.bomMusk};border-radius:999px;">Welcome</span>`,
                           }}
-                        >
-                          Welcome
-                        </td>
+                        />
                       </tr>
                     </table>
                     <p className="heading">

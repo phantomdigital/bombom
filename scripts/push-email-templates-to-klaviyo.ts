@@ -98,7 +98,7 @@ async function main() {
 
   for (const key of keys) {
     const entry = emailTemplates[key];
-    const rawHtml = await render(createElement(entry.component), { pretty: true });
+    const rawHtml = await render(createElement(entry.component), { pretty: false });
     const html = sanitizeKlaviyoEmailHtml(rawHtml);
     const text = await render(createElement(entry.component), {
       plainText: true,

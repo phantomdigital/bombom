@@ -1,213 +1,49 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html>
-  <head>
-    
-    
-    
-    
-    <title></title>
-    <style type="text/css">
-      @font-face {
-        font-family: saans;
-        font-style: normal;
-        font-weight: 400;
-        src: url(https://bombomtreats.com.au/fonts/SaansRegular.otf) format(opentype);
-      }
-      @font-face {
-        font-family: saans;
-        font-style: normal;
-        font-weight: 500;
-        src: url(https://bombomtreats.com.au/fonts/SaansMedium.otf) format(opentype);
-      }
-      body {
-        background-color: #eef0f3;
-        font-family: saans, Arial, Helvetica, sans-serif;
-        margin: 0;
-        padding: 0;
-      }
-      .badge {
-        display: inline-block;
-        margin: 0 0 18px;
-        padding: 3px 16px 4px;
-        font-size: 13px;
-        line-height: 1.1;
-        font-weight: 400;
-        color: #ffffff;
-        background-color: #f7b7d3;
-        border-radius: 999px;
-      }
-      .heading {
-        margin: 0 0 16px;
-        font-size: 24px;
-        font-weight: 600;
-        line-height: 32px;
-        color: #000000;
-      }
-      .body-text {
-        margin: 0 0 20px;
-        font-size: 16px;
-        line-height: 26px;
-        color: #000000;
-      }
-      .body-text.last {
-        margin: 0;
-      }
-    </style>
-  </head>
-  <body style="background-color:#eef0f3;margin:0;padding:0">
-    
-    <table
-      border="0"
-      cellpadding="0"
-      cellspacing="0"
-      width="100%"
-      style="background-color:#eef0f3">
-      <tr>
-        <td align="center" style="padding:28px 0">
-          <table
-            border="0"
-            cellpadding="0"
-            cellspacing="0"
-            width="600"
-            style="max-width:600px;width:95%;background-color:#ffffff;border-radius:8px 8px 0 0">
-            <tr>
-              <td
-                style="background-color:#91c4ff;text-align:center;padding:40px 28px 20px">
-                <a
-                  href="https://bombomtreats.com.au"
-                  target="_blank"
-                  style="text-decoration:none"
-                  ><img
-                    alt="BomBom"
-                    height="100"
-                    src="https://bombomtreats.com.au/email/logo-white.png"
-                    width="520"
-                    style="display:block;margin:0 auto;max-width:100%;width:520px;height:100px;border:none;outline:none"
-                /></a>
-              </td>
-            </tr>
-            <tr>
-              <td
-                style="background-color:#91c4ff;padding:0;line-height:0;font-size:0;text-align:center">
-                <img
-                  alt="Frozen Yoghurt - Soft Serve - Ice cream"
-                  height="32"
-                  src="https://bombomtreats.com.au/email/ticker.gif"
-                  width="600"
-                  style="display:block;width:600px;max-width:100%;height:32px;border:none;outline:none;mso-hide:all;" />
-                <!--[if mso]>
-                  <img
-                    alt="Frozen Yoghurt - Soft Serve - Ice cream"
-                    height="32"
-                    src="https://bombomtreats.com.au/email/ticker-static.png"
-                    width="600"
-                    style="display:block;width:600px;height:32px;border:none;outline:none;-ms-interpolation-mode:bicubic;" />
-                <![endif]-->
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <hr style="border:none;border-top:1px solid #dde1e6;margin:0" />
-              </td>
-            </tr>
-            <tr>
-              <td style="padding:48px 28px 32px">
-                <table
-                  border="0"
-                  cellpadding="0"
-                  cellspacing="0"
-                  style="margin:0 0 18px">
-                  <tr>
-                    <td
-                      align="left"
-                      style="padding:3px 16px 4px;font-size:13px;line-height:1.1;font-weight:400;color:#ffffff;background-color:#f7b7d3;border-radius:999px">
-                      Welcome
-                    </td>
-                  </tr>
-                </table>
-                <p class="heading">
-                  Hey {{ first_name|default:&quot;there&quot; }},
-                </p>
-                <p class="body-text">
-                  You&#x27;re officially on the BomBom waitlist. We&#x27;re
-                  putting the finishing touches on our Wagga store and
-                  you&#x27;ll be the first to know when we open.
-                </p>
-                <p class="body-text last">Thanks for getting in this early!</p>
-              </td>
-            </tr>
-          </table>
-          <table
-            border="0"
-            cellpadding="0"
-            cellspacing="0"
-            width="600"
-            style="max-width:600px;width:95%">
-            <tr>
-              <td style="padding:0;line-height:0">
-                <img
-                  alt=""
-                  height="112"
-                  src="https://bombomtreats.com.au/email/bleed-white.png"
-                  width="600"
-                  style="display:block;width:100%;max-width:100%;height:auto;border:none;outline:none" />
-              </td>
-            </tr>
-          </table>
-          <table
-            border="0"
-            cellpadding="0"
-            cellspacing="0"
-            width="600"
-            style="max-width:600px;width:95%">
-            <tr>
-              <td align="center" style="padding:16px 0 28px;text-align:center">
-                <a
-                  href="https://instagram.com/bombom.au"
-                  target="_blank"
-                  style="display:inline-block;margin:0 6px;text-decoration:none"
-                  ><img
-                    alt="Instagram"
-                    height="32"
-                    src="https://bombomtreats.com.au/email/instagram.png"
-                    width="32"
-                    style="display:inline-block;border:none;outline:none" /></a
-                ><a
-                  href="https://tiktok.com/@bombom_au"
-                  target="_blank"
-                  style="display:inline-block;margin:0 6px;text-decoration:none"
-                  ><img
-                    alt="TikTok"
-                    height="32"
-                    src="https://bombomtreats.com.au/email/tiktok.png"
-                    width="32"
-                    style="display:inline-block;border:none;outline:none"
-                /></a>
-                <p
-                  style="font-size:11px;line-height:1.45;margin:16px 0 8px;color:#5c6168">
-                  If you no longer wish to receive emails,<!-- -->
-                  <a
-                    href="{% unsubscribe_link %}"
-                    style="color:#5c6168;text-decoration:underline"
-                    >click here</a
-                  >.
-                </p>
-                <p
-                  style="font-size:11px;line-height:1.4;margin:0 0 4px;color:#5c6168">
-                  Shop 1, 117 Baylis St, Wagga Wagga
-                </p>
-                <p
-                  style="font-size:10px;line-height:1.35;margin:0;color:#7d8288">
-                  ©
-                  <!-- -->2026<!-- -->
-                  BomBom. All rights reserved.
-                </p>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
-    
-  </body>
-</html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html><head><title></title><style type="text/css">@font-face {
+  font-family: saans;
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://bombomtreats.com.au/fonts/SaansRegular.otf) format(opentype);
+}
+@font-face {
+  font-family: saans;
+  font-style: normal;
+  font-weight: 500;
+  src: url(https://bombomtreats.com.au/fonts/SaansMedium.otf) format(opentype);
+}
+body {
+  background-color: #eef0f3;
+  font-family: saans, Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+.badge {
+  display: inline-block;
+  margin: 0 0 18px;
+  padding: 3px 16px 4px;
+  font-size: 13px;
+  line-height: 1.1;
+  font-weight: 400;
+  color: #ffffff;
+  background-color: #f7b7d3;
+  border-radius: 999px;
+}
+.heading {
+  margin: 0 0 16px;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 32px;
+  color: #000000;
+}
+.body-text {
+  margin: 0 0 20px;
+  font-size: 16px;
+  line-height: 26px;
+  color: #000000;
+}
+.body-text.last {
+  margin: 0;
+}</style></head><body style="background-color:#eef0f3;margin:0;padding:0"><table border="0" cellPadding="0" cellSpacing="0" width="100%" style="background-color:#eef0f3"><tr><td align="center" style="padding:28px 0"><table border="0" cellPadding="0" cellSpacing="0" width="600" style="max-width:600px;width:95%;background-color:#ffffff;border-radius:8px 8px 0 0"><tr><td style="background-color:#91c4ff;text-align:center;padding:40px 28px 20px"><a href="https://bombomtreats.com.au" target="_blank" style="text-decoration:none"><img alt="BomBom" height="100" src="https://bombomtreats.com.au/email/logo-white.png" width="520" style="display:block;margin:0 auto;max-width:100%;width:520px;height:100px;border:none;outline:none"/></a></td></tr><tr><td style="background-color:#91c4ff;padding:0;line-height:0;font-size:0;text-align:center"><!--[if mso]>
+<img alt="Frozen Yoghurt - Soft Serve - Ice cream" height="32" src="https://bombomtreats.com.au/email/ticker-static.png" width="600" style="display:block;width:600px;height:32px;border:none;outline:none;-ms-interpolation-mode:bicubic;" />
+<![endif]--><!--[if !mso]><!-->
+<img alt="Frozen Yoghurt - Soft Serve - Ice cream" height="32" src="https://bombomtreats.com.au/email/ticker.gif" width="600" style="display:block;width:600px;max-width:100%;height:32px;border:none;outline:none;" />
+<!--<![endif]--></td></tr><tr><td><hr style="border:none;border-top:1px solid #dde1e6;margin:0"/></td></tr><tr><td style="padding:48px 28px 32px"><table border="0" cellPadding="0" cellSpacing="0" style="margin:0 0 18px"><tr><td align="left"><span style="display:inline-block;padding:3px 16px 3px;font-size:13px;line-height:13px;mso-line-height-rule:exactly;font-weight:400;color:#ffffff;background-color:#f7b7d3;border-radius:999px;">Welcome</span></td></tr></table><p class="heading">Hey {{ first_name|default:&quot;there&quot; }},</p><p class="body-text">You&#x27;re officially on the BomBom waitlist. We&#x27;re putting the finishing touches on our Wagga store and you&#x27;ll be the first to know when we open.</p><p class="body-text last">Thanks for getting in this early!</p></td></tr></table><table border="0" cellPadding="0" cellSpacing="0" width="600" style="max-width:600px;width:95%"><tr><td style="padding:0;line-height:0"><img alt="" height="112" src="https://bombomtreats.com.au/email/bleed-white.png" width="600" style="display:block;width:100%;max-width:100%;height:auto;border:none;outline:none"/></td></tr></table><table border="0" cellPadding="0" cellSpacing="0" width="600" style="max-width:600px;width:95%"><tr><td align="center" style="padding:16px 0 28px;text-align:center"><a href="https://instagram.com/bombom.au" target="_blank" style="display:inline-block;margin:0 6px;text-decoration:none"><img alt="Instagram" height="32" src="https://bombomtreats.com.au/email/instagram.png" width="32" style="display:inline-block;border:none;outline:none"/></a><a href="https://tiktok.com/@bombom_au" target="_blank" style="display:inline-block;margin:0 6px;text-decoration:none"><img alt="TikTok" height="32" src="https://bombomtreats.com.au/email/tiktok.png" width="32" style="display:inline-block;border:none;outline:none"/></a><p style="font-size:11px;line-height:1.45;margin:16px 0 8px;color:#5c6168">If you no longer wish to receive emails,<!-- --> <a href="{% unsubscribe_link %}" style="color:#5c6168;text-decoration:underline">click here</a>.</p><p style="font-size:11px;line-height:1.4;margin:0 0 4px;color:#5c6168">Shop 1, 117 Baylis St, Wagga Wagga</p><p style="font-size:10px;line-height:1.35;margin:0;color:#7d8288">© <!-- -->2026<!-- --> BomBom. All rights reserved.</p></td></tr></table></td></tr></table></body></html>
