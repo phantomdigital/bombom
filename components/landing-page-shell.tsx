@@ -235,7 +235,7 @@ export default function LandingPageShell({
 
       <footer className="shrink-0 bg-bom-ice px-5 py-6 pb-[max(2.5rem,env(safe-area-inset-bottom))] sm:px-10 sm:py-8 sm:pb-12 lg:px-16">
         <div className="flex w-full flex-col gap-3 sm:gap-4">
-          <div className="flex w-full flex-col items-start gap-3 text-left sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+          <div className="flex w-full flex-col items-start gap-3 text-left sm:flex-row sm:items-center sm:justify-between sm:gap-6">
             <address
               className={`flex max-w-xl shrink-0 items-center gap-2.5 text-left not-italic ${LANDING_BODY_MARKETING}`}
             >
@@ -249,7 +249,7 @@ export default function LandingPageShell({
               </span>
             </address>
             {showOpeningCountdown && !launchCelebration ? (
-              <OpeningCountdownTicker className="hidden shrink-0 sm:block sm:self-start" />
+              <OpeningCountdownTicker className="hidden shrink-0 sm:block" />
             ) : null}
           </div>
           <LandingSocialLinks className="mt-3 flex sm:hidden -ml-2" />

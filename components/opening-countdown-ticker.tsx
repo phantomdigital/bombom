@@ -38,16 +38,48 @@ export default function OpeningCountdownTicker({
 
   const { days, hours, minutes, seconds } = formatCountdown(remainingMs);
 
-  const label = `Opens in ${days}d ${String(hours).padStart(2, "0")}h ${String(minutes).padStart(2, "0")}m ${String(seconds).padStart(2, "0")}s`;
+  const timeLabel = `${days}d ${String(hours).padStart(2, "0")}h ${String(minutes).padStart(2, "0")}m ${String(seconds).padStart(2, "0")}s`;
 
   return (
     <div
-      className={`rounded-sm bg-bom-black px-3 py-2 font-mono text-xs font-black uppercase tracking-widest text-bom-white sm:px-4 sm:py-2.5 sm:text-sm ${className}`}
+      className={`text-center text-bom-white ${className}`}
       role="timer"
       aria-live="polite"
       aria-atomic="true"
     >
-      {label}
+      <div className="mb-2 font-mono text-[0.625rem] font-black uppercase tracking-[0.22em] sm:text-xs">
+        Opens in
+      </div>
+      <div
+        className="relative rounded-3xl bg-transparent px-6 py-4 font-sans text-base font-bold uppercase tracking-[0.08em] tabular-nums sm:px-14 sm:py-5 sm:text-lg"
+        aria-label={`Opens in ${timeLabel}`}
+      >
+        <svg
+          className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
+          aria-hidden="true"
+        >
+          <rect
+            x="0.5"
+            y="0.5"
+            width="calc(100% - 1px)"
+            height="calc(100% - 1px)"
+            rx="24"
+            fill="none"
+            stroke="currentColor"
+            strokeDasharray="14 10"
+          >
+            <animate
+              attributeName="stroke-dashoffset"
+              values="0;-14;-24"
+              keyTimes="0;0.5;1"
+              dur="1.2s"
+              calcMode="discrete"
+              repeatCount="indefinite"
+            />
+          </rect>
+        </svg>
+        {timeLabel}
+      </div>
     </div>
   );
 }
