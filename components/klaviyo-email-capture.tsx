@@ -67,14 +67,6 @@ const PLACEHOLDER_LETTER_VARIANTS = {
   },
 };
 
-/** Flavour colours with correct text contrast per brand guidelines */
-export const FLAVOUR_BUTTON_STYLES = [
-  { bg: 'bg-bom-lemon', text: 'text-bom-black' },
-  { bg: 'bg-bom-musk', text: 'text-bom-black' },
-] as const;
-
-export type FlavourStyle = (typeof FLAVOUR_BUTTON_STYLES)[number];
-
 /** Duration (ms) based on average reading speed ~200 wpm + base + padding for comfort */
 function getReadingDuration(text: string): number {
   const wordCount = text.split(/\s+/).filter(Boolean).length || 1;
@@ -110,7 +102,6 @@ export default function KlaviyoEmailCapture({
   const [isInputFocused, setIsInputFocused] = useState(false);
   const cycles = placeholderCycle ?? DEFAULT_PLACEHOLDER_CYCLE;
   const [cycleIndex, setCycleIndex] = useState(0);
-  const [flavourStyle] = useState<FlavourStyle>(() => FLAVOUR_BUTTON_STYLES[0]);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSuccessFading, setIsSuccessFading] = useState(false);
   const [errorToastMessage, setErrorToastMessage] = useState('');
@@ -338,9 +329,7 @@ export default function KlaviyoEmailCapture({
               variant="bomPill"
               size="bomPill"
               className={cn(
-                flavourStyle.bg,
-                flavourStyle.text,
-                'font-sans font-medium',
+                'bg-[#2665d6] text-white font-sans font-medium',
                 'w-full sm:w-auto sm:whitespace-nowrap items-stretch'
               )}
             >

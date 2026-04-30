@@ -89,7 +89,7 @@ export default function LandingPageShell({
 
           <div className="mx-auto w-full">
             <h1
-              className={`bom-body1-heading-sm sm:bom-body1-sm text-bom-black text-center mb-8 transition-opacity duration-400 ${isSuccessVisible ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+              className={`bom-body1-heading-sm sm:bom-body1-sm text-white text-center mb-8 transition-opacity duration-400 ${isSuccessVisible ? "opacity-0 pointer-events-none" : "opacity-100"}`}
               aria-hidden={isSuccessVisible}
             >
               {headline}
