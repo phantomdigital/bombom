@@ -9,6 +9,8 @@ import { getPublicSiteUrl } from "@/lib/site-url";
 
 const siteUrl = getPublicSiteUrl();
 const MARKETING_OPENING_LABEL = "Opening Friday 1st May from 11am";
+const MARKETING_SUCCESS_MESSAGE =
+  "Thanks! You're on the list.";
 const MARKETING_SEO_DESCRIPTION =
   "BomBom Treats opens Friday 1st May from 11am at Shop 1, 117 Baylis St, Wagga Wagga. Join the list for launch offers and updates.";
 
@@ -94,7 +96,7 @@ export default function LandingPageShell({
             </h1>
             <KlaviyoEmailCapture
               buttonText="Get Notified"
-              successMessage="Thanks! We'll let you know when we launch."
+              successMessage={MARKETING_SUCCESS_MESSAGE}
               variant="inline"
               className="mx-auto"
               onSuccessVisibilityChange={setIsSuccessVisible}
