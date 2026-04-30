@@ -10,7 +10,7 @@ export default function LandingSocialLinks({
 }: LandingSocialLinksProps) {
   return (
     <nav
-      className={`flex shrink-0 items-center gap-1 sm:gap-2 ${className}`}
+      className={`flex shrink-0 items-center gap-2 sm:gap-6 ${className}`}
       aria-label="Social links"
     >
       <Link
@@ -20,7 +20,7 @@ export default function LandingSocialLinks({
         className="inline-flex items-center justify-center p-2 text-bom-white transition-colors hover:text-bom-dark-blue sm:p-3"
         aria-label="Instagram (opens in new tab)"
       >
-        <SiInstagram className="size-7 shrink-0 sm:size-8 lg:size-12" />
+        <SiInstagram className="size-10 shrink-0 sm:size-12 lg:size-14" />
       </Link>
       <Link
         href="https://tiktok.com/@bombom_au"
@@ -29,7 +29,7 @@ export default function LandingSocialLinks({
         className="inline-flex items-center justify-center p-2 text-bom-white transition-colors hover:text-bom-dark-blue sm:p-3"
         aria-label="TikTok (opens in new tab)"
       >
-        <SiTiktok className="size-7 shrink-0 sm:size-8 lg:size-12" />
+        <SiTiktok className="size-10 shrink-0 sm:size-12 lg:size-14" />
       </Link>
     </nav>
   );
