@@ -1,12 +1,9 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import Link from "next/link";
-import BomBomLogo from "@/components/bombom-logo";
 import KlaviyoEmailCapture from "@/components/klaviyo-email-capture";
-import { SiInstagram, SiTiktok } from "react-icons/si";
+import LandingPageHeader from "@/components/landing-page-header";
 import { getPublicSiteUrl } from "@/lib/site-url";
-
 const siteUrl = getPublicSiteUrl();
 const MARKETING_OPENING_LABEL = "Opening Friday 1st May from 11am";
 const MARKETING_SUCCESS_MESSAGE =
@@ -72,26 +69,16 @@ export default function LandingPageShell({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       ) : null}
+      <LandingPageHeader />
       <main
         id="main-content"
-        className="flex-1 flex flex-col items-center justify-center px-6 sm:px-10 lg:px-16 py-12"
+        className="flex flex-1 flex-col items-center justify-center px-5 sm:px-10 lg:px-16 py-8 sm:py-12"
         tabIndex={-1}
       >
-        <div className="w-full max-w-4xl flex flex-col items-center">
-          <div className="w-full text-bom-white">
-            <BomBomLogo className="max-w-3xl sm:max-w-4xl lg:max-w-5xl mx-auto" aria-label="BomBom Treats" />
-          </div>
-
-          <div
-            className="w-full max-w-3xl sm:max-w-4xl lg:max-w-5xl mx-auto shrink-0 my-2 sm:my-3 aspect-[1223.31/234.87] sm:aspect-[2446.62/234.87]"
-            aria-hidden
-          />
-
-          <div
-            className="mx-auto w-full max-w-4xl rounded-4xl bg-bom-dark-blue px-7 py-10 sm:px-10 sm:py-12"
-          >
+        <div className="mx-auto w-full max-w-2xl sm:max-w-3xl lg:max-w-4xl">
+          <div className="rounded-4xl bg-bom-dark-blue px-8 py-12 sm:px-12 sm:py-14 lg:px-14 lg:py-16">
             <h1
-              className={`bom-body1-heading-sm sm:bom-body1-sm text-bom-white text-center mb-7 sm:mb-10 transition-opacity duration-400 ${isSuccessVisible ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+              className={`bom-body1-heading-sm sm:bom-body1-sm text-bom-white text-center mb-8 sm:mb-11 transition-opacity duration-400 ${isSuccessVisible ? "opacity-0 pointer-events-none" : "opacity-100"}`}
               aria-hidden={isSuccessVisible}
             >
               {headline}
@@ -108,35 +95,15 @@ export default function LandingPageShell({
         </div>
       </main>
 
-      <footer className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 sm:gap-4 px-5 sm:px-10 lg:px-16 py-6 sm:py-8 pb-10 sm:pb-12 bg-bom-ice">
-        <div className="flex flex-col gap-1 sm:gap-2">
-          <span className="font-sans text-3xl sm:text-4xl lg:text-5xl font-medium text-bom-white tracking-tight leading-tight">
+      <footer className="px-5 sm:px-10 lg:px-16 py-6 sm:py-8 pb-10 sm:pb-12 bg-bom-ice">
+        <div className="flex flex-col items-start gap-1 sm:gap-2 text-left">
+          <span className="font-sans text-3xl sm:text-4xl lg:text-5xl font-medium text-bom-white tracking-tight leading-tight text-left">
             {MARKETING_OPENING_LABEL}
           </span>
           <address className="bom-body1-sm text-bom-white not-italic text-left">
             Shop 1, 117 Baylis St, Wagga Wagga
           </address>
         </div>
-        <nav className="flex items-center gap-2 sm:gap-3">
-          <Link
-            href="https://instagram.com/bombom.au"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center p-3 text-bom-white hover:text-bom-musk transition-colors cursor-pointer"
-            aria-label="Instagram (opens in new tab)"
-          >
-            <SiInstagram className="size-8 sm:size-10 shrink-0" />
-          </Link>
-          <Link
-            href="https://tiktok.com/@bombom_au"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center p-3 text-bom-white hover:text-bom-musk transition-colors cursor-pointer"
-            aria-label="TikTok (opens in new tab)"
-          >
-            <SiTiktok className="size-8 sm:size-10 shrink-0" />
-          </Link>
-        </nav>
       </footer>
     </div>
   );
