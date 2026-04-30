@@ -19,6 +19,7 @@ const LANDING_BODY_MARKETING =
 const MARKETING_OPENING_LABEL = "Opening Friday 1st May from 11am";
 const MARKETING_LIST_LINE =
   "Join the list for launch offers and updates.";
+const LOCATION_LABEL = "Shop 1, 117 Baylis St, Wagga Wagga";
 const OPEN_CELEBRATION_HEADLINE = "And just like that, we're open!";
 const OPEN_CELEBRATION_SUBLINE =
   "Wander in if you're around. Otherwise, join the list below for launch offers and updates.";
@@ -227,6 +228,16 @@ export default function LandingPageShell({
               onSuccessVisibilityChange={setIsSuccessVisible}
             />
           </div>
+          <address
+            className={`mx-auto mt-10 flex max-w-xs items-center justify-center gap-2.5 text-center not-italic sm:hidden ${LANDING_BODY_MARKETING}`}
+          >
+            <MapPinIcon
+              weight="light"
+              className="size-[1.15em] shrink-0 text-current"
+              aria-hidden
+            />
+            <span className="min-w-0 leading-tight">{LOCATION_LABEL}</span>
+          </address>
           {showOpeningCountdown && !launchCelebration ? (
             <OpeningCountdownTicker className="mx-auto mt-4 w-fit sm:hidden" />
           ) : null}
@@ -237,16 +248,14 @@ export default function LandingPageShell({
         <div className="flex w-full flex-col gap-3 sm:gap-4">
           <div className="flex w-full flex-col items-start gap-3 text-left sm:flex-row sm:items-center sm:justify-between sm:gap-6">
             <address
-              className={`flex max-w-xl shrink-0 items-center gap-2.5 text-left not-italic ${LANDING_BODY_MARKETING}`}
+              className={`hidden max-w-xl shrink-0 items-center gap-2.5 text-left not-italic sm:flex ${LANDING_BODY_MARKETING}`}
             >
               <MapPinIcon
                 weight="light"
                 className="size-[1.15em] shrink-0 text-current"
                 aria-hidden
               />
-              <span className="min-w-0 leading-tight">
-                Shop 1, 117 Baylis St, Wagga Wagga
-              </span>
+              <span className="min-w-0 leading-tight">{LOCATION_LABEL}</span>
             </address>
             {showOpeningCountdown && !launchCelebration ? (
               <OpeningCountdownTicker className="hidden shrink-0 sm:block" />
