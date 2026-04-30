@@ -95,7 +95,7 @@ export default function LandingPageShell({
               {headline}
             </h1>
             <KlaviyoEmailCapture
-              buttonText="Get Notified"
+              buttonText="Stay in the loop"
               successMessage={MARKETING_SUCCESS_MESSAGE}
               variant="inline"
               className="mx-auto"

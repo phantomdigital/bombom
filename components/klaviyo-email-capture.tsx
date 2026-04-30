@@ -316,7 +316,7 @@ export default function KlaviyoEmailCapture({
                 placeholder={nativePlaceholder}
                 disabled={isPending}
                 className={cn(
-                  'h-[65px] min-h-[65px] py-[20px] !px-[26px] rounded-sm text-base font-medium font-sans w-full min-w-0 box-border',
+                  'h-[65px] min-h-[65px] py-0 !px-[26px] leading-[65px] rounded-sm text-base font-medium font-sans w-full min-w-0 box-border appearance-none',
                   'bg-background border-0 shadow-none',
                   'outline-none',
                   'focus:border-transparent focus:ring-0 focus:ring-offset-0',
@@ -345,12 +345,14 @@ export default function KlaviyoEmailCapture({
               )}
             >
               {status === 'loading' ? (
-                <span className="inline-flex h-full items-center gap-2">
+                <span className="inline-flex h-full -translate-y-[1px] items-center gap-2">
                   <AiOutlineLoading3Quarters className="size-4 animate-spin" aria-hidden />
                   <span>Subscribing...</span>
                 </span>
               ) : (
-                <span className="inline-flex h-full items-center">{buttonText}</span>
+                <span className="inline-flex h-full -translate-y-[1px] items-center">
+                  {buttonText}
+                </span>
               )}
             </Button>
           </div>
