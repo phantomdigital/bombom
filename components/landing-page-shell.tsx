@@ -9,6 +9,8 @@ import { getPublicSiteUrl } from "@/lib/site-url";
 
 const siteUrl = getPublicSiteUrl();
 const MARKETING_OPENING_LABEL = "Opening Friday 1st May from 11am";
+const MARKETING_SEO_DESCRIPTION =
+  "BomBom Treats opens Friday 1st May from 11am at Shop 1, 117 Baylis St, Wagga Wagga. Join the list for launch offers and updates.";
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -28,8 +30,7 @@ const jsonLd = {
       "@id": `${siteUrl}/#website`,
       url: siteUrl,
       name: "BomBom Treats",
-      description:
-        "BomBom Treats — opening this autumn at Shop 1, 117 Baylis St, Wagga Wagga. Join the list to be first to know when we open.",
+      description: MARKETING_SEO_DESCRIPTION,
       publisher: { "@id": `${siteUrl}/#organization` },
     },
     {
@@ -37,8 +38,7 @@ const jsonLd = {
       "@id": `${siteUrl}/#local`,
       name: "BomBom Treats",
       url: siteUrl,
-      description:
-        "BomBom Treats — opening this autumn at Shop 1, 117 Baylis St, Wagga Wagga. Join the list to be first to know when we open.",
+      description: MARKETING_SEO_DESCRIPTION,
       address: {
         "@type": "PostalAddress",
         streetAddress: "Shop 1, 117 Baylis St",

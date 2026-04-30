@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({
 const siteUrl = getPublicSiteUrl();
 
 const description =
-  "BomBom Treats — opening this autumn at Shop 1, 117 Baylis St, Wagga Wagga. Join the list to be first to know when we open.";
+  "BomBom Treats opens Friday 1st May from 11am at Shop 1, 117 Baylis St, Wagga Wagga. Join the list for launch offers and updates.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   title: {
-    default: "BomBom Treats | Coming Autumn — Wagga Wagga",
+    default: "BomBom Treats | Opening Friday 1st May, 11am",
     template: "%s | BomBom Treats",
   },
   description,
@@ -31,7 +31,8 @@ export const metadata: Metadata = {
     "desserts",
     "ice cream",
     "bakery",
-    "coming soon",
+    "opening day",
+    "Friday 1st May",
   ],
   authors: [{ name: "BomBom Treats", url: siteUrl }],
   creator: "BomBom Treats",
@@ -40,12 +41,12 @@ export const metadata: Metadata = {
     locale: "en_AU",
     url: siteUrl,
     siteName: "BomBom Treats",
-    title: "BomBom Treats | Coming Autumn — Wagga Wagga",
+    title: "BomBom Treats | Opening Friday 1st May, 11am",
     description,
   },
   twitter: {
     card: "summary_large_image",
-    title: "BomBom Treats | Coming Autumn — Wagga Wagga",
+    title: "BomBom Treats | Opening Friday 1st May, 11am",
     description,
   },
   robots: {
