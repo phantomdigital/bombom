@@ -84,6 +84,8 @@ interface KlaviyoEmailCaptureProps {
   buttonText?: string;
   successMessage?: string;
   variant?: 'default' | 'inline' | 'stacked';
+  /** When true, supporting copy (e.g. consent) is light for dark panels */
+  onDarkSurface?: boolean;
   onSuccessVisibilityChange?: (isVisible: boolean) => void;
 }
 
@@ -95,6 +97,7 @@ export default function KlaviyoEmailCapture({
   buttonText = 'Subscribe',
   successMessage = 'Thanks for subscribing!',
   variant = 'inline',
+  onDarkSurface = false,
   onSuccessVisibilityChange,
 }: KlaviyoEmailCaptureProps) {
   const [state, formAction, isPending] = useActionState(subscribeToKlaviyo, null);
@@ -329,7 +332,7 @@ export default function KlaviyoEmailCapture({
               variant="bomPill"
               size="bomPill"
               className={cn(
-                'bg-[#2665d6] text-white font-sans font-medium',
+                'bg-bom-lime text-bom-black font-sans font-medium',
                 'w-full sm:w-auto sm:whitespace-nowrap items-stretch'
               )}
             >
@@ -370,7 +373,12 @@ export default function KlaviyoEmailCapture({
                       className="size-4"
                     />
                   </span>
-                  <span className="text-center font-sans text-[12px] sm:text-[13px] leading-snug text-bom-black/85">
+                  <span
+                    className={cn(
+                      'text-center font-sans text-[12px] sm:text-[13px] leading-snug',
+                      onDarkSurface ? 'text-bom-white/85' : 'text-bom-black/85'
+                    )}
+                  >
                     I agree to receive marketing emails from BomBom.
                   </span>
                 </label>

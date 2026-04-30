@@ -77,19 +77,21 @@ export default function LandingPageShell({
         className="flex-1 flex flex-col items-center justify-center px-6 sm:px-10 lg:px-16 py-12"
         tabIndex={-1}
       >
-        <div className="w-full max-w-5xl flex flex-col items-center">
-          <div className="w-full px-2 sm:px-4 text-bom-white">
+        <div className="w-full max-w-4xl flex flex-col items-center">
+          <div className="w-full text-bom-white">
             <BomBomLogo className="max-w-3xl sm:max-w-4xl lg:max-w-5xl mx-auto" aria-label="BomBom Treats" />
           </div>
 
           <div
-            className="w-full max-w-3xl sm:max-w-4xl lg:max-w-5xl mx-auto shrink-0 aspect-[1223.31/234.87] sm:aspect-[2446.62/234.87]"
+            className="w-full max-w-3xl sm:max-w-4xl lg:max-w-5xl mx-auto shrink-0 my-2 sm:my-3 aspect-[1223.31/234.87] sm:aspect-[2446.62/234.87]"
             aria-hidden
           />
 
-          <div className="mx-auto w-full">
+          <div
+            className="mx-auto w-full max-w-4xl rounded-4xl bg-bom-dark-blue px-7 py-10 sm:px-10 sm:py-12"
+          >
             <h1
-              className={`bom-body1-heading-sm sm:bom-body1-sm text-white text-center mb-8 transition-opacity duration-400 ${isSuccessVisible ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+              className={`bom-body1-heading-sm sm:bom-body1-sm text-bom-white text-center mb-8 transition-opacity duration-400 ${isSuccessVisible ? "opacity-0 pointer-events-none" : "opacity-100"}`}
               aria-hidden={isSuccessVisible}
             >
               {headline}
@@ -98,7 +100,8 @@ export default function LandingPageShell({
               buttonText="Stay in the loop"
               successMessage={MARKETING_SUCCESS_MESSAGE}
               variant="inline"
-              className="mx-auto"
+              onDarkSurface
+              className="relative mx-auto w-full max-w-none"
               onSuccessVisibilityChange={setIsSuccessVisible}
             />
           </div>
