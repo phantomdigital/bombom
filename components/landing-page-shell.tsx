@@ -91,7 +91,7 @@ export default function LandingPageShell({
             className="mx-auto w-full max-w-4xl rounded-4xl bg-bom-dark-blue px-7 py-10 sm:px-10 sm:py-12"
           >
             <h1
-              className={`bom-body1-heading-sm sm:bom-body1-sm text-bom-white text-center mb-8 transition-opacity duration-400 ${isSuccessVisible ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+              className={`bom-body1-heading-sm sm:bom-body1-sm text-bom-white text-center mb-7 sm:mb-10 transition-opacity duration-400 ${isSuccessVisible ? "opacity-0 pointer-events-none" : "opacity-100"}`}
               aria-hidden={isSuccessVisible}
             >
               {headline}
