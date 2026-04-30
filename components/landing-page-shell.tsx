@@ -10,9 +10,8 @@ import { getPublicSiteUrl } from "@/lib/site-url";
 const siteUrl = getPublicSiteUrl();
 const LANDING_LARGE_PROMO_TYPE =
   "font-sans text-3xl sm:text-4xl lg:text-5xl font-medium tracking-tight leading-tight text-bom-white";
-const LANDING_BODY_MARKETING = "bom-body1-sm text-bom-white not-italic";
-const LANDING_LOCATION_TYPE =
-  "font-sans text-base leading-tight text-bom-white not-italic sm:bom-body1-sm";
+const LANDING_BODY_MARKETING =
+  "font-sans text-base leading-[1.2] text-bom-white not-italic sm:text-[clamp(0.8125rem,1.75vw,16pt)]";
 const MARKETING_OPENING_LABEL = "Opening Friday 1st May from 11am";
 const MARKETING_LIST_LINE =
   "Join the list for launch offers and updates.";
@@ -129,7 +128,7 @@ export default function LandingPageShell({
         <div className="flex w-full flex-col gap-3 sm:gap-4">
           <div className="flex w-full flex-col items-start gap-3 text-left sm:flex-row sm:items-start sm:justify-between sm:gap-6">
             <address
-              className={`flex max-w-xl shrink-0 items-start gap-2 ${LANDING_LOCATION_TYPE} text-left`}
+              className={`flex max-w-xl shrink-0 items-start gap-2 ${LANDING_BODY_MARKETING} text-left`}
             >
               <MapPinIcon
                 weight="light"
