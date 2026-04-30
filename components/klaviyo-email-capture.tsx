@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect, useId, useState } from 'react';
+import { useActionState, useEffect, useId, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { HiXMark } from 'react-icons/hi2';
@@ -19,6 +19,8 @@ const DEFAULT_PLACEHOLDER_CYCLE = [
   'stay in the loop',
   "we'll keep you posted",
 ];
+
+const FORM_REVEAL_DELAY_MS = 1000;
 
 const ATTRIBUTION_QUERY_KEYS = [
   'utm_source',
@@ -107,12 +109,14 @@ export default function KlaviyoEmailCapture({
   const [cycleIndex, setCycleIndex] = useState(0);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSuccessFading, setIsSuccessFading] = useState(false);
+  const [isFormContentRevealed, setIsFormContentRevealed] = useState(true);
   const [errorToastMessage, setErrorToastMessage] = useState('');
   const [showErrorToast, setShowErrorToast] = useState(false);
   const [errorToastKey, setErrorToastKey] = useState(0);
   const [marketingConsent, setMarketingConsent] = useState(false);
   const [attributionFields, setAttributionFields] = useState<Record<string, string>>({});
   const marketingConsentId = useId();
+  const hasShownSuccessRef = useRef(false);
 
   useEffect(() => {
     if (state?.success) {
@@ -139,6 +143,22 @@ export default function KlaviyoEmailCapture({
   useEffect(() => {
     onSuccessVisibilityChange?.(showSuccess);
   }, [showSuccess, onSuccessVisibilityChange]);
+
+  useEffect(() => {
+    if (showSuccess) {
+      hasShownSuccessRef.current = true;
+      setIsFormContentRevealed(false);
+      return;
+    }
+
+    if (!hasShownSuccessRef.current) return;
+
+    const revealTimeoutId = window.setTimeout(() => {
+      setIsFormContentRevealed(true);
+    }, FORM_REVEAL_DELAY_MS);
+
+    return () => window.clearTimeout(revealTimeoutId);
+  }, [showSuccess]);
 
   useEffect(() => {
     if (!showSuccess) return;
@@ -212,7 +232,10 @@ export default function KlaviyoEmailCapture({
 
   const status = showSuccess ? 'success' : isPending ? 'loading' : 'idle';
   const hasError = showErrorToast;
-  const canSubmit = !isPending && (!showMarketingConsentField || marketingConsent);
+  const canSubmit =
+    !isPending &&
+    email.trim().length > 0 &&
+    (!showMarketingConsentField || marketingConsent);
 
   const isInline = variant === 'inline';
   const isStacked = variant === 'stacked';
@@ -242,9 +265,16 @@ export default function KlaviyoEmailCapture({
           action={formAction}
           aria-label="Email signup form"
           initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
+          animate={{
+            opacity: isFormContentRevealed ? 1 : 0,
+            y: isFormContentRevealed ? 0 : 6,
+          }}
           transition={{ duration: 0.35, ease: 'easeOut' }}
-          className="flex flex-col gap-2"
+          className={cn(
+            "flex flex-col gap-2",
+            !isFormContentRevealed && "pointer-events-none"
+          )}
+          aria-hidden={!isFormContentRevealed}
         >
           {listId && <input type="hidden" name="listId" value={listId} />}
           {marketingConsent && (
@@ -332,7 +362,8 @@ export default function KlaviyoEmailCapture({
               size="bomPill"
               className={cn(
                 'bg-bom-lime text-bom-black font-sans font-medium antialiased',
-                'w-full sm:w-auto sm:whitespace-nowrap items-center justify-center'
+                'w-full sm:w-auto sm:whitespace-nowrap items-center justify-center',
+            !isPending && 'disabled:opacity-100'
               )}
             >
               {status === 'loading' ? (

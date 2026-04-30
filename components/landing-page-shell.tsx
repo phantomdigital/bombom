@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import confetti from "canvas-confetti";
+import { motion } from "framer-motion";
 import { MapPinIcon } from "@phosphor-icons/react";
 import KlaviyoEmailCapture from "@/components/klaviyo-email-capture";
 import LandingPageHeader from "@/components/landing-page-header";
@@ -25,6 +26,10 @@ const OPEN_CELEBRATION_SUBLINE =
   "Wander in if you're around. Otherwise, join the list below for launch offers and updates.";
 const MARKETING_SUCCESS_MESSAGE =
   "You're in — we'll be in touch.";
+const INTRO_REVEAL_DELAY_MS = 1000;
+const CARD_LAYOUT_TRANSITION = {
+  layout: { duration: 0.8, ease: [0.16, 1, 0.3, 1] as const },
+};
 const MARKETING_SEO_DESCRIPTION =
   "BomBom Treats opens Friday 1st May from 11am at Shop 1, 117 Baylis St, Wagga Wagga. Join the list for launch offers and updates.";
 
@@ -115,6 +120,7 @@ export default function LandingPageShell({
   includeJsonLd = false,
 }: LandingPageShellProps) {
   const [isSuccessVisible, setIsSuccessVisible] = useState(false);
+  const [isIntroContentRevealed, setIsIntroContentRevealed] = useState(true);
   const [celebrationDemo, setCelebrationDemo] = useState(false);
   /** Re-render periodically so countdown → celebration flips without user action. */
   const [, setPulseTick] = useState(0);
@@ -122,6 +128,7 @@ export default function LandingPageShell({
   /** Increment from localhost-only control to replay confetti bursts. */
   const [confettiReplayKey, setConfettiReplayKey] = useState(0);
   const showOpeningCountdownRef = useRef(showOpeningCountdown);
+  const hasShownSuccessRef = useRef(false);
   showOpeningCountdownRef.current = showOpeningCountdown;
 
   const launchCelebration =
@@ -143,6 +150,22 @@ export default function LandingPageShell({
     }, 1000);
     return () => window.clearInterval(id);
   }, [showOpeningCountdown]);
+
+  useEffect(() => {
+    if (isSuccessVisible) {
+      hasShownSuccessRef.current = true;
+      setIsIntroContentRevealed(false);
+      return;
+    }
+
+    if (!hasShownSuccessRef.current) return;
+
+    const revealTimeoutId = window.setTimeout(() => {
+      setIsIntroContentRevealed(true);
+    }, INTRO_REVEAL_DELAY_MS);
+
+    return () => window.clearTimeout(revealTimeoutId);
+  }, [isSuccessVisible]);
 
   useEffect(() => {
     if (!launchCelebration || !showOpeningCountdown) return;
@@ -201,33 +224,42 @@ export default function LandingPageShell({
         tabIndex={-1}
       >
         <div className="mx-auto w-full max-w-3xl sm:max-w-4xl lg:max-w-6xl">
-          <div className="rounded-4xl bg-bom-dark-blue px-10 py-12 sm:px-14 sm:py-14 lg:px-20 lg:py-16">
-            <div
-              className={`mb-8 transition-opacity duration-400 sm:mb-11 ${isSuccessVisible ? "pointer-events-none opacity-0" : "opacity-100"}`}
-              aria-hidden={isSuccessVisible}
+          <motion.div
+            layout
+            transition={CARD_LAYOUT_TRANSITION}
+            className="rounded-4xl bg-bom-dark-blue px-10 py-12 sm:px-14 sm:py-14 lg:px-20 lg:py-16"
+          >
+            <motion.div
+              layout="position"
+              transition={CARD_LAYOUT_TRANSITION}
             >
-              <h1
-                className={`${LANDING_LARGE_PROMO_TYPE} text-center ${showMarketingSubline ? "mb-3 sm:mb-4" : ""}`}
+              <div
+                className={`mb-8 transition-opacity duration-400 sm:mb-11 ${isSuccessVisible ? "hidden" : isIntroContentRevealed ? "opacity-100" : "pointer-events-none opacity-0"}`}
+                aria-hidden={isSuccessVisible || !isIntroContentRevealed}
               >
-                {displayHeadline}
-              </h1>
-              {showMarketingSubline ? (
-                <p
-                  className={`${LANDING_BODY_MARKETING} mx-auto max-w-2xl text-center`}
+                <h1
+                  className={`${LANDING_LARGE_PROMO_TYPE} text-center ${showMarketingSubline ? "mb-3 sm:mb-4" : ""}`}
                 >
-                  {displaySubline}
-                </p>
-              ) : null}
-            </div>
-            <KlaviyoEmailCapture
-              buttonText="Stay in the loop"
-              successMessage={MARKETING_SUCCESS_MESSAGE}
-              variant="inline"
-              onDarkSurface
-              className="relative mx-auto w-full max-w-none"
-              onSuccessVisibilityChange={setIsSuccessVisible}
-            />
-          </div>
+                  {displayHeadline}
+                </h1>
+                {showMarketingSubline ? (
+                  <p
+                    className={`${LANDING_BODY_MARKETING} mx-auto max-w-2xl text-center`}
+                  >
+                    {displaySubline}
+                  </p>
+                ) : null}
+              </div>
+              <KlaviyoEmailCapture
+                buttonText="Stay in the loop"
+                successMessage={MARKETING_SUCCESS_MESSAGE}
+                variant="inline"
+                onDarkSurface
+                className="relative mx-auto w-full max-w-none"
+                onSuccessVisibilityChange={setIsSuccessVisible}
+              />
+            </motion.div>
+          </motion.div>
           <address
             className={`mx-auto mt-10 flex max-w-xs items-center justify-center gap-2.5 text-center not-italic sm:hidden ${LANDING_BODY_MARKETING}`}
           >
