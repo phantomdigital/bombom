@@ -16,7 +16,7 @@ const siteUrl = getPublicSiteUrl();
 const LANDING_LARGE_PROMO_TYPE =
   "font-sans text-3xl sm:text-4xl lg:text-5xl font-medium tracking-tight leading-tight text-bom-white";
 const LANDING_BODY_MARKETING =
-  "font-sans text-base leading-[1.2] text-bom-white not-italic sm:text-[clamp(0.8125rem,1.75vw,16pt)]";
+  "font-sans text-base leading-[1.2] text-bom-white not-italic sm:text-base lg:text-[clamp(1rem,1.75vw,16pt)]";
 const MARKETING_OPENING_LABEL = "Opening Friday 1st May from 11am";
 const MARKETING_LIST_LINE =
   "Join the list for launch offers and updates.";
@@ -25,7 +25,7 @@ const OPEN_CELEBRATION_HEADLINE = "And just like that, we're open!";
 const OPEN_CELEBRATION_SUBLINE =
   "Wander in if you're around. Otherwise, join the list below for launch offers and updates.";
 const MARKETING_SUCCESS_MESSAGE =
-  "You're in — we'll be in touch.";
+  "You're in,  we'll be in touch.";
 const INTRO_REVEAL_DELAY_MS = 1000;
 const CARD_LAYOUT_TRANSITION = {
   layout: { duration: 0.8, ease: [0.16, 1, 0.3, 1] as const },
@@ -260,25 +260,27 @@ export default function LandingPageShell({
               />
             </motion.div>
           </motion.div>
-          <address
-            className={`mx-auto mt-10 flex max-w-xs items-center justify-center gap-2.5 text-center not-italic sm:hidden ${LANDING_BODY_MARKETING}`}
-          >
-            <MapPinIcon
-              weight="light"
-              className="size-[1.15em] shrink-0 text-current"
-              aria-hidden
-            />
-            <span className="min-w-0 leading-tight">{LOCATION_LABEL}</span>
-          </address>
-          {showOpeningCountdown && !launchCelebration ? (
-            <OpeningCountdownTicker className="mx-auto mt-4 w-fit sm:hidden" />
-          ) : null}
+          <div className="mt-10 flex flex-col items-center gap-8 sm:hidden">
+            <address
+              className={`flex max-w-xs items-center justify-center gap-2.5 text-center not-italic ${LANDING_BODY_MARKETING}`}
+            >
+              <MapPinIcon
+                weight="light"
+                className="size-[1.15em] shrink-0 text-current"
+                aria-hidden
+              />
+              <span className="min-w-0 leading-tight">{LOCATION_LABEL}</span>
+            </address>
+            {showOpeningCountdown && !launchCelebration ? (
+              <OpeningCountdownTicker className="w-fit" />
+            ) : null}
+          </div>
         </div>
       </main>
 
-      <footer className="shrink-0 bg-bom-ice px-5 py-6 pb-[max(2.5rem,env(safe-area-inset-bottom))] sm:px-10 sm:py-8 sm:pb-12 lg:px-16">
-        <div className="flex w-full flex-col gap-3 sm:gap-4">
-          <div className="flex w-full flex-col items-start gap-3 text-left sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+      <footer className="shrink-0 bg-bom-ice px-5 pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-0 sm:px-10 sm:py-8 sm:pb-12 lg:px-16">
+        <div className="flex w-full flex-col sm:gap-4">
+          <div className="hidden w-full flex-col items-start gap-3 text-left sm:flex sm:flex-row sm:items-center sm:justify-between sm:gap-6">
             <address
               className={`hidden max-w-xl shrink-0 items-center gap-2.5 text-left not-italic sm:flex ${LANDING_BODY_MARKETING}`}
             >
@@ -293,7 +295,7 @@ export default function LandingPageShell({
               <OpeningCountdownTicker className="hidden shrink-0 sm:block" />
             ) : null}
           </div>
-          <LandingSocialLinks className="mt-3 flex sm:hidden -ml-2" />
+          <LandingSocialLinks className="flex justify-center sm:hidden" />
         </div>
       </footer>
     </div>

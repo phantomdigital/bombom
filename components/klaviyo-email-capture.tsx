@@ -287,11 +287,11 @@ export default function KlaviyoEmailCapture({
             className={cn(
               'isolate flex gap-1.5 sm:gap-2',
               isStacked && 'flex-col',
-              isInline && 'flex-col sm:flex-row sm:items-center',
+              isInline && 'flex-col lg:flex-row lg:items-center',
               variant === 'default' && 'flex-col sm:flex-row items-stretch sm:items-center'
             )}
           >
-            <div className="relative min-w-0 flex-1 cursor-pointer sm:flex-[1_1_560px]">
+            <div className="relative min-w-0 flex-1 cursor-pointer lg:flex-[1_1_560px]">
               <AnimatePresence mode="wait" initial={false}>
                 {showAnimatedPlaceholder && (
                   <motion.div
@@ -362,7 +362,7 @@ export default function KlaviyoEmailCapture({
               size="bomPill"
               className={cn(
                 'bg-bom-lime text-bom-black font-sans font-medium antialiased',
-                'w-full sm:w-auto sm:whitespace-nowrap items-center justify-center',
+                'w-full lg:w-auto lg:whitespace-nowrap items-center justify-center',
             !isPending && 'disabled:opacity-100'
               )}
             >
