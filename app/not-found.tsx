@@ -3,6 +3,8 @@ import LandingPageShell from "@/components/landing-page-shell";
 export default function NotFound() {
   return (
     <LandingPageShell
+      showMarketingSubline={false}
+      showOpeningCountdown={false}
       headline={
         <>
           <span className="block">404</span>
