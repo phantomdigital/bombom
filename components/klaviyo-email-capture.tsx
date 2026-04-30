@@ -1,16 +1,15 @@
 'use client';
 
-import { useActionState, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { useActionState, useEffect, useId, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
-import { HiChevronRight, HiXMark } from 'react-icons/hi2';
+import { HiXMark } from 'react-icons/hi2';
 import { subscribeToKlaviyo } from '@/app/actions/klaviyo';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import TimedPopover from '@/components/ui/timed-popover';
 import { cn } from '@/lib/utils';
 
-const PLACEHOLDER_PREFIX = 'Hey you,';
 const DEFAULT_PLACEHOLDER_CYCLE = [
   'enter your email',
   'join the list',
@@ -32,7 +31,7 @@ const ATTRIBUTION_QUERY_KEYS = [
   'ttclid',
 ] as const;
 
-const LETTER_CONTAINER_VARIANTS = {
+const PLACEHOLDER_LETTER_CONTAINER_VARIANTS = {
   initial: {},
   animate: {
     transition: {
@@ -48,7 +47,7 @@ const LETTER_CONTAINER_VARIANTS = {
   },
 };
 
-const LETTER_VARIANTS = {
+const PLACEHOLDER_LETTER_VARIANTS = {
   initial: { y: 16, opacity: 0 },
   animate: {
     y: 0,
@@ -70,8 +69,8 @@ const LETTER_VARIANTS = {
 
 /** Flavour colours with correct text contrast per brand guidelines */
 export const FLAVOUR_BUTTON_STYLES = [
-  { bg: 'bg-bom-lemon', text: 'text-bom-black', hoverBg: 'hover:!bg-bom-lemon' },
-  { bg: 'bg-bom-musk', text: 'text-bom-black', hoverBg: 'hover:!bg-bom-musk' },
+  { bg: 'bg-bom-lemon', text: 'text-bom-black' },
+  { bg: 'bg-bom-musk', text: 'text-bom-black' },
 ] as const;
 
 export type FlavourStyle = (typeof FLAVOUR_BUTTON_STYLES)[number];
@@ -108,18 +107,10 @@ export default function KlaviyoEmailCapture({
 }: KlaviyoEmailCaptureProps) {
   const [state, formAction, isPending] = useActionState(subscribeToKlaviyo, null);
   const [email, setEmail] = useState('');
-  const [isFocused, setIsFocused] = useState(false);
+  const [isInputFocused, setIsInputFocused] = useState(false);
   const cycles = placeholderCycle ?? DEFAULT_PLACEHOLDER_CYCLE;
   const [cycleIndex, setCycleIndex] = useState(0);
-  const [flavourStyle, setFlavourStyle] = useState<FlavourStyle>(() => FLAVOUR_BUTTON_STYLES[0]);
-  const useAnimatedPlaceholder = !placeholder;
-  const longestCycleLength = Math.max(...cycles.map((item) => item.length), 0);
-  const rotatingTextWidthCh = Math.min(Math.max(longestCycleLength + 3, 10), 24);
-
-  const overlayRef = useRef<HTMLDivElement>(null);
-  const measurerRef = useRef<HTMLSpanElement>(null);
-  const [centerOffset, setCenterOffset] = useState(0);
-  const [hasCycled, setHasCycled] = useState(false);
+  const [flavourStyle] = useState<FlavourStyle>(() => FLAVOUR_BUTTON_STYLES[0]);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSuccessFading, setIsSuccessFading] = useState(false);
   const [errorToastMessage, setErrorToastMessage] = useState('');
@@ -129,10 +120,6 @@ export default function KlaviyoEmailCapture({
   const [attributionFields, setAttributionFields] = useState<Record<string, string>>({});
   const marketingConsentId = useId();
 
-  useLayoutEffect(() => {
-    setFlavourStyle(FLAVOUR_BUTTON_STYLES[Math.floor(Math.random() * FLAVOUR_BUTTON_STYLES.length)]);
-  }, []);
-
   useEffect(() => {
     if (state?.success) {
       setShowSuccess(true);
@@ -141,7 +128,6 @@ export default function KlaviyoEmailCapture({
       setErrorToastMessage('');
       setMarketingConsent(false);
       setEmail('');
-      setIsFocused(false);
       if (typeof document !== 'undefined') {
         const el = document.activeElement;
         if (el instanceof HTMLElement) el.blur();
@@ -172,7 +158,6 @@ export default function KlaviyoEmailCapture({
     const hideTimeoutId = setTimeout(() => {
       setShowSuccess(false);
       setIsSuccessFading(false);
-      setIsFocused(false);
     }, durationMs + fadeMs);
 
     return () => {
@@ -227,35 +212,9 @@ export default function KlaviyoEmailCapture({
     return () => clearTimeout(timeoutId);
   }, [placeholder, cycles]);
 
-  const showPlaceholderOverlay = useAnimatedPlaceholder && !email && !isFocused;
-  const nativePlaceholder = placeholder ?? (useAnimatedPlaceholder ? '' : cycles[0]);
-  const rotatingText = `${cycles[cycleIndex]}...`;
-
-  useLayoutEffect(() => {
-    const overlay = overlayRef.current;
-    const measurer = measurerRef.current;
-    if (!overlay || !measurer || !showPlaceholderOverlay) return;
-
-    const updateOffset = () => {
-      if (!overlay || !measurer) return;
-      const containerWidth = overlay.getBoundingClientRect().width;
-      const contentWidth = measurer.getBoundingClientRect().width;
-      const paddingLeft = parseFloat(getComputedStyle(overlay).paddingLeft) || 0;
-      const centerX = containerWidth / 2;
-      const contentCenterOffset = contentWidth / 2;
-      setCenterOffset(Math.max(0, centerX - contentCenterOffset - paddingLeft));
-    };
-
-    updateOffset();
-    const ro = new ResizeObserver(updateOffset);
-    ro.observe(overlay);
-
-    return () => ro.disconnect();
-  }, [showPlaceholderOverlay, cycleIndex, rotatingText]);
-
-  useEffect(() => {
-    if (cycleIndex > 0) setHasCycled(true);
-  }, [cycleIndex]);
+  const animatedPlaceholder = `Hey you, ${cycles[cycleIndex]}...`;
+  const showAnimatedPlaceholder = !placeholder && !email && !isInputFocused;
+  const nativePlaceholder = placeholder ?? '';
 
   const status = showSuccess ? 'success' : isPending ? 'loading' : 'idle';
   const hasError = showErrorToast;
@@ -265,7 +224,7 @@ export default function KlaviyoEmailCapture({
   const isStacked = variant === 'stacked';
 
   return (
-    <div className={cn('relative w-full max-w-xl', className)}>
+    <div className={cn('relative w-full max-w-3xl', className)}>
       {status === 'success' ? (
         <div
           role="status"
@@ -309,97 +268,61 @@ export default function KlaviyoEmailCapture({
               variant === 'default' && 'flex-col sm:flex-row items-stretch sm:items-center'
             )}
           >
-            <div className="group relative flex-1 min-w-0 cursor-pointer">
-              {email ? (
+            <div className="relative min-w-0 flex-1 cursor-pointer sm:flex-[1_1_560px]">
+              <AnimatePresence mode="wait" initial={false}>
+                {showAnimatedPlaceholder && (
+                  <motion.div
+                    key={animatedPlaceholder}
+                    className="pointer-events-none absolute inset-y-0 left-0 z-10 flex w-full items-center justify-center overflow-hidden px-[26px] text-muted-foreground sm:justify-start"
+                    aria-hidden
+                  >
+                    <motion.span
+                      className="flex min-w-0 items-center overflow-hidden whitespace-nowrap font-sans text-base font-normal"
+                      variants={PLACEHOLDER_LETTER_CONTAINER_VARIANTS}
+                      initial="initial"
+                      animate="animate"
+                      exit="exit"
+                    >
+                      {Array.from(animatedPlaceholder).map((char, index) => (
+                        <motion.span
+                          key={`${animatedPlaceholder}-${char}-${index}`}
+                          className="inline-block"
+                          variants={PLACEHOLDER_LETTER_VARIANTS}
+                        >
+                          {char === ' ' ? '\u00A0' : char}
+                        </motion.span>
+                      ))}
+                    </motion.span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              {email && (
                 <button
                   type="button"
                   onClick={() => setEmail('')}
-                  className="absolute right-2 top-1/2 z-10 -translate-y-1/2 flex items-center justify-center p-2 text-muted-foreground hover:text-foreground transition-colors sm:right-5 focus-visible:ring-2 focus-visible:ring-bom-black focus-visible:ring-offset-2 rounded-sm"
+                  className="absolute right-2 top-1/2 z-10 -translate-y-1/2 flex items-center justify-center p-2 text-muted-foreground sm:right-5 focus-visible:ring-0 rounded-sm"
                   aria-label="Clear email"
                 >
                   <HiXMark className="size-5" />
                 </button>
-              ) : (
-                <div
-                  className="pointer-events-none absolute right-3 top-1/2 z-10 -translate-y-1/2 text-muted-foreground opacity-0 transition-opacity duration-200 group-hover:opacity-100 sm:right-6"
-                  aria-hidden
-                >
-                  <HiChevronRight className="size-5" />
-                </div>
-              )}
-              {showPlaceholderOverlay && (
-                <div
-                  ref={overlayRef}
-                  className="pointer-events-none absolute inset-0 flex items-center overflow-hidden px-3 sm:px-6 text-muted-foreground"
-                  aria-hidden
-                >
-                  {/* Off-screen measurer - exact same structure for accurate width */}
-                  <span
-                    ref={measurerRef}
-                    className="absolute left-[-9999px] top-0 inline-flex items-center gap-1 leading-none text-sm sm:text-base font-medium font-sans whitespace-nowrap invisible"
-                    aria-hidden
-                  >
-                    <span className="shrink-0">{PLACEHOLDER_PREFIX}</span>
-                    <span>{rotatingText}</span>
-                  </span>
-                  <motion.span
-                    className="inline-flex items-center gap-1 leading-none"
-                    animate={{ x: centerOffset }}
-                    transition={
-                      hasCycled
-                        ? { type: 'tween', ease: 'easeOut', duration: 0.35 }
-                        : { duration: 0 }
-                    }
-                  >
-                    <span className="shrink-0 text-sm sm:text-base font-medium font-sans">
-                      {PLACEHOLDER_PREFIX}
-                    </span>
-                    <span
-                      className="relative inline-block h-[1.2em] overflow-hidden text-left align-middle"
-                      style={{ width: `${rotatingTextWidthCh}ch` }}
-                    >
-                      <AnimatePresence mode="wait" initial={false}>
-                        <motion.span
-                          key={rotatingText}
-                          variants={LETTER_CONTAINER_VARIANTS}
-                          initial="initial"
-                          animate="animate"
-                          exit="exit"
-                          style={{ overflow: 'hidden' }}
-                          className="absolute inset-0 flex items-center justify-start font-medium font-sans text-sm sm:text-base leading-none whitespace-nowrap"
-                        >
-                          {Array.from(rotatingText).map((char, idx) => (
-                            <motion.span
-                              key={`${char}-${idx}`}
-                              variants={LETTER_VARIANTS}
-                              className="inline-block"
-                            >
-                              {char === ' ' ? '\u00A0' : char}
-                            </motion.span>
-                          ))}
-                        </motion.span>
-                      </AnimatePresence>
-                    </span>
-                  </motion.span>
-                </div>
               )}
               <input
                 type="email"
                 name="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                onFocus={() => setIsFocused(true)}
-                onBlur={() => setIsFocused(false)}
+                onFocus={() => setIsInputFocused(true)}
+                onBlur={() => setIsInputFocused(false)}
                 placeholder={nativePlaceholder}
                 disabled={isPending}
                 className={cn(
-                  'h-14 min-h-14 py-2.5 px-10 sm:py-3 sm:pl-6 sm:pr-12 rounded-sm text-base font-medium font-sans w-full min-w-0 box-border',
-                  'bg-background border border-bom-black shadow-none',
-                  'transition-all outline-none',
-                  'focus:border-bom-black focus:ring-[1px] focus:ring-bom-black/20 focus:ring-offset-0',
-                  hasError && 'border-bom-darkred focus:border-bom-darkred focus:ring-bom-darkred/20',
+                  'h-[65px] min-h-[65px] py-[20px] !px-[26px] rounded-sm text-base font-medium font-sans w-full min-w-0 box-border',
+                  'bg-background border-0 shadow-none',
+                  'outline-none',
+                  'focus:border-transparent focus:ring-0 focus:ring-offset-0',
+                  hasError && 'focus:border-transparent focus:ring-0',
                   'disabled:opacity-50 disabled:cursor-not-allowed',
-                  'text-center sm:text-left placeholder:text-center sm:placeholder:text-left',
+                  'text-center placeholder:text-center sm:text-left sm:placeholder:text-left',
                   'placeholder:text-muted-foreground placeholder:font-normal placeholder:normal-case placeholder:tracking-normal'
                 )}
                 aria-label="Email address"
@@ -412,16 +335,12 @@ export default function KlaviyoEmailCapture({
               type="submit"
               disabled={!canSubmit}
               aria-busy={isPending}
-              size={isInline ? 'default' : 'lg'}
+              variant="bomPill"
+              size="bomPill"
               className={cn(
-                'rounded-sm hover:underline',
                 flavourStyle.bg,
-                flavourStyle.hoverBg,
                 flavourStyle.text,
-                'focus-visible:ring-bom-red/30 focus-visible:ring-[3px]',
-                'text-sm sm:text-base font-sans font-medium uppercase tracking-wider transition-all',
-                'h-14 py-0 px-5 sm:px-8 border border-bom-black',
-                'translate-y-0 shadow-none hover:-translate-y-1 hover:shadow-[0_8px_0_0_theme(colors.bom.black)] active:translate-y-0 active:shadow-none disabled:translate-y-0 disabled:shadow-none',
+                'font-sans font-medium',
                 'w-full sm:w-auto sm:whitespace-nowrap items-stretch'
               )}
             >
