@@ -1,0 +1,16 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//BomBom Treats//Opening Date//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:bombom-opening-date@bombomtreats.com.au
+DTSTAMP:20260424T000000Z
+DTSTART:20260501T010000Z
+DTEND:20260501T050000Z
+SUMMARY:BomBom Treats Opening Day
+DESCRIPTION:You got early access. BomBom Treats is opening at Shop 1, 117 Baylis St, Wagga Wagga.
+LOCATION:Shop 1, 117 Baylis St, Wagga Wagga NSW 2650, Australia
+STATUS:CONFIRMED
+END:VEVENT
+END:VCALENDAR

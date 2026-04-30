@@ -8,6 +8,7 @@ import { SiInstagram, SiTiktok } from "react-icons/si";
 import { getPublicSiteUrl } from "@/lib/site-url";
 
 const siteUrl = getPublicSiteUrl();
+const MARKETING_OPENING_LABEL = "Opening Friday 1st May from 11am";
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -105,7 +106,7 @@ export default function LandingPageShell({
       <footer className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 sm:gap-4 px-5 sm:px-10 lg:px-16 py-6 sm:py-8 pb-10 sm:pb-12 bg-bom-ice">
         <div className="flex flex-col gap-1 sm:gap-2">
           <span className="font-sans text-3xl sm:text-4xl lg:text-5xl font-medium text-bom-white tracking-tight leading-tight">
-            Coming Autumn!
+            {MARKETING_OPENING_LABEL}
           </span>
           <address className="bom-body1-sm text-bom-white not-italic text-left">
             Shop 1, 117 Baylis St, Wagga Wagga
