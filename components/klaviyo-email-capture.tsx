@@ -224,18 +224,17 @@ export default function KlaviyoEmailCapture({
           role="status"
           aria-live="polite"
           className={cn(
-            'overflow-hidden rounded-t-sm rounded-b-none bg-bom-white/10 text-center font-sans font-semibold transition-opacity duration-400',
-            isSuccessFading ? 'opacity-0' : 'opacity-100'
+            "flex min-h-[13.5rem] w-full flex-col text-center transition-opacity duration-400 sm:min-h-[6.125rem]",
+            isSuccessFading ? "opacity-0" : "opacity-100"
           )}
         >
-          <div className="px-6 py-5">
-            <p className="text-bom-white font-medium">{successMessage}</p>
+          <div className="flex min-h-0 flex-1 flex-col justify-center pb-5 sm:pb-4">
+            <p className="font-sans text-3xl font-medium leading-tight tracking-tight text-bom-white sm:text-4xl lg:text-5xl">
+              {successMessage}
+            </p>
           </div>
-          <div className="h-1 w-full bg-bom-white/15">
-            <div
-              className="h-full w-0 bg-bom-white animate-success-progress"
-              aria-hidden
-            />
+          <div className="h-1 w-full shrink-0 bg-bom-white/15" aria-hidden>
+            <div className="h-full w-0 animate-success-progress bg-bom-white" />
           </div>
         </div>
       ) : (
@@ -256,7 +255,7 @@ export default function KlaviyoEmailCapture({
           ))}
           <div
             className={cn(
-              'flex gap-1.5 sm:gap-2',
+              'isolate flex gap-1.5 sm:gap-2',
               isStacked && 'flex-col',
               isInline && 'flex-col sm:flex-row sm:items-center',
               variant === 'default' && 'flex-col sm:flex-row items-stretch sm:items-center'
@@ -310,7 +309,7 @@ export default function KlaviyoEmailCapture({
                 placeholder={nativePlaceholder}
                 disabled={isPending}
                 className={cn(
-                  'h-[65px] min-h-[65px] py-0 !px-[26px] leading-[65px] rounded-sm text-base font-medium font-sans w-full min-w-0 box-border appearance-none',
+                  'h-[65px] min-h-[65px] py-0 !px-[26px] leading-[65px] rounded-sm text-base font-medium font-sans w-full min-w-0 box-border appearance-none antialiased',
                   'bg-background border-0 shadow-none',
                   'outline-none',
                   'focus:border-transparent focus:ring-0 focus:ring-offset-0',
@@ -332,19 +331,17 @@ export default function KlaviyoEmailCapture({
               variant="bomPill"
               size="bomPill"
               className={cn(
-                'bg-bom-lime text-bom-black font-sans font-medium',
-                'w-full sm:w-auto sm:whitespace-nowrap items-stretch'
+                'bg-bom-lime text-bom-black font-sans font-medium antialiased',
+                'w-full sm:w-auto sm:whitespace-nowrap items-center justify-center'
               )}
             >
               {status === 'loading' ? (
-                <span className="inline-flex h-full -translate-y-[1px] items-center gap-2">
-                  <AiOutlineLoading3Quarters className="size-4 animate-spin" aria-hidden />
+                <span className="inline-flex items-center gap-2">
+                  <AiOutlineLoading3Quarters className="size-4 shrink-0 animate-spin" aria-hidden />
                   <span>Subscribing...</span>
                 </span>
               ) : (
-                <span className="inline-flex h-full -translate-y-[1px] items-center">
-                  {buttonText}
-                </span>
+                <span>{buttonText}</span>
               )}
             </Button>
           </div>
@@ -360,9 +357,9 @@ export default function KlaviyoEmailCapture({
               >
                 <label
                   htmlFor={marketingConsentId}
-                  className="group -mx-1 flex w-full items-center justify-center gap-2.5 px-1 py-1 cursor-pointer select-none touch-manipulation"
+                  className="group -mx-1 flex w-full cursor-pointer touch-manipulation select-none items-center justify-center gap-3.5 px-2 py-2.5 sm:gap-4 sm:py-3"
                 >
-                  <span className="-m-1 inline-flex shrink-0 items-center justify-center rounded-sm p-1">
+                  <span className="-m-1 inline-flex shrink-0 items-center justify-center rounded-md p-0.5">
                     <Checkbox
                       id={marketingConsentId}
                       name="marketingConsent"
@@ -370,13 +367,21 @@ export default function KlaviyoEmailCapture({
                       onCheckedChange={(checked) => setMarketingConsent(checked === true)}
                       disabled={isPending}
                       required={showMarketingConsentField}
-                      className="size-4"
+                      className={cn(
+                        'size-6 overflow-hidden rounded-md border-0 shadow-none',
+                        onDarkSurface
+                          ? "bg-bom-white/20 focus-visible:ring-bom-white/45"
+                          : "bg-bom-black/10 focus-visible:ring-bom-black/25",
+                        "data-[state=checked]:bg-bom-lime data-[state=checked]:text-bom-black",
+                        "focus-visible:ring-2 focus-visible:ring-offset-0 focus-visible:ring-offset-transparent",
+                        "[&_svg]:size-[1.125rem]"
+                      )}
                     />
                   </span>
                   <span
                     className={cn(
-                      'text-center font-sans text-[12px] sm:text-[13px] leading-snug',
-                      onDarkSurface ? 'text-bom-white/85' : 'text-bom-black/85'
+                      "text-center font-sans text-[13px] leading-snug sm:text-[15px]",
+                      onDarkSurface ? "text-bom-white/85" : "text-bom-black/85"
                     )}
                   >
                     I agree to receive marketing emails from BomBom.

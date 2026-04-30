@@ -3,7 +3,11 @@
 import { useEffect, useState } from "react";
 
 /** 1 May 2026, 11:00 Australian Eastern (AEST/+10 wall time — Sydney handles DST for display labels). */
-const OPENING_TARGET_MS = new Date("2026-05-01T11:00:00+10:00").getTime();
+export const OPENING_LAUNCH_TIMESTAMP_MS = new Date(
+  "2026-05-01T11:00:00+10:00"
+).getTime();
+
+const OPENING_TARGET_MS = OPENING_LAUNCH_TIMESTAMP_MS;
 
 type OpeningCountdownTickerProps = {
   className?: string;
