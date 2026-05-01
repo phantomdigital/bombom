@@ -184,7 +184,7 @@ async function main() {
   }
 
   if (dryRun) {
-    console.info('\nDry run only — no Klaviyo requests sent.');
+    console.info('\nDry run only - no Klaviyo requests sent.');
   }
 }
 

@@ -5,12 +5,12 @@ import {
 } from '../lib/site-url';
 
 /**
- * Email colors — core brand and flavour colors from app/globals.css only.
+ * Email colors - core brand and flavour colors from app/globals.css only.
  * No light/dark variants; inline styles need hex.
  */
 export const EMAIL_THEME = {
   bomWhite: '#ffffff',
-  /** Body padding + footer strip — neutral frame around the white card */
+  /** Body padding + footer strip - neutral frame around the white card */
   emailOuterBg: '#eef0f3',
   /** Rules between blocks inside the card (pairs with emailOuterBg) */
   emailDivider: '#dde1e6',
@@ -51,10 +51,10 @@ export const FONT_CSS = `@font-face {
   src: url(${FONT_BASE_URL}/fonts/SaansMedium.otf) format(opentype);
 }`;
 
-/** Shipped links (logo, CTAs) always use production — never localhost. */
+/** Shipped links (logo, CTAs) always use production - never localhost. */
 export const EMAIL_SITE_URL = SITE_URL_PRODUCTION;
 
-/** Ticker GIF — record from /ticker-preview, save to public/email/ticker.gif */
+/** Ticker GIF - record from /ticker-preview, save to public/email/ticker.gif */
 export const TICKER_GIF_URL = `${SITE_URL_PRODUCTION}/email/ticker.gif`;
 
 export const EMAIL_BLEED_URL = `${SITE_URL_PRODUCTION}/email/bleed-white.png`;
@@ -85,7 +85,7 @@ export const EMAIL_LOGO_SRC = emailPreviewStatic
  * - Preview (`npm run email:dev`): `/static/images/ticker.gif` (mirrors `public/email/ticker.gif`).
  * - Local Next + `.env.local` with `NEXT_PUBLIC_SITE_URL=http://localhost:3000`: load from Next
  *   `public/email/ticker.gif` while preview static is off.
- * - Production: `https://bombomtreats.com.au/email/ticker.gif` — must exist on the live site (deploy `public/email/`).
+ * - Production: `https://bombomtreats.com.au/email/ticker.gif` - must exist on the live site (deploy `public/email/`).
  */
 function resolveTickerGifSrc(): string {
   if (emailPreviewStatic) {

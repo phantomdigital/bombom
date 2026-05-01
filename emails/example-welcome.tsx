@@ -9,7 +9,7 @@ import {
 } from './theme';
 
 /**
- * BomBom waitlist welcome — HTML shaped for Klaviyo CODE templates.
+ * BomBom waitlist welcome - HTML shaped for Klaviyo CODE templates.
  *
  * Structure, `<head>` CSS classes, and table markup follow the exact pattern Klaviyo
  * accepts. Do not use `@react-email` `<Html>` / `<Head>` / `<Body>` / `<Tailwind>`: they add

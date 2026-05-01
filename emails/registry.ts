@@ -14,15 +14,15 @@ export type EmailTemplateEntry = {
  */
 export const emailTemplates = {
   'example-welcome': {
-    klaviyoName: 'BomBom Treats — Waitlist welcome',
+    klaviyoName: 'BomBom Treats - Waitlist welcome',
     component: ExampleWelcomeEmail,
   },
   'example-welcome-v2': {
-    klaviyoName: 'BomBom Treats — Waitlist welcome (v2)',
+    klaviyoName: 'BomBom Treats - Waitlist welcome (v2)',
     component: ExampleWelcomeEmail,
   },
   'opening-date': {
-    klaviyoName: 'BomBom Treats — Opening date (leaked chat)',
+    klaviyoName: 'BomBom Treats - Opening date (leaked chat)',
     component: OpeningDateEmail,
   },
 } satisfies Record<string, EmailTemplateEntry>;

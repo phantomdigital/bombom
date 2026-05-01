@@ -10,7 +10,7 @@ import {
 import HomeVideoPlaceholder from "@/components/home/home-video-placeholder";
 import { cn } from "@/lib/utils";
 
-/** Scroll track height — more = slower, finer control per wheel tick. */
+/** Scroll track height - more = slower, finer control per wheel tick. */
 const TRACK_HEIGHT_VH = 420;
 
 type HomeMenuScrollExperienceProps = {
@@ -83,7 +83,7 @@ export default function HomeMenuScrollExperience({
             Musk &amp; vanilla twist
           </p>
           <p className="mt-3 max-w-md font-sans text-base leading-relaxed text-bom-black/80">
-            Limited soft-serve swirl — swap this line when the real monthly
+            Limited soft-serve swirl - swap this line when the real monthly
             flavour is live.
           </p>
         </div>
@@ -133,7 +133,7 @@ export default function HomeMenuScrollExperience({
                   Musk &amp; vanilla twist
                 </p>
                 <p className="mt-4 max-w-2xl font-sans text-lg leading-relaxed text-bom-black/85 sm:text-xl sm:leading-relaxed">
-                  Limited soft-serve swirl — swap this line when the real monthly
+                  Limited soft-serve swirl - swap this line when the real monthly
                   flavour is live.
                 </p>
               </div>

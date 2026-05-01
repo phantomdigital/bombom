@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 /** Local hero placeholder (Copacabana-style wide photo). */
 const PLACEHOLDER_SRC = "/9154.jpg";
 
-/** px per unit of “how far element midline is from viewport centre” — tune for strength. */
+/** px per unit of “how far element midline is from viewport centre” - tune for strength. */
 const PARALLAX_STRENGTH = 0.45;
 
 /**

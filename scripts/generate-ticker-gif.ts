@@ -15,7 +15,7 @@ const GIFEncoder = require('gif-encoder');
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 const OUTPUT = resolve(ROOT, 'public/email/ticker.gif');
-/** Same folder as logo — React Email preview serves `emails/static` at `/static/*` */
+/** Same folder as logo - React Email preview serves `emails/static` at `/static/*` */
 const EMAIL_PREVIEW_TICKER = resolve(ROOT, 'emails/static/images/ticker.gif');
 
 const WIDTH = 600;
@@ -50,7 +50,7 @@ html,body{background:#91c4ff;width:${WIDTH}px;height:${HEIGHT}px;overflow:hidden
 </div>
 </body></html>`;
 
-/** Native decode/resize — `png-js` per frame was the main cost (minutes on long GIFs). */
+/** Native decode/resize - `png-js` per frame was the main cost (minutes on long GIFs). */
 async function screenshotToRgba(buf: Buffer): Promise<Buffer> {
   const { data, info } = await sharp(buf)
     .resize(WIDTH, HEIGHT, { fit: 'fill' })

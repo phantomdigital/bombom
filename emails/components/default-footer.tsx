@@ -10,7 +10,7 @@ const INSTAGRAM_URL = 'https://instagram.com/bombom.au';
 const TIKTOK_URL = 'https://tiktok.com/@bombom_au';
 
 /**
- * Default footer — social icons, address, unsubscribe, copyright.
+ * Default footer - social icons, address, unsubscribe, copyright.
  * Reuse across all email templates.
  */
 export default function DefaultFooter() {
