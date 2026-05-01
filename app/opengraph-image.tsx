@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "BomBom Treats — Opening Friday 1st May from 11am";
+export const alt = "BomBom Treats - Now open in Wagga";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -38,7 +38,7 @@ export default async function Image() {
             textAlign: "center",
           }}
         >
-          Opening Friday 1st May from 11am · 117 Baylis St, Wagga
+          Now open at 117 Baylis St, Wagga Wagga
         </div>
       </div>
     ),
