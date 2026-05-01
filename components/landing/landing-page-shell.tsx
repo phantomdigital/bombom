@@ -31,7 +31,7 @@ const CARD_LAYOUT_TRANSITION = {
   layout: { duration: 0.8, ease: [0.16, 1, 0.3, 1] as const },
 };
 const MARKETING_SEO_DESCRIPTION =
-  "BomBom Treats opens Friday 1st May from 11am at Shop 1, 117 Baylis St, Wagga Wagga. Join the list for launch offers and updates.";
+  "BomBom Treats is now open at Shop 1, 117 Baylis St, Wagga Wagga. Come in and say hey!";
 
 const jsonLd = {
   "@context": "https://schema.org",
