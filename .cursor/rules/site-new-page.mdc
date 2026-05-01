@@ -1,0 +1,82 @@
+---
+description: >-
+  Reference for adding a route under `(site)` with theme wipes, staggered body
+  motion, deferred navigation, and header links.
+globs: app/(site)/**/*.tsx
+alwaysApply: false
+---
+
+# Add a new page under `(site)`
+
+Use this checklist when introducing a route like `/menu`: URL, shell colour wipe, header nav, gated body reveal, optional CTA.
+
+## 1. Route files
+
+Create a segment under `app/(site)/`:
+
+- `page.tsx` - thin server component only: pass-through `main` shell + composes one client content module.
+
+```tsx
+// app/(site)/example/page.tsx
+import { ExampleContent } from "./example-content";
+
+export default function ExamplePage() {
+  return (
+    <main
+      id="main-content"
+      tabIndex={-1}
+      className="relative isolate flex min-h-0 flex-1 flex-col overflow-hidden bg-transparent"
+    >
+      <ExampleContent />
+    </main>
+  );
+}
+```
+
+- `*-content.tsx` - `"use client"`; composes the shared placeholder / content component.
+
+For placeholders, use `app/(site)/_components/site-placeholder-content.tsx`. The shell (`SiteChrome`) controls `isContentRevealed`, so page content can fade in exactly when the wipe peels away.
+
+Important: page content reveal is a **fade only**. Do not add swipe/slide (`x`/`y`) or blur unless product asks.
+
+## 2. Register the wipe/backdrop colour
+
+Edit `lib/site-route-theme.ts`: add `{ match: "/example", palette: { css: "var(--color-bom-…)", hex: "#…" } }`.
+
+Pick tokens from `@theme inline` in `app/globals.css` (`--color-bom-*`). `hex` must match the CSS token so Framer can interpolate the overlay.
+
+Order matters (first matching prefix wins). Put **specific** paths before broader ones if needed.
+
+Default palette is applied when pathname does not match any entry (`getSitePalette`).
+
+## 3. Header link (optional)
+
+`components/header/site-header.tsx`: add `<Link href="/example">…</Link>` beside existing nav entries.
+
+Deferred navigation intercepts internal **same-origin** `<a href>` clicks at the `(site)` root; no extra wiring per route.
+
+## 4. Timing (global)
+
+Tune in `lib/site-page-transition-timing.ts`:
+
+- Overlay: `coverDurationS`, `briefHoldS`, `revealSpring`, etc.
+- Pre-navigation outgoing fade delay: **`contentExitDurationS`** (`SiteChrome` `setTimeout` + motion).
+- Incoming body fade: `SiteChrome` toggles `isContentRevealed` through `SitePageTransitionProvider` at peel time.
+
+Avoid animating **`exit`** expecting it to control “leave” timing: **`app/(site)/template.tsx` remounts every navigation**. Outgoing fades are driven by **`components/site/site-chrome.tsx`** (deferred link handler + keyed `AnimatePresence`).
+
+## 5. Buttons (placeholder / CTAs)
+
+Use `Button` from `components/ui/button.tsx`: **`variant="bomPill"`** + **`size="bomPill"`** to match signup (Stay in the loop). Mirror Klaviyo’s layout classes (`w-full lg:w-auto …`, `font-sans font-medium antialiased`).
+
+Prefer **`asChild`** + `<Link>` with label wrapped in `<span>`.
+
+- Use a BOM fill that **contrasts** the page wipe colour (avoid same-as-background pills).
+- **No custom hover colours** unless product asks (`hover:bg-*` / `hover:text-*` on these CTAs is intentionally omitted).
+
+## 6. Sanity check
+
+After adding a route:
+
+- `npm run build`
+- Navigate from header/links: current view should stay frozen, destination colour should cover, route should swap behind the full cover, then the overlay should peel while content fades in.
