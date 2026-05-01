@@ -1,5 +1,5 @@
 import BomBomLogo from "@/components/bombom-logo";
-import LandingSocialLinks from "@/components/landing-social-links";
+import LandingSocialLinks from "@/components/landing/landing-social-links";
 
 export default function LandingPageHeader() {
   return (

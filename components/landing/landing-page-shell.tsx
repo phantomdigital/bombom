@@ -4,12 +4,12 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import confetti from "canvas-confetti";
 import { motion } from "framer-motion";
 import { MapPinIcon } from "@phosphor-icons/react";
-import KlaviyoEmailCapture from "@/components/klaviyo-email-capture";
-import LandingPageHeader from "@/components/landing-page-header";
-import LandingSocialLinks from "@/components/landing-social-links";
+import KlaviyoEmailCapture from "@/components/landing/klaviyo-email-capture";
+import LandingPageHeader from "@/components/landing/landing-page-header";
+import LandingSocialLinks from "@/components/landing/landing-social-links";
 import OpeningCountdownTicker, {
   OPENING_LAUNCH_TIMESTAMP_MS,
-} from "@/components/opening-countdown-ticker";
+} from "@/components/landing/opening-countdown-ticker";
 import { getPublicSiteUrl } from "@/lib/site-url";
 
 const siteUrl = getPublicSiteUrl();

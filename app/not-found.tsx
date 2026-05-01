@@ -1,4 +1,4 @@
-import LandingPageShell from "@/components/landing-page-shell";
+import LandingPageShell from "@/components/landing/landing-page-shell";
 
 export default function NotFound() {
   return (
