@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   title: {
-    default: "BomBom Treats | Gelato & Desserts in Wagga Wagga",
+    default: "BomBom Treats | Now Open in Wagga",
     template: "%s | BomBom Treats",
   },
   description,
@@ -43,12 +43,12 @@ export const metadata: Metadata = {
     locale: "en_AU",
     url: siteUrl,
     siteName: "BomBom Treats",
-    title: "BomBom Treats | Gelato & Desserts in Wagga Wagga",
+    title: "BomBom Treats | Now Open in Wagga",
     description,
   },
   twitter: {
     card: "summary_large_image",
-    title: "BomBom Treats | Gelato & Desserts in Wagga Wagga",
+    title: "BomBom Treats | Now Open in Wagga",
     description,
   },
   robots: {

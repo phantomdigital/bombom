@@ -31,7 +31,7 @@ const CARD_LAYOUT_TRANSITION = {
   layout: { duration: 0.8, ease: [0.16, 1, 0.3, 1] as const },
 };
 const MARKETING_SEO_DESCRIPTION =
-  "BomBom Treats is now open at Shop 1, 117 Baylis St, Wagga Wagga. Visit for gelato, soft serve, cakes, coffee, and sweet treats.";
+  "BomBom Treats is now open at Shop 1, 117 Baylis St, Wagga Wagga.";
 
 const jsonLd = {
   "@context": "https://schema.org",
