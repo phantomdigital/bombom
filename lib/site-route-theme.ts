@@ -42,6 +42,20 @@ export const SITE_ROUTE_THEME: SiteRouteThemeEntry[] = [
     },
   },
   {
+    match: "/specials",
+    palette: {
+      css: "var(--color-bom-orange)",
+      hex: "#ff7040",
+    },
+  },
+  {
+    match: "/story",
+    palette: {
+      css: "var(--color-bom-violet)",
+      hex: "#6968de",
+    },
+  },
+  {
     match: "/about",
     palette: {
       css: "var(--color-bom-violet)",
