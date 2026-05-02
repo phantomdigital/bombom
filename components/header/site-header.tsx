@@ -13,6 +13,7 @@ import BomBomLogo from "@/components/bombom-logo";
 import NavPopoverLink, {
   type NavPopoverConfig,
 } from "@/components/header/nav-popover-link";
+import { useHeaderPopoverManager } from "@/components/header/hooks/useHeaderPopoverManager";
 import AccountIcon from "@/components/icons/account-icon";
 import { Button } from "@/components/ui/button";
 import { focusRing } from "@/components/ui/focus-ring";
@@ -128,7 +129,7 @@ const NAV_ITEMS: NavItem[] = [
 
 const navLinkClass =
   cn(
-    "font-sans text-xl font-medium leading-none tracking-normal antialiased text-bom-black/80 transition-colors hover:text-bom-black hover:bg-neutral-200 p-6 rounded-md",
+    "font-sans text-xl font-medium leading-none tracking-normal antialiased text-bom-black/80 transition-colors hover:bg-neutral-200 hover:text-bom-black focus-visible:bg-neutral-200 p-6 rounded-md",
     focusRing
   );
 
@@ -138,7 +139,7 @@ const orderNowButtonClass =
 
 const mobileLinkClass =
   cn(
-    "flex w-full items-center justify-between rounded-2xl px-4 py-3 font-sans text-base font-medium leading-none tracking-normal antialiased text-bom-black/85 transition-colors hover:bg-bom-black/[0.04] hover:text-bom-black",
+    "flex w-full items-center justify-between rounded-2xl px-4 py-3 font-sans text-base font-medium leading-none tracking-normal antialiased text-bom-black/85 transition-colors hover:bg-neutral-200 hover:text-bom-black focus-visible:bg-neutral-200",
     focusRing
   );
 
@@ -152,6 +153,7 @@ const accountIconButtonClass =
 const HEADER_HIDE_AFTER_Y = 96;
 const HEADER_SCROLL_DELTA = 8;
 const HEADER_HIDE_SCROLL_DISTANCE = 100;
+const POPOVER_CLOSE_SCROLL_DELTA = 40;
 
 type SiteHeaderProps = {
   interactionDisabled?: boolean;
@@ -161,11 +163,9 @@ export default function SiteHeader({
   interactionDisabled = false,
 }: SiteHeaderProps) {
   const pathname = usePathname();
+  const popoverManager = useHeaderPopoverManager();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [expandedMobileHref, setExpandedMobileHref] = useState<string | null>(
-    null
-  );
-  const [activePopoverHref, setActivePopoverHref] = useState<string | null>(
     null
   );
   const [isHeaderHidden, setIsHeaderHidden] = useState(false);
@@ -176,14 +176,16 @@ export default function SiteHeader({
   useEffect(() => {
     setIsMobileOpen(false);
     setExpandedMobileHref(null);
-    setActivePopoverHref(null);
+    popoverManager.close();
     setIsHeaderHidden(false);
     downwardScrollDistanceRef.current = 0;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- close is stable; we only want to reset on pathname change
   }, [pathname]);
 
   useEffect(() => {
     if (!interactionDisabled) return;
-    setActivePopoverHref(null);
+    popoverManager.close();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- close is stable; only react to interactionDisabled
   }, [interactionDisabled]);
 
   useEffect(() => {
@@ -197,8 +199,8 @@ export default function SiteHeader({
         const currentScrollY = window.scrollY;
         const delta = currentScrollY - lastScrollYRef.current;
 
-        if (Math.abs(delta) > HEADER_SCROLL_DELTA) {
-          setActivePopoverHref(null);
+        if (Math.abs(delta) > POPOVER_CLOSE_SCROLL_DELTA) {
+          popoverManager.close();
         }
 
         if (isMobileOpen || currentScrollY <= HEADER_HIDE_AFTER_Y) {
@@ -224,6 +226,7 @@ export default function SiteHeader({
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- close is stable; avoid re-subscribing on every state change
   }, [isMobileOpen]);
 
   function closeMobileNav() {
@@ -274,14 +277,8 @@ export default function SiteHeader({
                   label={item.label}
                   popover={item.popover}
                   className={navLinkClass}
+                  manager={popoverManager}
                   interactionDisabled={interactionDisabled}
-                  open={activePopoverHref === item.href}
-                  onOpenChange={(open) => {
-                    setActivePopoverHref((currentHref) => {
-                      if (open) return item.href;
-                      return currentHref === item.href ? null : currentHref;
-                    });
-                  }}
                 />
               ))}
             </nav>
@@ -371,7 +368,7 @@ export default function SiteHeader({
                                       href={group.href}
                                       onClick={closeMobileNav}
                                       className={cn(
-                                        "rounded-xl px-4 py-3 font-sans text-sm font-medium leading-none text-bom-black/75 transition-colors hover:bg-bom-white hover:text-bom-black focus-visible:bg-bom-white",
+                                        "rounded-xl px-4 py-3 font-sans text-sm font-medium leading-none text-bom-black/75 transition-colors hover:bg-neutral-200 hover:text-bom-black focus-visible:bg-neutral-200",
                                         focusRing
                                       )}
                                     >
@@ -384,7 +381,7 @@ export default function SiteHeader({
                                       href={popoverItem.href}
                                       onClick={closeMobileNav}
                                       className={cn(
-                                        "rounded-xl px-4 py-3 font-sans text-sm font-medium leading-none text-bom-black/75 transition-colors hover:bg-bom-white hover:text-bom-black focus-visible:bg-bom-white",
+                                        "rounded-xl px-4 py-3 font-sans text-sm font-medium leading-none text-bom-black/75 transition-colors hover:bg-neutral-200 hover:text-bom-black focus-visible:bg-neutral-200",
                                         focusRing
                                       )}
                                     >

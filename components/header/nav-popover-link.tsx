@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  useState,
-  type ComponentType,
-  type MouseEvent,
-  type PointerEvent,
-} from "react";
+import { useState, type ComponentType, type MouseEvent, type PointerEvent } from "react";
 import Link from "next/link";
 import { CaretRightIcon } from "@phosphor-icons/react";
 
@@ -16,7 +11,7 @@ import {
 } from "@/components/ui/popover";
 import { focusRing, focusRingInset } from "@/components/ui/focus-ring";
 import { cn } from "@/lib/utils";
-import { useNavPopoverState } from "./hooks/useNavPopoverState";
+import type { HeaderPopoverManager } from "./hooks/useHeaderPopoverManager";
 
 export type NavPopoverItem = {
   href: string;
@@ -61,20 +56,20 @@ type NavPopoverLinkProps = {
   label: string;
   className?: string;
   popover?: NavPopoverConfig;
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
+  manager: HeaderPopoverManager;
   interactionDisabled?: boolean;
 };
-
-const CLOSE_DELAY_MS = 180;
-const SUPPRESS_OPEN_MS = 700;
 
 /** Default BOM hero fill when group omits `heroTintClassName`. */
 const DEFAULT_MEGA_TINT_CLASS = "bg-bom-dark-blue";
 
+/** Space between nav trigger and panel; `sideOffset` is applied by Radix (safe vs custom transform hacks). */
+const POPOVER_SIDE_OFFSET_COMPACT = 24;
+const POPOVER_SIDE_OFFSET_MEGA = 32;
+
 const popoverItemClass =
   cn(
-    "group rounded-xl px-7 py-5 transition-colors hover:bg-neutral-100 focus-visible:bg-neutral-100",
+    "group rounded-xl px-7 py-5 transition-colors hover:bg-neutral-200 focus-visible:bg-neutral-200",
     focusRing
   );
 
@@ -83,8 +78,7 @@ export default function NavPopoverLink({
   label,
   className,
   popover,
-  open: controlledOpen,
-  onOpenChange,
+  manager,
   interactionDisabled = false,
 }: NavPopoverLinkProps) {
   const [activeMegaIndex, setActiveMegaIndex] = useState(0);
@@ -94,28 +88,24 @@ export default function NavPopoverLink({
       ? popover.groups.length > 0
       : popover.items.length > 0
     : false;
-  const {
-    open,
-    setOpen,
-    openPopover,
-    closePopover,
-    closePopoverAfterPointerLeave,
-    closePopoverForNavigation,
-    togglePopover,
-  } = useNavPopoverState({
-    hasPopover: hasPopover && !interactionDisabled,
-    open: controlledOpen,
-    onOpenChange,
-    closeDelayMs: CLOSE_DELAY_MS,
-    suppressOpenMs: SUPPRESS_OPEN_MS,
-  });
+  const open =
+    hasPopover && !interactionDisabled && manager.activeHref === href;
   const activeMegaGroup =
     popover?.variant === "mega" ? popover.groups[activeMegaIndex] : null;
 
+  function handleWrapperPointerEnter() {
+    if (!hasPopover || interactionDisabled) return;
+    manager.open(href);
+  }
+
+  function handleWrapperPointerLeave() {
+    manager.scheduleClose();
+  }
+
   function handleTriggerClick(event: MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
-    if (interactionDisabled) return;
-    togglePopover();
+    if (!hasPopover || interactionDisabled) return;
+    manager.toggle(href);
   }
 
   function handleTriggerPointerDown(event: PointerEvent<HTMLButtonElement>) {
@@ -129,7 +119,11 @@ export default function NavPopoverLink({
     if (!(target instanceof Element)) return;
     if (interactionDisabled) return;
     if (!target.closest("a[href]")) return;
-    closePopoverForNavigation();
+    manager.close();
+  }
+
+  function handleEscape(event: { key: string }) {
+    if (event.key === "Escape") manager.close();
   }
 
   if (!hasPopover || !popover) {
@@ -146,14 +140,22 @@ export default function NavPopoverLink({
       : DEFAULT_MEGA_TINT_CLASS;
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover
+      open={open}
+      modal={false}
+      onOpenChange={(nextOpen) => {
+        if (nextOpen) {
+          if (!interactionDisabled) manager.open(href);
+        } else {
+          manager.close();
+        }
+      }}
+    >
       <span
         className="inline-flex"
-        onPointerEnter={openPopover}
-        onPointerLeave={closePopoverAfterPointerLeave}
-        onKeyDown={(event) => {
-          if (event.key === "Escape") closePopover();
-        }}
+        onPointerEnter={handleWrapperPointerEnter}
+        onPointerLeave={handleWrapperPointerLeave}
+        onKeyDown={handleEscape}
       >
         <PopoverTrigger asChild>
           <button
@@ -174,10 +176,14 @@ export default function NavPopoverLink({
         <PopoverContent
           side="bottom"
           align={popover.variant === "mega" ? "center" : "start"}
-          sideOffset={40}
+          sideOffset={
+            popover.variant === "mega"
+              ? POPOVER_SIDE_OFFSET_MEGA
+              : POPOVER_SIDE_OFFSET_COMPACT
+          }
           onOpenAutoFocus={(event) => event.preventDefault()}
-          onPointerEnter={openPopover}
-          onPointerLeave={closePopoverAfterPointerLeave}
+          onPointerEnter={() => manager.cancelClose()}
+          onPointerLeave={() => manager.scheduleClose()}
           onClickCapture={handleContentClick}
           className={cn(
             popover.variant === "mega"
@@ -199,7 +205,7 @@ export default function NavPopoverLink({
                       className={cn(
                         popoverItemClass,
                         "flex items-center justify-between gap-4",
-                        activeMegaIndex === index && "bg-neutral-100"
+                        activeMegaIndex === index && "bg-neutral-200"
                       )}
                     >
                       <span className="flex min-w-0 items-center gap-3">
@@ -244,7 +250,7 @@ export default function NavPopoverLink({
                             key={item.href}
                             href={item.href}
                             className={cn(
-                              "rounded-xl px-4 py-3 font-sans text-sm font-medium leading-none text-bom-black/80 transition-colors hover:bg-bom-white hover:text-bom-black focus-visible:bg-bom-white",
+                              "rounded-xl px-4 py-3 font-sans text-sm font-medium leading-none text-bom-black/80 transition-colors hover:bg-neutral-200 hover:text-bom-black focus-visible:bg-neutral-200",
                               focusRing
                             )}
                           >
@@ -262,7 +268,7 @@ export default function NavPopoverLink({
                     <Link
                       href="/menu"
                       className={cn(
-                        "mt-auto inline-flex w-fit rounded-xl px-4 py-3 font-sans text-sm font-medium leading-none text-bom-black/70 transition-colors hover:bg-bom-white hover:text-bom-black focus-visible:bg-bom-white",
+                        "mt-auto inline-flex w-fit rounded-xl px-4 py-3 font-sans text-sm font-medium leading-none text-bom-black/70 transition-colors hover:bg-neutral-200 hover:text-bom-black focus-visible:bg-neutral-200",
                         focusRing
                       )}
                     >
@@ -299,7 +305,7 @@ export default function NavPopoverLink({
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "rounded-xl px-6 py-5 font-sans text-base font-medium leading-none whitespace-nowrap text-bom-black/80 transition-colors hover:bg-neutral-100 hover:text-bom-black focus-visible:bg-neutral-100",
+                    "rounded-xl px-6 py-5 font-sans text-base font-medium leading-none whitespace-nowrap text-bom-black/80 transition-colors hover:bg-neutral-200 hover:text-bom-black focus-visible:bg-neutral-200",
                     focusRing
                   )}
                 >
