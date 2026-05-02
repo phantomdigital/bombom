@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -16,9 +16,14 @@ import NavPopoverLink, {
 } from "@/components/header/nav-popover-link";
 import { useHeaderPopoverManager } from "@/components/header/hooks/useHeaderPopoverManager";
 import AccountIcon from "@/components/icons/account-icon";
+import { useSiteHeaderOrderNowChromeSetter } from "@/components/site/site-header-order-now-chrome-context";
 import { Button } from "@/components/ui/button";
 import { focusRing } from "@/components/ui/focus-ring";
 import { productCategories } from "@/lib/categories";
+import {
+  contrastingForegroundForOrderNowFill,
+  getSeamAwareLogoColor,
+} from "@/lib/seam-aware-logo-color";
 import { cn } from "@/lib/utils";
 
 type NavItem = {
@@ -135,8 +140,10 @@ const navLinkClass =
   );
 
 /** Matches `/home` View menu sizing (`bomPill` defaults); header uses `w-auto` not hero `w-full`. */
-const orderNowButtonClass =
-  "bg-bom-black text-bom-white shrink-0 font-sans font-medium antialiased w-auto lg:whitespace-nowrap items-center justify-center";
+const orderNowButtonBaseClass =
+  "shrink-0 font-sans font-medium antialiased w-auto lg:whitespace-nowrap items-center justify-center";
+
+const orderNowButtonDefaultColorsClass = "bg-bom-black text-bom-white";
 
 const mobileLinkClass =
   cn(
@@ -181,8 +188,17 @@ export default function SiteHeader({
   const downwardScrollDistanceRef = useRef(0);
   const isTickingRef = useRef(false);
   const outsidePillRef = useRef<HTMLDivElement | null>(null);
+  const headerRootRef = useRef<HTMLElement | null>(null);
+  const logoLinkRef = useRef<HTMLAnchorElement | null>(null);
+  const orderNowLinkRef = useRef<HTMLAnchorElement | null>(null);
+  const logoColorRef = useRef("rgb(255, 255, 255)");
+  const orderNowFillRef = useRef("rgb(255, 255, 255)");
   const [outsidePillHeight, setOutsidePillHeight] = useState<number | null>(
     null
+  );
+  const [outsideLogoColor, setOutsideLogoColor] = useState("rgb(255, 255, 255)");
+  const [outsideOrderNowFill, setOutsideOrderNowFill] = useState(
+    "rgb(255, 255, 255)"
   );
 
   useEffect(() => {
@@ -260,6 +276,82 @@ export default function SiteHeader({
     return () => observer.disconnect();
   }, [logoPlacement]);
 
+  const setOrderNowChrome = useSiteHeaderOrderNowChromeSetter();
+
+  useLayoutEffect(() => {
+    if (logoPlacement !== "outside-pill") {
+      logoColorRef.current = "rgb(255, 255, 255)";
+      orderNowFillRef.current = "rgb(255, 255, 255)";
+      setOutsideLogoColor("rgb(255, 255, 255)");
+      setOutsideOrderNowFill("rgb(255, 255, 255)");
+      setOrderNowChrome?.(null);
+      return;
+    }
+
+    let transitionLoopRafId: number | null = null;
+    let hasPublishedInitial = false;
+
+    const updateOutsideChrome = () => {
+      const headerElement = headerRootRef.current;
+      if (!headerElement) return;
+
+      const logoElement = logoLinkRef.current;
+      if (logoElement) {
+        const nextLogo = getSeamAwareLogoColor(logoElement, [headerElement], "logo");
+        if (nextLogo !== logoColorRef.current) {
+          logoColorRef.current = nextLogo;
+          setOutsideLogoColor(nextLogo);
+        }
+      }
+
+      const orderNowElement = orderNowLinkRef.current;
+      if (orderNowElement) {
+        const nextOrder = getSeamAwareLogoColor(
+          orderNowElement,
+          [headerElement],
+          "orderNow"
+        );
+        const shouldPublish = !hasPublishedInitial || nextOrder !== orderNowFillRef.current;
+        if (shouldPublish) {
+          hasPublishedInitial = true;
+          orderNowFillRef.current = nextOrder;
+          setOutsideOrderNowFill(nextOrder);
+          setOrderNowChrome?.({
+            fill: nextOrder,
+            foreground: contrastingForegroundForOrderNowFill(nextOrder),
+          });
+        }
+      }
+    };
+
+    updateOutsideChrome();
+    window.addEventListener("scroll", updateOutsideChrome, { passive: true });
+    window.addEventListener("resize", updateOutsideChrome);
+
+    if (interactionDisabled) {
+      const tickDuringTransition = () => {
+        updateOutsideChrome();
+        transitionLoopRafId = window.requestAnimationFrame(tickDuringTransition);
+      };
+      transitionLoopRafId = window.requestAnimationFrame(tickDuringTransition);
+    }
+
+    return () => {
+      if (transitionLoopRafId !== null) {
+        window.cancelAnimationFrame(transitionLoopRafId);
+      }
+      window.removeEventListener("scroll", updateOutsideChrome);
+      window.removeEventListener("resize", updateOutsideChrome);
+    };
+  }, [logoPlacement, interactionDisabled, setOrderNowChrome]);
+
+  useEffect(() => {
+    return () => {
+      setOrderNowChrome?.(null);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- unmount-only cleanup
+  }, []);
+
   function closeMobileNav() {
     setIsMobileOpen(false);
     setExpandedMobileHref(null);
@@ -267,6 +359,7 @@ export default function SiteHeader({
 
   const logoLink = (
     <Link
+      ref={logoLinkRef}
       href="/home"
       className={cn(
         "flex min-w-0 items-center rounded-full translate-x-1 sm:translate-x-1.5",
@@ -279,6 +372,7 @@ export default function SiteHeader({
     >
       <BomBomLogo
         variant={logoPlacement === "outside-pill" ? "light" : "dark"}
+        color={logoPlacement === "outside-pill" ? outsideLogoColor : undefined}
         className={
           logoPlacement === "outside-pill"
             ? "block w-auto object-contain object-left"
@@ -339,9 +433,28 @@ export default function SiteHeader({
           variant="bomPill"
           size="bomPill"
           asChild
-          className={orderNowButtonClass}
+          className={cn(
+            orderNowButtonBaseClass,
+            logoPlacement === "outside-pill"
+              ? "border-0 shadow-none transition-[filter] hover:brightness-[0.92] motion-reduce:hover:brightness-100"
+              : orderNowButtonDefaultColorsClass
+          )}
         >
-          <Link href="/menu">
+          <Link
+            ref={orderNowLinkRef}
+            href="/menu"
+            style={
+              logoPlacement === "outside-pill"
+                ? {
+                    transitionProperty: "filter",
+                    transitionDuration: "200ms",
+                    transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
+                    background: outsideOrderNowFill,
+                    color: contrastingForegroundForOrderNowFill(outsideOrderNowFill),
+                  }
+                : undefined
+            }
+          >
             <span>Order now</span>
           </Link>
         </Button>
@@ -368,6 +481,8 @@ export default function SiteHeader({
 
   return (
     <header
+      ref={headerRootRef}
+      data-site-header-root
       className={cn(
         "fixed inset-x-0 top-0 z-[70] p-16 transition-transform duration-500 ease-out will-change-transform motion-reduce:transition-none sm:p-20 lg:p-12",
         isHeaderHidden ? "-translate-y-[calc(100%+2rem)]" : "translate-y-0",

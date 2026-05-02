@@ -293,6 +293,13 @@
     -webkit-mask-size: contain;
     mask-size: contain;
     mask-mode: alpha;
+    -webkit-mask-origin: border-box;
+    mask-origin: border-box;
+    -webkit-mask-clip: border-box;
+    mask-clip: border-box;
+    isolation: isolate;
+    transform: translateZ(0);
+    backface-visibility: hidden;
   }
 
   /* Full-bleed tiling grid for /home (repeats with content height). */
