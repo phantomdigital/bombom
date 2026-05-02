@@ -93,6 +93,7 @@ const SitePageTransitionOverlay = forwardRef<SitePageTransitionOverlayHandle>(
     return (
       <motion.div
         aria-hidden
+        data-site-page-transition-overlay=""
         initial={{
           clipPath: CLIP_FULLY_HIDDEN_FROM_TOP,
           skewY: 0,
