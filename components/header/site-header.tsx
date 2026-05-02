@@ -1,8 +1,15 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   CakeIcon,
   CoffeeIcon,
@@ -21,15 +28,22 @@ import { Button } from "@/components/ui/button";
 import { focusRing } from "@/components/ui/focus-ring";
 import { productCategories } from "@/lib/categories";
 import {
-  contrastingForegroundForOrderNowFill,
+  getDefaultSeamChromeForPaletteHex,
   getSeamAwareLogoColor,
 } from "@/lib/seam-aware-logo-color";
+import { getSitePalette } from "@/lib/site-route-theme";
 import { cn } from "@/lib/utils";
+
+/** Chrome / pills / gutters use ~90% spacing; desktop nav stays `text-xl`; account shell, Order bomPill & icon glyphs stay baseline size */
 
 type NavItem = {
   href: string;
   label: string;
   popover?: NavPopoverConfig;
+};
+
+type HeaderPillHandoffDelta = {
+  x: number;
 };
 
 const NAV_ITEMS: NavItem[] = [
@@ -135,19 +149,44 @@ const NAV_ITEMS: NavItem[] = [
 
 const navLinkClass =
   cn(
-    "font-sans text-xl font-medium leading-none tracking-normal antialiased text-bom-black/80 transition-colors hover:bg-neutral-200 hover:text-bom-black focus-visible:bg-neutral-200 p-6 rounded-md",
+    "font-sans text-xl font-medium leading-none tracking-normal antialiased text-bom-black/80 transition-colors hover:bg-neutral-200 hover:text-bom-black focus-visible:bg-neutral-200 p-[1.35rem] rounded-md",
     focusRing
   );
 
 /** Matches `/home` View menu sizing (`bomPill` defaults); header uses `w-auto` not hero `w-full`. */
 const orderNowButtonBaseClass =
-  "shrink-0 font-sans font-medium antialiased w-auto lg:whitespace-nowrap items-center justify-center";
+  "shrink-0 font-sans font-medium antialiased w-auto lg:whitespace-nowrap items-center justify-center !h-[65px] !min-h-[65px] !px-[58px] !text-base";
 
-const orderNowButtonDefaultColorsClass = "bg-bom-black text-bom-white";
+const orderNowButtonDefaultColorsClass = "bg-bom-ink text-bom-white";
+
+/** Canonical soft-black ink token (`globals.css`: `--bom-ink`). */
+const BOM_INK_CSS_VAR = "var(--bom-ink)";
+
+/** Fill + label for synced CTAs; `fill` mirrors Order pill (`--bom-order-now-fill` aliases `--bom-ink`). */
+const HEADER_ORDER_NOW_CHROME = {
+  fill: BOM_INK_CSS_VAR,
+  foreground: "var(--color-bom-white)",
+} as const;
+
+/** Map palette/seam-returned pure blacks to `:root --bom-ink`. */
+function isPureBlackInk(cssColor: string): boolean {
+  const t = cssColor.trim().toLowerCase();
+  return (
+    t === "#000" ||
+    t === "#000000" ||
+    /^rgb\(\s*0\s*,\s*0\s*,\s*0\s*\)$/.test(t) ||
+    /^rgba\(\s*0\s*,\s*0\s*,\s*0\s*,\s*1(?:\.0*)?\s*\)$/.test(t)
+  );
+}
+
+/** Replace `#000` / `rgb(0,0,0)` with semantic brand ink everywhere the header writes logo colour. */
+function coerceBrandInk(cssColor: string): string {
+  return isPureBlackInk(cssColor) ? BOM_INK_CSS_VAR : cssColor;
+}
 
 const mobileLinkClass =
   cn(
-    "flex w-full items-center justify-between rounded-2xl px-4 py-3 font-sans text-base font-medium leading-none tracking-normal antialiased text-bom-black/85 transition-colors hover:bg-neutral-200 hover:text-bom-black focus-visible:bg-neutral-200",
+    "flex w-full items-center justify-between rounded-2xl px-[0.9rem] py-[0.675rem] font-sans text-base font-medium leading-none tracking-normal antialiased text-bom-black/85 transition-colors hover:bg-neutral-200 hover:text-bom-black focus-visible:bg-neutral-200",
     focusRing
   );
 
@@ -158,11 +197,68 @@ const accountIconButtonClass =
     focusRing
   );
 
-const HEADER_HIDE_AFTER_Y = 96;
-const HEADER_SCROLL_DELTA = 8;
-const HEADER_HIDE_SCROLL_DISTANCE = 100;
+const COMPACT_HEADER_AFTER_VIEWPORT_RATIO = 0.72;
+const COMPACT_HEADER_MIN_SCROLL_Y = 320;
 /** Lenis / sub-pixel scroll can spike; keep high to avoid closing while hovering the header. */
 const POPOVER_CLOSE_SCROLL_DELTA = 72;
+
+/** Dual header swap targets Tailwind `lg` (see site layout); translate-only, no fade. */
+const LG_MEDIA_QUERY = "(min-width: 1024px)";
+const HEADER_MODE_SLIDE_PX = 148;
+const COMPACT_HEADER_OFFSCREEN_Y = -260;
+const HEADER_MODE_SLIDE_TRANSITION = {
+  duration: 0.5,
+  ease: [0.4, 0, 0.2, 1] as const,
+};
+const HEADER_HANDOFF_COMPACT_HIDE_DELAY_MS = 560;
+const HEADER_HANDOFF_HERO_REVEAL_DELAY_MS = 500;
+
+/** Subtle swell + tiny twist during route wipes (readable but never loud). */
+const LOGO_TRANSIT_PULSE_ANIMATE = {
+  scale: [1, 1.034, 0.997, 1],
+  rotate: [0, -1.65, 0.65, 0],
+};
+const LOGO_SECOND_WORD_PULSE_ANIMATE = {
+  scale: [1, 1, 1.034, 0.997, 1],
+  rotate: [0, 0, -1.65, 0.65, 0],
+};
+const LOGO_TRANSIT_IDLE = { scale: 1, rotate: 0 };
+const LOGO_FIRST_WORD_LAYOUT_PULSE_ANIMATE = {
+  ...LOGO_TRANSIT_PULSE_ANIMATE,
+  marginRight: [0, 10, 0, 0],
+};
+const LOGO_FIRST_WORD_LAYOUT_IDLE = {
+  ...LOGO_TRANSIT_IDLE,
+  marginRight: 0,
+};
+const LOGO_WORD_STAGGER_S = 0.23;
+const LOGO_TRANSIT_PULSE_TWEEN = {
+  duration: 1.24,
+  times: [0, 0.4, 0.73, 1],
+  ease: [
+    [0.33, 1, 0.38, 1],
+    [0.45, 0, 0.55, 1],
+    [0.4, 1, 0.58, 1],
+  ] as [[number, number, number, number], [number, number, number, number], [number, number, number, number]],
+};
+const LOGO_SECOND_WORD_PULSE_TWEEN = {
+  ...LOGO_TRANSIT_PULSE_TWEEN,
+  times: [0, LOGO_WORD_STAGGER_S / LOGO_TRANSIT_PULSE_TWEEN.duration, 0.4, 0.73, 1],
+  ease: [
+    "linear",
+    [0.33, 1, 0.38, 1],
+    [0.45, 0, 0.55, 1],
+    [0.4, 1, 0.58, 1],
+  ] as ["linear", [number, number, number, number], [number, number, number, number], [number, number, number, number]],
+};
+/**
+ * Unlock → rest: eased tween only (never overshoots past scale 1 / 0°). Curve is
+ * a bit brisk at first, longer soft landing vs the swipe-in pulse opener.
+ */
+const LOGO_REST_SETTLE = {
+  duration: 1.06,
+  ease: [0.14, 0.68, 0.045, 1] as [number, number, number, number],
+};
 
 export type SiteHeaderProps = {
   interactionDisabled?: boolean;
@@ -178,35 +274,51 @@ export default function SiteHeader({
   logoPlacement = "in-pill",
 }: SiteHeaderProps) {
   const pathname = usePathname();
+  const reduceMotion = useReducedMotion();
+  /** Hero vs compact chrome swap reads `lg` breakpoint so mobile never inherits desktop motion. */
+  const [viewportLg, setViewportLg] = useState(false);
+  useLayoutEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia(LG_MEDIA_QUERY);
+    const syncViewport = () => {
+      setViewportLg(mq.matches);
+    };
+    syncViewport();
+    mq.addEventListener("change", syncViewport);
+    return () => mq.removeEventListener("change", syncViewport);
+  }, []);
+
   const popoverManager = useHeaderPopoverManager();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [expandedMobileHref, setExpandedMobileHref] = useState<string | null>(
     null
   );
-  const [isHeaderHidden, setIsHeaderHidden] = useState(false);
+  const [isCompactHeaderActive, setIsCompactHeaderActive] = useState(false);
   const lastScrollYRef = useRef(0);
-  const downwardScrollDistanceRef = useRef(0);
   const isTickingRef = useRef(false);
-  const outsidePillRef = useRef<HTMLDivElement | null>(null);
   const headerRootRef = useRef<HTMLElement | null>(null);
+  const heroPillRef = useRef<HTMLDivElement | null>(null);
+  const compactPillRef = useRef<HTMLDivElement | null>(null);
   const logoLinkRef = useRef<HTMLAnchorElement | null>(null);
-  const orderNowLinkRef = useRef<HTMLAnchorElement | null>(null);
-  const logoColorRef = useRef("rgb(255, 255, 255)");
-  const orderNowFillRef = useRef("rgb(255, 255, 255)");
-  const [outsidePillHeight, setOutsidePillHeight] = useState<number | null>(
-    null
-  );
-  const [outsideLogoColor, setOutsideLogoColor] = useState("rgb(255, 255, 255)");
-  const [outsideOrderNowFill, setOutsideOrderNowFill] = useState(
-    "rgb(255, 255, 255)"
-  );
+  const wasInteractionDisabledRef = useRef(interactionDisabled);
+  const [compactPillHandoffDelta, setCompactPillHandoffDelta] =
+    useState<HeaderPillHandoffDelta | null>(null);
+  const [isCompactPillHandoffSuppressed, setIsCompactPillHandoffSuppressed] =
+    useState(false);
+  const [isHeroPillHandoffSuppressed, setIsHeroPillHandoffSuppressed] =
+    useState(false);
+  const paletteHex = getSitePalette(pathname).hex;
+  const routeLogoChrome = getDefaultSeamChromeForPaletteHex(paletteHex, "logo");
+  const outsidePillLogoInk = coerceBrandInk(routeLogoChrome.color);
+
+  const logoColorRef = useRef(outsidePillLogoInk);
 
   useEffect(() => {
     setIsMobileOpen(false);
     setExpandedMobileHref(null);
     popoverManager.close();
-    setIsHeaderHidden(false);
-    downwardScrollDistanceRef.current = 0;
+    setIsCompactHeaderActive(false);
+    setCompactPillHandoffDelta(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- close is stable; we only want to reset on pathname change
   }, [pathname]);
 
@@ -216,10 +328,63 @@ export default function SiteHeader({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- close is stable; only react to interactionDisabled
   }, [interactionDisabled]);
 
+  useLayoutEffect(() => {
+    const wasInteractionDisabled = wasInteractionDisabledRef.current;
+    wasInteractionDisabledRef.current = interactionDisabled;
+
+    if (!interactionDisabled) {
+      setCompactPillHandoffDelta(null);
+      setIsCompactPillHandoffSuppressed(false);
+      setIsHeroPillHandoffSuppressed(false);
+      return;
+    }
+
+    if (
+      wasInteractionDisabled ||
+      !viewportLg ||
+      !isCompactHeaderActive ||
+      !heroPillRef.current ||
+      !compactPillRef.current
+    ) {
+      return;
+    }
+
+    const heroRect = heroPillRef.current.getBoundingClientRect();
+    const compactRect = compactPillRef.current.getBoundingClientRect();
+
+    setIsCompactPillHandoffSuppressed(false);
+    setIsHeroPillHandoffSuppressed(true);
+    setCompactPillHandoffDelta({
+      x: heroRect.left - compactRect.left,
+    });
+  }, [interactionDisabled, isCompactHeaderActive, viewportLg]);
+
+  useEffect(() => {
+    if (!compactPillHandoffDelta) return;
+
+    const timeoutId = window.setTimeout(
+      () => setIsCompactPillHandoffSuppressed(true),
+      reduceMotion ? 0 : HEADER_HANDOFF_COMPACT_HIDE_DELAY_MS
+    );
+
+    return () => window.clearTimeout(timeoutId);
+  }, [compactPillHandoffDelta, reduceMotion]);
+
+  useEffect(() => {
+    if (!compactPillHandoffDelta) return;
+
+    const timeoutId = window.setTimeout(
+      () => setIsHeroPillHandoffSuppressed(false),
+      reduceMotion ? 0 : HEADER_HANDOFF_HERO_REVEAL_DELAY_MS
+    );
+
+    return () => window.clearTimeout(timeoutId);
+  }, [compactPillHandoffDelta, reduceMotion]);
+
   useEffect(() => {
     lastScrollYRef.current = window.scrollY;
 
-    function handleScroll() {
+    function requestScrollUpdate() {
       if (isTickingRef.current) return;
       isTickingRef.current = true;
 
@@ -231,119 +396,110 @@ export default function SiteHeader({
           popoverManager.close();
         }
 
-        if (isMobileOpen || currentScrollY <= HEADER_HIDE_AFTER_Y) {
-          downwardScrollDistanceRef.current = 0;
-          setIsHeaderHidden(false);
-        } else if (delta > HEADER_SCROLL_DELTA) {
-          downwardScrollDistanceRef.current += delta;
-          if (downwardScrollDistanceRef.current >= HEADER_HIDE_SCROLL_DISTANCE) {
-            setIsHeaderHidden(true);
-          }
-        } else if (delta < -HEADER_SCROLL_DELTA) {
-          downwardScrollDistanceRef.current = 0;
-          setIsHeaderHidden(false);
-        }
+        const compactThreshold = Math.max(
+          COMPACT_HEADER_MIN_SCROLL_Y,
+          window.innerHeight * COMPACT_HEADER_AFTER_VIEWPORT_RATIO
+        );
+        setIsCompactHeaderActive(
+          !isMobileOpen && currentScrollY > compactThreshold
+        );
 
         lastScrollYRef.current = currentScrollY;
         isTickingRef.current = false;
       });
     }
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
+    requestScrollUpdate();
+    window.addEventListener("scroll", requestScrollUpdate, { passive: true });
+    window.addEventListener("resize", requestScrollUpdate);
 
     return () => {
-      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("scroll", requestScrollUpdate);
+      window.removeEventListener("resize", requestScrollUpdate);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- close is stable; avoid re-subscribing on every state change
-  }, [isMobileOpen]);
-
-  useEffect(() => {
-    if (logoPlacement !== "outside-pill") {
-      setOutsidePillHeight(null);
-      return;
-    }
-    const node = outsidePillRef.current;
-    if (!node) return;
-
-    const updateHeight = () => {
-      setOutsidePillHeight(Math.round(node.getBoundingClientRect().height));
-    };
-
-    updateHeight();
-    const observer = new ResizeObserver(() => updateHeight());
-    observer.observe(node);
-
-    return () => observer.disconnect();
-  }, [logoPlacement]);
+  }, [interactionDisabled, isMobileOpen]);
 
   const setOrderNowChrome = useSiteHeaderOrderNowChromeSetter();
 
   useLayoutEffect(() => {
-    if (logoPlacement !== "outside-pill") {
-      logoColorRef.current = "rgb(255, 255, 255)";
-      orderNowFillRef.current = "rgb(255, 255, 255)";
-      setOutsideLogoColor("rgb(255, 255, 255)");
-      setOutsideOrderNowFill("rgb(255, 255, 255)");
-      setOrderNowChrome?.(null);
-      return;
-    }
+    setOrderNowChrome?.(HEADER_ORDER_NOW_CHROME);
+  }, [setOrderNowChrome]);
 
-    let transitionLoopRafId: number | null = null;
-    let hasPublishedInitial = false;
+  useLayoutEffect(() => {
+    if (logoPlacement !== "outside-pill") return;
 
-    const updateOutsideChrome = () => {
-      const headerElement = headerRootRef.current;
-      if (!headerElement) return;
+    logoColorRef.current = outsidePillLogoInk;
+    headerRootRef.current?.style.setProperty(
+      "--seam-logo-color",
+      outsidePillLogoInk
+    );
+  }, [logoPlacement, outsidePillLogoInk]);
 
-      const logoElement = logoLinkRef.current;
-      if (logoElement) {
-        const nextLogo = getSeamAwareLogoColor(logoElement, [headerElement], "logo");
-        if (nextLogo !== logoColorRef.current) {
-          logoColorRef.current = nextLogo;
-          setOutsideLogoColor(nextLogo);
-        }
-      }
+  useLayoutEffect(() => {
+    if (logoPlacement !== "outside-pill" || !interactionDisabled) return;
 
-      const orderNowElement = orderNowLinkRef.current;
-      if (orderNowElement) {
-        const nextOrder = getSeamAwareLogoColor(
-          orderNowElement,
-          [headerElement],
-          "orderNow"
-        );
-        const shouldPublish = !hasPublishedInitial || nextOrder !== orderNowFillRef.current;
-        if (shouldPublish) {
-          hasPublishedInitial = true;
-          orderNowFillRef.current = nextOrder;
-          setOutsideOrderNowFill(nextOrder);
-          setOrderNowChrome?.({
-            fill: nextOrder,
-            foreground: contrastingForegroundForOrderNowFill(nextOrder),
-          });
-        }
-      }
+    let rafId: number | null = null;
+    let pendingLogoColor: string | null = null;
+    let pendingLogoStreak = 0;
+
+    const commitLogoColor = (nextLogoColor: string) => {
+      if (nextLogoColor === logoColorRef.current) return;
+      logoColorRef.current = nextLogoColor;
+      headerRootRef.current?.style.setProperty(
+        "--seam-logo-color",
+        nextLogoColor
+      );
     };
 
-    updateOutsideChrome();
-    window.addEventListener("scroll", updateOutsideChrome, { passive: true });
-    window.addEventListener("resize", updateOutsideChrome);
+    const sampleTransitionLogoColor = () => {
+      const headerElement = headerRootRef.current;
+      const logoElement = logoLinkRef.current;
 
-    if (interactionDisabled) {
-      const tickDuringTransition = () => {
-        updateOutsideChrome();
-        transitionLoopRafId = window.requestAnimationFrame(tickDuringTransition);
-      };
-      transitionLoopRafId = window.requestAnimationFrame(tickDuringTransition);
-    }
+      if (headerElement && logoElement) {
+        const rect = logoElement.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          const sampled = getSeamAwareLogoColor(
+            logoElement,
+            [headerElement],
+            "logo"
+          );
+          const nextLogoColor = coerceBrandInk(sampled);
+
+          if (nextLogoColor === logoColorRef.current) {
+            pendingLogoColor = null;
+            pendingLogoStreak = 0;
+          } else {
+            if (pendingLogoColor === nextLogoColor) {
+              pendingLogoStreak += 1;
+            } else {
+              pendingLogoColor = nextLogoColor;
+              pendingLogoStreak = 1;
+            }
+
+            if (pendingLogoStreak >= 2) {
+              commitLogoColor(nextLogoColor);
+              pendingLogoColor = null;
+              pendingLogoStreak = 0;
+            }
+          }
+        }
+      }
+
+      rafId = window.requestAnimationFrame(sampleTransitionLogoColor);
+    };
+
+    rafId = window.requestAnimationFrame(sampleTransitionLogoColor);
 
     return () => {
-      if (transitionLoopRafId !== null) {
-        window.cancelAnimationFrame(transitionLoopRafId);
-      }
-      window.removeEventListener("scroll", updateOutsideChrome);
-      window.removeEventListener("resize", updateOutsideChrome);
+      if (rafId !== null) window.cancelAnimationFrame(rafId);
     };
-  }, [logoPlacement, interactionDisabled, setOrderNowChrome]);
+  }, [interactionDisabled, logoPlacement]);
+
+  useEffect(() => {
+    popoverManager.close();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- close is stable; mode changes should dismiss anchored panels
+  }, [isCompactHeaderActive]);
 
   useEffect(() => {
     return () => {
@@ -357,12 +513,58 @@ export default function SiteHeader({
     setExpandedMobileHref(null);
   }
 
+  const isCompactPillHandoffRequested =
+    interactionDisabled &&
+    viewportLg &&
+    isCompactHeaderActive;
+  const isCompactPillHandoffActive =
+    isCompactPillHandoffRequested &&
+    compactPillHandoffDelta !== null;
+
+  const logoMotionAnimate =
+    reduceMotion ?
+      LOGO_TRANSIT_IDLE
+    : interactionDisabled ?
+      LOGO_TRANSIT_PULSE_ANIMATE
+    : LOGO_TRANSIT_IDLE;
+  const firstLogoMotionAnimate =
+    reduceMotion ?
+      LOGO_FIRST_WORD_LAYOUT_IDLE
+    : interactionDisabled ?
+      LOGO_FIRST_WORD_LAYOUT_PULSE_ANIMATE
+    : LOGO_FIRST_WORD_LAYOUT_IDLE;
+  const logoMotionTransition =
+    reduceMotion ?
+      { duration: 0 }
+    : interactionDisabled ?
+      LOGO_TRANSIT_PULSE_TWEEN
+    : LOGO_REST_SETTLE;
+  const secondLogoWordTransition =
+    reduceMotion ?
+      { duration: 0 }
+    : interactionDisabled ?
+      LOGO_SECOND_WORD_PULSE_TWEEN
+    : LOGO_REST_SETTLE;
+  const secondLogoMotionAnimate =
+    reduceMotion ?
+      LOGO_TRANSIT_IDLE
+    : interactionDisabled ?
+      LOGO_SECOND_WORD_PULSE_ANIMATE
+    : LOGO_TRANSIT_IDLE;
+  const logoVariant = logoPlacement === "outside-pill" ? "light" : "dark";
+  const logoColor =
+    logoPlacement === "outside-pill" ? "var(--seam-logo-color)" : undefined;
+  const logoWordClassName =
+    logoPlacement === "outside-pill" ?
+      "block h-[84px] w-auto sm:h-[92px] lg:h-[88px]"
+    : "block h-[21.6px] w-auto sm:h-[25.2px] lg:h-[28.8px]";
+
   const logoLink = (
     <Link
       ref={logoLinkRef}
       href="/home"
       className={cn(
-        "flex min-w-0 items-center rounded-full translate-x-1 sm:translate-x-1.5",
+        "flex min-w-0 items-center rounded-full translate-x-[0.225rem] sm:translate-x-[0.3375rem]",
         logoPlacement === "outside-pill"
           ? "shrink-0 self-stretch"
           : "shrink",
@@ -370,29 +572,49 @@ export default function SiteHeader({
       )}
       aria-label="BomBom Treats home"
     >
-      <BomBomLogo
-        variant={logoPlacement === "outside-pill" ? "light" : "dark"}
-        color={logoPlacement === "outside-pill" ? outsideLogoColor : undefined}
-        className={
-          logoPlacement === "outside-pill"
-            ? "block w-auto object-contain object-left"
-            : "block h-7 w-auto sm:h-8 lg:h-10"
-        }
-        style={
-          logoPlacement === "outside-pill" && outsidePillHeight
-            ? { height: `${outsidePillHeight}px`, width: "auto" }
-            : undefined
-        }
-      />
+      <span
+        className={cn(
+          "inline-flex max-w-full items-center",
+          logoPlacement === "outside-pill" ? "origin-left" : "origin-center"
+        )}
+      >
+        <motion.span
+          className="inline-flex shrink-0 origin-bottom-left will-change-transform"
+          animate={firstLogoMotionAnimate}
+          transition={logoMotionTransition}
+        >
+          <BomBomLogo
+            variant={logoVariant}
+            color={logoColor}
+            word="first"
+            className={logoWordClassName}
+          />
+        </motion.span>
+        <motion.span
+          className="inline-flex shrink-0 origin-bottom-left will-change-transform"
+          animate={secondLogoMotionAnimate}
+          transition={secondLogoWordTransition}
+        >
+          <BomBomLogo
+            variant={logoVariant}
+            color={logoColor}
+            word="second"
+            className={logoWordClassName}
+          />
+        </motion.span>
+      </span>
     </Link>
   );
 
-  const primaryNav = (
+  const renderPrimaryNav = (
+    disabled: boolean,
+    layoutClassName: string
+  ) => (
     <nav
       aria-label="Primary"
       className={cn(
-        "hidden min-w-0 items-center justify-end gap-4 px-4 lg:flex lg:gap-8 lg:px-6 xl:gap-0 xl:px-8",
-        logoPlacement === "in-pill" ? "flex-1" : "w-auto shrink-0"
+        "hidden min-w-0 items-center justify-end gap-[0.9rem] px-[0.9rem] lg:flex lg:gap-[1.8rem] lg:px-[1.35rem] xl:gap-0 xl:px-[1.8rem]",
+        layoutClassName
       )}
     >
       {NAV_ITEMS.map((item) => (
@@ -403,20 +625,20 @@ export default function SiteHeader({
           popover={item.popover}
           className={navLinkClass}
           manager={popoverManager}
-          interactionDisabled={interactionDisabled}
+          interactionDisabled={interactionDisabled || disabled}
         />
       ))}
     </nav>
   );
 
-  const headerActions = (
+  const renderHeaderActions = (withInlineMargin = false) => (
     <div
       className={cn(
-        "flex shrink-0 items-center gap-3 sm:gap-4 lg:gap-5",
-        logoPlacement === "in-pill" && "ml-auto"
+        "flex shrink-0 items-center gap-[10.8px] sm:gap-[14.4px] lg:gap-[18px]",
+        withInlineMargin && "ml-auto"
       )}
     >
-      <div className="box-border flex shrink-0 items-center gap-1 p-3.5 sm:p-3.5">
+      <div className="box-border flex shrink-0 items-center gap-1 p-[0.788rem] sm:p-[0.788rem]">
         <Link
           href="/account"
           className={accountIconButtonClass}
@@ -435,25 +657,17 @@ export default function SiteHeader({
           asChild
           className={cn(
             orderNowButtonBaseClass,
-            logoPlacement === "outside-pill"
-              ? "border-0 shadow-none transition-[filter] hover:brightness-[0.92] motion-reduce:hover:brightness-100"
-              : orderNowButtonDefaultColorsClass
+            orderNowButtonDefaultColorsClass,
+            "border-0 shadow-none transition-[filter] hover:brightness-[0.92] motion-reduce:hover:brightness-100"
           )}
         >
           <Link
-            ref={orderNowLinkRef}
             href="/menu"
-            style={
-              logoPlacement === "outside-pill"
-                ? {
-                    transitionProperty: "filter",
-                    transitionDuration: "200ms",
-                    transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
-                    background: outsideOrderNowFill,
-                    color: contrastingForegroundForOrderNowFill(outsideOrderNowFill),
-                  }
-                : undefined
-            }
+            style={{
+              transitionProperty: "filter",
+              transitionDuration: "200ms",
+              transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
+            }}
           >
             <span>Order now</span>
           </Link>
@@ -483,51 +697,125 @@ export default function SiteHeader({
     <header
       ref={headerRootRef}
       data-site-header-root
+      style={
+        logoPlacement === "outside-pill" ?
+          ({
+            "--seam-logo-color": outsidePillLogoInk,
+          } as CSSProperties)
+        : undefined
+      }
       className={cn(
-        "fixed inset-x-0 top-0 z-[70] p-16 transition-transform duration-500 ease-out will-change-transform motion-reduce:transition-none sm:p-20 lg:p-12",
-        isHeaderHidden ? "-translate-y-[calc(100%+2rem)]" : "translate-y-0",
+        "pointer-events-none fixed inset-x-0 top-0 z-[70] p-[3.6rem] sm:p-[4.5rem] lg:p-[2.7rem]",
         interactionDisabled && "pointer-events-none"
       )}
     >
       <div className="mx-auto w-full max-w-full">
-        <div className="flex flex-col gap-3">
-          {logoPlacement === "outside-pill" ? (
-            <div className="flex w-full items-stretch justify-between">
-              {logoLink}
+        <div className="flex flex-col gap-[0.675rem]">
+          <div className="relative lg:min-h-[5.75rem]">
+            <motion.div
+              className={cn(
+                !interactionDisabled &&
+                  !(viewportLg && isCompactHeaderActive) &&
+                  "pointer-events-auto",
+                viewportLg && isCompactHeaderActive && "pointer-events-none"
+              )}
+              initial={false}
+              animate={{
+                y:
+                  viewportLg &&
+                  isCompactHeaderActive &&
+                  !isCompactPillHandoffRequested ?
+                    -HEADER_MODE_SLIDE_PX
+                  : 0,
+              }}
+              transition={
+                reduceMotion ?
+                  { duration: 0 }
+                : HEADER_MODE_SLIDE_TRANSITION
+              }
+            >
+              {logoPlacement === "outside-pill" ? (
+                <div className="mx-auto flex w-full items-stretch justify-between">
+                  {logoLink}
+                  <div
+                    ref={heroPillRef}
+                    data-site-header-pill="hero"
+                    className={cn(
+                      "flex w-fit max-w-full shrink-0 self-stretch items-center gap-[0.9rem] rounded-full bg-bom-white py-[0.675rem] pl-[0.9rem] pr-[0.675rem]",
+                      "ring-1 ring-bom-black/[0.06]",
+                      "sm:gap-[1.125rem] sm:py-[0.7875rem] sm:pl-[1.125rem] sm:pr-[0.788rem] lg:gap-1 lg:py-[0.45rem] lg:pl-[1.35rem] lg:pr-[0.9rem] xl:gap-0",
+                      isHeroPillHandoffSuppressed && "invisible"
+                    )}
+                  >
+                    {renderPrimaryNav(isCompactHeaderActive, "w-auto shrink-0")}
+                    {renderHeaderActions()}
+                  </div>
+                </div>
+              ) : (
+                <div
+                  ref={heroPillRef}
+                  data-site-header-pill="hero"
+                  className={cn(
+                    "flex items-center gap-[0.9rem] rounded-full bg-bom-white py-[0.675rem] pl-[1.575rem] pr-[0.675rem]",
+                    "ring-1 ring-bom-black/[0.06]",
+                    "sm:gap-[1.125rem] sm:py-[0.7875rem] sm:pl-[2.025rem] sm:pr-[0.788rem] lg:gap-1 lg:py-[0.45rem] lg:pl-[2.475rem] lg:pr-[0.9rem] xl:gap-0",
+                    isHeroPillHandoffSuppressed && "invisible"
+                  )}
+                >
+                  {logoLink}
+                  {renderPrimaryNav(isCompactHeaderActive, "flex-1")}
+                  {renderHeaderActions(true)}
+                </div>
+              )}
+            </motion.div>
+
+            <motion.div
+              className={cn(
+                "pointer-events-none absolute left-0 right-0 top-0 z-[1] hidden justify-center lg:flex",
+                viewportLg &&
+                  isCompactHeaderActive &&
+                  !interactionDisabled &&
+                  "pointer-events-auto"
+              )}
+              initial={false}
+              animate={{
+                x:
+                  isCompactPillHandoffActive ?
+                    compactPillHandoffDelta.x
+                  : 0,
+                y:
+                  viewportLg && isCompactHeaderActive ?
+                    0
+                  : COMPACT_HEADER_OFFSCREEN_Y,
+              }}
+              transition={
+                reduceMotion ?
+                  { duration: 0 }
+                : HEADER_MODE_SLIDE_TRANSITION
+              }
+            >
               <div
-                ref={outsidePillRef}
-                data-site-header-pill
+                ref={compactPillRef}
+                data-site-header-pill="compact"
                 className={cn(
-                  "flex w-fit max-w-full shrink-0 self-stretch items-center gap-4 rounded-full bg-bom-white py-3 pl-4 pr-3",
+                  "flex w-fit max-w-[calc(100vw-5.4rem)] shrink-0 items-center gap-[0.9rem] rounded-full bg-bom-white py-[0.45rem] pl-[1.35rem] pr-[0.9rem]",
                   "ring-1 ring-bom-black/[0.06]",
-                  "sm:gap-5 sm:py-3.5 sm:pl-5 sm:pr-3.5 lg:gap-1 lg:py-2 lg:pl-6 lg:pr-4 xl:gap-0"
+                  "lg:gap-1 xl:gap-0",
+                  isCompactPillHandoffSuppressed && "hidden"
                 )}
               >
-                {primaryNav}
-                {headerActions}
+                {renderPrimaryNav(!isCompactHeaderActive, "w-auto shrink-0")}
+                {renderHeaderActions()}
               </div>
-            </div>
-          ) : (
-            <div
-              data-site-header-pill
-              className={cn(
-                "flex items-center gap-4 rounded-full bg-bom-white py-3 pl-7 pr-3",
-                "ring-1 ring-bom-black/[0.06]",
-                "sm:gap-5 sm:py-3.5 sm:pl-9 sm:pr-3.5 lg:gap-1 lg:py-2 lg:pl-11 lg:pr-4 xl:gap-0"
-              )}
-            >
-              {logoLink}
-              {primaryNav}
-              {headerActions}
-            </div>
-          )}
+            </motion.div>
+          </div>
 
           {isMobileOpen && (
             <nav
               id="site-mobile-nav"
               aria-label="Mobile primary"
               className={cn(
-                "rounded-3xl bg-bom-white p-3",
+                "pointer-events-auto rounded-3xl bg-bom-white p-[0.675rem]",
                 "ring-1 ring-bom-black/[0.06]",
                 "lg:hidden"
               )}
@@ -554,7 +842,7 @@ export default function SiteHeader({
                             <span aria-hidden>{isExpanded ? "-" : "+"}</span>
                           </button>
                           {isExpanded ? (
-                            <div className="mt-1 grid gap-1 rounded-2xl bg-bom-black/[0.03] p-2">
+                            <div className="mt-1 grid gap-1 rounded-2xl bg-bom-black/[0.03] p-[0.45rem]">
                               {item.popover.variant === "mega"
                                 ? item.popover.groups.map((group) => (
                                     <Link
@@ -562,7 +850,7 @@ export default function SiteHeader({
                                       href={group.href}
                                       onClick={closeMobileNav}
                                       className={cn(
-                                        "rounded-xl px-4 py-3 font-sans text-sm font-medium leading-none text-bom-black/75 transition-colors hover:bg-neutral-200 hover:text-bom-black focus-visible:bg-neutral-200",
+                                        "rounded-xl px-[0.9rem] py-[0.675rem] font-sans text-sm font-medium leading-none text-bom-black/75 transition-colors hover:bg-neutral-200 hover:text-bom-black focus-visible:bg-neutral-200",
                                         focusRing
                                       )}
                                     >
@@ -575,7 +863,7 @@ export default function SiteHeader({
                                       href={popoverItem.href}
                                       onClick={closeMobileNav}
                                       className={cn(
-                                        "rounded-xl px-4 py-3 font-sans text-sm font-medium leading-none text-bom-black/75 transition-colors hover:bg-neutral-200 hover:text-bom-black focus-visible:bg-neutral-200",
+                                        "rounded-xl px-[0.9rem] py-[0.675rem] font-sans text-sm font-medium leading-none text-bom-black/75 transition-colors hover:bg-neutral-200 hover:text-bom-black focus-visible:bg-neutral-200",
                                         focusRing
                                       )}
                                     >
