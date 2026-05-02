@@ -4,6 +4,7 @@ import * as React from 'react';
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
 import { Check } from 'lucide-react';
 
+import { focusRingTight } from '@/components/ui/focus-ring';
 import { cn } from '@/lib/utils';
 
 function Checkbox({
@@ -15,7 +16,7 @@ function Checkbox({
       data-slot="checkbox"
       className={cn(
         'peer shrink-0 rounded-[2px] border border-bom-black bg-background shadow-none transition-colors',
-        'focus-visible:outline-none focus-visible:ring-[2px] focus-visible:ring-bom-black/25 focus-visible:ring-offset-1',
+        focusRingTight,
         'disabled:cursor-not-allowed disabled:opacity-50',
         'data-[state=checked]:bg-bom-black data-[state=checked]:text-bom-white',
         className
