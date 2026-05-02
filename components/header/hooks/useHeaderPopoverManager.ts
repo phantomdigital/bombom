@@ -11,7 +11,7 @@ type Options = {
 export type HeaderPopoverManager = ReturnType<typeof useHeaderPopoverManager>;
 
 export function useHeaderPopoverManager({
-  closeDelayMs = 200,
+  closeDelayMs = 320,
 }: Options = {}) {
   const [activeHref, setActiveHref] = useState<string | null>(null);
   const closeTimeoutRef = useRef<number | null>(null);

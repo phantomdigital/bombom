@@ -7,8 +7,9 @@ import {
   CakeIcon,
   CoffeeIcon,
   IceCreamIcon,
+  ListDashesIcon,
+  XIcon,
 } from "@phosphor-icons/react";
-import { Menu, X } from "lucide-react";
 import BomBomLogo from "@/components/bombom-logo";
 import NavPopoverLink, {
   type NavPopoverConfig,
@@ -153,14 +154,21 @@ const accountIconButtonClass =
 const HEADER_HIDE_AFTER_Y = 96;
 const HEADER_SCROLL_DELTA = 8;
 const HEADER_HIDE_SCROLL_DISTANCE = 100;
-const POPOVER_CLOSE_SCROLL_DELTA = 40;
+/** Lenis / sub-pixel scroll can spike; keep high to avoid closing while hovering the header. */
+const POPOVER_CLOSE_SCROLL_DELTA = 72;
 
-type SiteHeaderProps = {
+export type SiteHeaderProps = {
   interactionDisabled?: boolean;
+  /**
+   * `in-pill`: logo inside the white bar (default).
+   * `outside-pill`: logo sits beside the bar with space between (flex `justify-between`).
+   */
+  logoPlacement?: "in-pill" | "outside-pill";
 };
 
 export default function SiteHeader({
   interactionDisabled = false,
+  logoPlacement = "in-pill",
 }: SiteHeaderProps) {
   const pathname = usePathname();
   const popoverManager = useHeaderPopoverManager();
@@ -172,6 +180,10 @@ export default function SiteHeader({
   const lastScrollYRef = useRef(0);
   const downwardScrollDistanceRef = useRef(0);
   const isTickingRef = useRef(false);
+  const outsidePillRef = useRef<HTMLDivElement | null>(null);
+  const [outsidePillHeight, setOutsidePillHeight] = useState<number | null>(
+    null
+  );
 
   useEffect(() => {
     setIsMobileOpen(false);
@@ -229,104 +241,171 @@ export default function SiteHeader({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- close is stable; avoid re-subscribing on every state change
   }, [isMobileOpen]);
 
+  useEffect(() => {
+    if (logoPlacement !== "outside-pill") {
+      setOutsidePillHeight(null);
+      return;
+    }
+    const node = outsidePillRef.current;
+    if (!node) return;
+
+    const updateHeight = () => {
+      setOutsidePillHeight(Math.round(node.getBoundingClientRect().height));
+    };
+
+    updateHeight();
+    const observer = new ResizeObserver(() => updateHeight());
+    observer.observe(node);
+
+    return () => observer.disconnect();
+  }, [logoPlacement]);
+
   function closeMobileNav() {
     setIsMobileOpen(false);
     setExpandedMobileHref(null);
   }
 
+  const logoLink = (
+    <Link
+      href="/home"
+      className={cn(
+        "flex min-w-0 items-center rounded-full translate-x-1 sm:translate-x-1.5",
+        logoPlacement === "outside-pill"
+          ? "shrink-0 self-stretch"
+          : "shrink",
+        focusRing
+      )}
+      aria-label="BomBom Treats home"
+    >
+      <BomBomLogo
+        variant={logoPlacement === "outside-pill" ? "light" : "dark"}
+        className={
+          logoPlacement === "outside-pill"
+            ? "block w-auto object-contain object-left"
+            : "block h-7 w-auto sm:h-8 lg:h-10"
+        }
+        style={
+          logoPlacement === "outside-pill" && outsidePillHeight
+            ? { height: `${outsidePillHeight}px`, width: "auto" }
+            : undefined
+        }
+      />
+    </Link>
+  );
+
+  const primaryNav = (
+    <nav
+      aria-label="Primary"
+      className={cn(
+        "hidden min-w-0 items-center justify-end gap-4 px-4 lg:flex lg:gap-8 lg:px-6 xl:gap-0 xl:px-8",
+        logoPlacement === "in-pill" ? "flex-1" : "w-auto shrink-0"
+      )}
+    >
+      {NAV_ITEMS.map((item) => (
+        <NavPopoverLink
+          key={item.href}
+          href={item.href}
+          label={item.label}
+          popover={item.popover}
+          className={navLinkClass}
+          manager={popoverManager}
+          interactionDisabled={interactionDisabled}
+        />
+      ))}
+    </nav>
+  );
+
+  const headerActions = (
+    <div
+      className={cn(
+        "flex shrink-0 items-center gap-3 sm:gap-4 lg:gap-5",
+        logoPlacement === "in-pill" && "ml-auto"
+      )}
+    >
+      <div className="box-border flex shrink-0 items-center gap-1 p-3.5 sm:p-3.5">
+        <Link
+          href="/account"
+          className={accountIconButtonClass}
+          aria-label="Account"
+        >
+          <AccountIcon
+            size={32}
+            strokeWidth={19}
+            aria-hidden
+            className="shrink-0 text-bom-black/90"
+          />
+        </Link>
+        <Button
+          variant="bomPill"
+          size="bomPill"
+          asChild
+          className={orderNowButtonClass}
+        >
+          <Link href="/menu">
+            <span>Order now</span>
+          </Link>
+        </Button>
+        <button
+          type="button"
+          aria-label={isMobileOpen ? "Close menu" : "Open menu"}
+          aria-expanded={isMobileOpen}
+          aria-controls="site-mobile-nav"
+          onClick={() => setIsMobileOpen((open) => !open)}
+          className={cn(
+            "flex size-[65px] shrink-0 items-center justify-center rounded-full text-bom-black/80 transition-colors hover:bg-bom-black/[0.04] hover:text-bom-black lg:hidden",
+            focusRing
+          )}
+        >
+          {isMobileOpen ? (
+            <XIcon className="size-5" weight="regular" aria-hidden />
+          ) : (
+            <ListDashesIcon className="size-5" weight="regular" aria-hidden />
+          )}
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <header
       className={cn(
-        "fixed inset-x-0 top-0 z-[70] px-4 pt-4 transition-transform duration-500 ease-out will-change-transform motion-reduce:transition-none sm:px-6 sm:pt-6 lg:px-10 lg:pt-7",
+        "fixed inset-x-0 top-0 z-[70] p-16 transition-transform duration-500 ease-out will-change-transform motion-reduce:transition-none sm:p-20 lg:p-12",
         isHeaderHidden ? "-translate-y-[calc(100%+2rem)]" : "translate-y-0",
         interactionDisabled && "pointer-events-none"
       )}
     >
-      <div className="mx-auto w-full max-w-[87.5rem]">
+      <div className="mx-auto w-full max-w-full">
         <div className="flex flex-col gap-3">
-          <div
-            data-site-header-pill
-            className={cn(
-              "flex items-center gap-4 rounded-full bg-bom-white py-3 pl-7 pr-3",
-              "ring-1 ring-bom-black/[0.06]",
-              "sm:gap-5 sm:py-3.5 sm:pl-9 sm:pr-3.5 lg:gap-1 lg:py-2 lg:pl-11 lg:pr-4 xl:gap-0"
-            )}
-          >
-            <Link
-              href="/home"
-              className={cn(
-                "flex min-w-0 shrink translate-x-1 items-center rounded-full sm:translate-x-1.5",
-                focusRing
-              )}
-              aria-label="BomBom Treats home"
-            >
-              <BomBomLogo
-                variant="dark"
-                className="block h-7 w-auto sm:h-8 lg:h-10"
-              />
-            </Link>
-
-            <nav
-              aria-label="Primary"
-              className="hidden min-w-0 flex-1 items-center justify-end gap-4 px-4 lg:flex lg:gap-8 lg:px-6 xl:gap-0 xl:px-8"
-            >
-              {NAV_ITEMS.map((item) => (
-                <NavPopoverLink
-                  key={item.href}
-                  href={item.href}
-                  label={item.label}
-                  popover={item.popover}
-                  className={navLinkClass}
-                  manager={popoverManager}
-                  interactionDisabled={interactionDisabled}
-                />
-              ))}
-            </nav>
-
-            <div className="ml-auto flex shrink-0 items-center gap-3 sm:gap-4 lg:gap-5">
-              <div className="box-border flex shrink-0 items-center gap-1 p-3.5 sm:p-3.5">
-                <Link
-                  href="/account"
-                  className={accountIconButtonClass}
-                  aria-label="Account"
-                >
-                  <AccountIcon
-                    size={32}
-                    strokeWidth={19}
-                    aria-hidden
-                    className="shrink-0 text-bom-black/90"
-                  />
-                </Link>
-                <Button
-                  variant="bomPill"
-                  size="bomPill"
-                  asChild
-                  className={orderNowButtonClass}
-                >
-                  <Link href="/menu">
-                    <span>Order now</span>
-                  </Link>
-                </Button>
-                <button
-                  type="button"
-                  aria-label={isMobileOpen ? "Close menu" : "Open menu"}
-                  aria-expanded={isMobileOpen}
-                  aria-controls="site-mobile-nav"
-                  onClick={() => setIsMobileOpen((open) => !open)}
-                  className={cn(
-                    "flex size-[65px] shrink-0 items-center justify-center rounded-full text-bom-black/80 transition-colors hover:bg-bom-black/[0.04] hover:text-bom-black lg:hidden",
-                    focusRing
-                  )}
-                >
-                  {isMobileOpen ? (
-                    <X className="size-5" aria-hidden="true" />
-                  ) : (
-                    <Menu className="size-5" aria-hidden="true" />
-                  )}
-                </button>
+          {logoPlacement === "outside-pill" ? (
+            <div className="flex w-full items-stretch justify-between">
+              {logoLink}
+              <div
+                ref={outsidePillRef}
+                data-site-header-pill
+                className={cn(
+                  "flex w-fit max-w-full shrink-0 self-stretch items-center gap-4 rounded-full bg-bom-white py-3 pl-4 pr-3",
+                  "ring-1 ring-bom-black/[0.06]",
+                  "sm:gap-5 sm:py-3.5 sm:pl-5 sm:pr-3.5 lg:gap-1 lg:py-2 lg:pl-6 lg:pr-4 xl:gap-0"
+                )}
+              >
+                {primaryNav}
+                {headerActions}
               </div>
             </div>
-          </div>
+          ) : (
+            <div
+              data-site-header-pill
+              className={cn(
+                "flex items-center gap-4 rounded-full bg-bom-white py-3 pl-7 pr-3",
+                "ring-1 ring-bom-black/[0.06]",
+                "sm:gap-5 sm:py-3.5 sm:pl-9 sm:pr-3.5 lg:gap-1 lg:py-2 lg:pl-11 lg:pr-4 xl:gap-0"
+              )}
+            >
+              {logoLink}
+              {primaryNav}
+              {headerActions}
+            </div>
+          )}
 
           {isMobileOpen && (
             <nav

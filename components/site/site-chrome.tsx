@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { useReducedMotion } from "framer-motion";
 import { usePathname, useRouter } from "next/navigation";
-import SiteHeader from "@/components/header/site-header";
+import SiteHeaderLogoOutside from "@/components/header/site-header-logo-outside";
 import { SitePageTransitionProvider } from "@/components/site/site-page-transition-context";
 import SitePageTransitionOverlay, {
   type SitePageTransitionOverlayHandle,
@@ -230,7 +230,7 @@ export default function SiteChrome({ children }: { children: ReactNode }) {
       style={backdropStyle}
       onClickCapture={handleClickCapture}
     >
-      <SiteHeader interactionDisabled={isNavigationLocked} />
+      <SiteHeaderLogoOutside interactionDisabled={isNavigationLocked} />
       <SitePageTransitionProvider isContentRevealed={isContentRevealed}>
         {children}
       </SitePageTransitionProvider>

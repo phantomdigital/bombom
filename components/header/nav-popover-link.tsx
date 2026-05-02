@@ -1,6 +1,11 @@
 "use client";
 
-import { useState, type ComponentType, type MouseEvent, type PointerEvent } from "react";
+import {
+  useState,
+  type ComponentType,
+  type MouseEvent,
+  type PointerEvent,
+} from "react";
 import Link from "next/link";
 import { CaretRightIcon } from "@phosphor-icons/react";
 
@@ -99,7 +104,9 @@ export default function NavPopoverLink({
   }
 
   function handleWrapperPointerLeave() {
-    manager.scheduleClose();
+    if (manager.activeHref === href) {
+      manager.scheduleClose();
+    }
   }
 
   function handleTriggerClick(event: MouseEvent<HTMLButtonElement>) {
@@ -146,7 +153,7 @@ export default function NavPopoverLink({
       onOpenChange={(nextOpen) => {
         if (nextOpen) {
           if (!interactionDisabled) manager.open(href);
-        } else {
+        } else if (manager.activeHref === href) {
           manager.close();
         }
       }}
@@ -183,7 +190,11 @@ export default function NavPopoverLink({
           }
           onOpenAutoFocus={(event) => event.preventDefault()}
           onPointerEnter={() => manager.cancelClose()}
-          onPointerLeave={() => manager.scheduleClose()}
+          onPointerLeave={() => {
+            if (manager.activeHref === href) {
+              manager.scheduleClose();
+            }
+          }}
           onClickCapture={handleContentClick}
           className={cn(
             popover.variant === "mega"

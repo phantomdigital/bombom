@@ -8,7 +8,7 @@ import { SITE_PAGE_TRANSITION } from "@/lib/site-page-transition-timing";
 import { cn } from "@/lib/utils";
 
 const sectionShellClass =
-  "mx-auto flex w-full min-h-[100dvh] max-w-5xl flex-col items-center justify-center gap-8 px-5 pb-20 pt-12 text-center sm:px-10 sm:pt-16 lg:px-16";
+  "mx-auto flex w-full min-h-[100dvh] max-w-5xl flex-col items-center justify-center gap-8 px-5 pb-20 pt-12 text-center sm:px-10 sm:pt-44 lg:px-16";
 
 type SitePlaceholderContentProps = {
   eyebrow: string;
