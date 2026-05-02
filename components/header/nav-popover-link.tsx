@@ -160,8 +160,7 @@ export default function NavPopoverLink({
             type="button"
             className={cn(
               className,
-              "cursor-pointer",
-              open && "bg-neutral-200 text-bom-black"
+              "cursor-pointer"
             )}
             aria-haspopup="menu"
             aria-expanded={open}
