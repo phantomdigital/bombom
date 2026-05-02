@@ -1,11 +1,10 @@
 "use client";
 
 import {
-  useRef,
   useState,
   type ComponentType,
-  type FocusEvent,
   type MouseEvent,
+  type PointerEvent,
 } from "react";
 import Link from "next/link";
 import { CaretRightIcon } from "@phosphor-icons/react";
@@ -17,6 +16,7 @@ import {
 } from "@/components/ui/popover";
 import { focusRing, focusRingInset } from "@/components/ui/focus-ring";
 import { cn } from "@/lib/utils";
+import { useNavPopoverState } from "./hooks/useNavPopoverState";
 
 export type NavPopoverItem = {
   href: string;
@@ -63,9 +63,11 @@ type NavPopoverLinkProps = {
   popover?: NavPopoverConfig;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  interactionDisabled?: boolean;
 };
 
 const CLOSE_DELAY_MS = 180;
+const SUPPRESS_OPEN_MS = 700;
 
 /** Default BOM hero fill when group omits `heroTintClassName`. */
 const DEFAULT_MEGA_TINT_CLASS = "bg-bom-dark-blue";
@@ -83,87 +85,51 @@ export default function NavPopoverLink({
   popover,
   open: controlledOpen,
   onOpenChange,
+  interactionDisabled = false,
 }: NavPopoverLinkProps) {
-  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const [activeMegaIndex, setActiveMegaIndex] = useState(0);
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const closeTimeoutRef = useRef<number | null>(null);
-  const suppressOpenRef = useRef(false);
-  const suppressOpenTimeoutRef = useRef<number | null>(null);
 
   const hasPopover = popover
     ? popover.variant === "mega"
       ? popover.groups.length > 0
       : popover.items.length > 0
     : false;
-  const open = controlledOpen ?? uncontrolledOpen;
+  const {
+    open,
+    setOpen,
+    openPopover,
+    closePopover,
+    closePopoverAfterPointerLeave,
+    closePopoverForNavigation,
+    togglePopover,
+  } = useNavPopoverState({
+    hasPopover: hasPopover && !interactionDisabled,
+    open: controlledOpen,
+    onOpenChange,
+    closeDelayMs: CLOSE_DELAY_MS,
+    suppressOpenMs: SUPPRESS_OPEN_MS,
+  });
   const activeMegaGroup =
     popover?.variant === "mega" ? popover.groups[activeMegaIndex] : null;
 
-  function setOpen(nextOpen: boolean) {
-    setUncontrolledOpen(nextOpen);
-    onOpenChange?.(nextOpen);
-  }
-
-  function clearCloseTimeout() {
-    if (closeTimeoutRef.current === null) return;
-    window.clearTimeout(closeTimeoutRef.current);
-    closeTimeoutRef.current = null;
-  }
-
-  function suppressOpenBriefly() {
-    suppressOpenRef.current = true;
-    if (suppressOpenTimeoutRef.current !== null) {
-      window.clearTimeout(suppressOpenTimeoutRef.current);
-    }
-    suppressOpenTimeoutRef.current = window.setTimeout(() => {
-      suppressOpenRef.current = false;
-      suppressOpenTimeoutRef.current = null;
-    }, 700);
-  }
-
-  function openPopover() {
-    if (!hasPopover) return;
-    if (suppressOpenRef.current) return;
-    clearCloseTimeout();
-    setOpen(true);
-  }
-
-  function handlePointerLeave() {
-    suppressOpenRef.current = false;
-    if (suppressOpenTimeoutRef.current !== null) {
-      window.clearTimeout(suppressOpenTimeoutRef.current);
-      suppressOpenTimeoutRef.current = null;
-    }
-    closePopoverSoon();
-  }
-
-  function closePopoverSoon() {
-    clearCloseTimeout();
-    closeTimeoutRef.current = window.setTimeout(() => {
-      setOpen(false);
-      closeTimeoutRef.current = null;
-    }, CLOSE_DELAY_MS);
-  }
-
-  function handleBlur(event: FocusEvent<HTMLSpanElement>) {
-    if (event.currentTarget.contains(event.relatedTarget)) return;
-    closePopoverSoon();
-  }
-
   function handleTriggerClick(event: MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
-    clearCloseTimeout();
-    setOpen(!open);
+    if (interactionDisabled) return;
+    togglePopover();
+  }
+
+  function handleTriggerPointerDown(event: PointerEvent<HTMLButtonElement>) {
+    if (event.pointerType === "mouse" || event.pointerType === "touch") {
+      event.preventDefault();
+    }
   }
 
   function handleContentClick(event: MouseEvent<HTMLDivElement>) {
     const target = event.target;
     if (!(target instanceof Element)) return;
+    if (interactionDisabled) return;
     if (!target.closest("a[href]")) return;
-    suppressOpenBriefly();
-    clearCloseTimeout();
-    setOpen(false);
+    closePopoverForNavigation();
   }
 
   if (!hasPopover || !popover) {
@@ -184,17 +150,14 @@ export default function NavPopoverLink({
       <span
         className="inline-flex"
         onPointerEnter={openPopover}
-        onPointerLeave={handlePointerLeave}
-        onFocus={openPopover}
-        onBlur={handleBlur}
+        onPointerLeave={closePopoverAfterPointerLeave}
         onKeyDown={(event) => {
-          if (event.key === "Escape") setOpen(false);
+          if (event.key === "Escape") closePopover();
         }}
       >
         <PopoverTrigger asChild>
           <button
             type="button"
-            ref={triggerRef}
             className={cn(
               className,
               "cursor-pointer",
@@ -202,6 +165,8 @@ export default function NavPopoverLink({
             )}
             aria-haspopup="menu"
             aria-expanded={open}
+            disabled={interactionDisabled}
+            onPointerDown={handleTriggerPointerDown}
             onClick={handleTriggerClick}
           >
             {label}
@@ -213,9 +178,7 @@ export default function NavPopoverLink({
           sideOffset={40}
           onOpenAutoFocus={(event) => event.preventDefault()}
           onPointerEnter={openPopover}
-          onPointerLeave={handlePointerLeave}
-          onFocus={openPopover}
-          onBlur={closePopoverSoon}
+          onPointerLeave={closePopoverAfterPointerLeave}
           onClickCapture={handleContentClick}
           className={cn(
             popover.variant === "mega"

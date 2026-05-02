@@ -28,7 +28,9 @@ export default function SiteChrome({ children }: { children: ReactNode }) {
   const overlayRef = useRef<SitePageTransitionOverlayHandle>(null);
   const prevPathRef = useRef<string | null>(null);
   const clickTransitionRef = useRef(false);
+  const pendingClickRevealPathRef = useRef<string | null>(null);
   const [isContentRevealed, setIsContentRevealed] = useState(true);
+  const [isNavigationLocked, setIsNavigationLocked] = useState(false);
   const [shellHex, setShellHex] = useState(
     () => getSitePalette(pathname).hex
   );
@@ -68,8 +70,10 @@ export default function SiteChrome({ children }: { children: ReactNode }) {
       if (!overlay) {
         setShellHex(newPalette.hex);
         setIsContentRevealed(true);
+        setIsNavigationLocked(false);
         return;
       }
+      setIsNavigationLocked(true);
       setIsContentRevealed(false);
       await overlay.cover(newPalette.hex);
       if (cancelled) return;
@@ -81,12 +85,52 @@ export default function SiteChrome({ children }: { children: ReactNode }) {
       await overlay.peel();
       if (cancelled) return;
       setIsContentRevealed(true);
+      setIsNavigationLocked(false);
     })();
 
     return () => {
       cancelled = true;
     };
   }, [pathname, reduceMotion]);
+
+  useEffect(() => {
+    if (!clickTransitionRef.current) return;
+    if (pendingClickRevealPathRef.current !== pathname) return;
+
+    let cancelled = false;
+
+    (async () => {
+      const overlay = overlayRef.current;
+      if (!overlay) {
+        flushSync(() => {
+          setIsContentRevealed(true);
+          setIsNavigationLocked(false);
+        });
+        clickTransitionRef.current = false;
+        pendingClickRevealPathRef.current = null;
+        return;
+      }
+
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => resolve())
+        )
+      );
+      if (cancelled) return;
+      await overlay.peel();
+      if (cancelled) return;
+      flushSync(() => {
+        setIsContentRevealed(true);
+        setIsNavigationLocked(false);
+      });
+      clickTransitionRef.current = false;
+      pendingClickRevealPathRef.current = null;
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [children, pathname]);
 
   async function handleClickCapture(event: MouseEvent<HTMLDivElement>) {
     if (event.defaultPrevented || event.button !== 0) return;
@@ -141,10 +185,13 @@ export default function SiteChrome({ children }: { children: ReactNode }) {
     const overlay = overlayRef.current;
 
     clickTransitionRef.current = true;
+    setIsNavigationLocked(true);
 
     try {
       if (!overlay) {
         router.push(href);
+        clickTransitionRef.current = false;
+        setIsNavigationLocked(false);
         return;
       }
 
@@ -161,22 +208,14 @@ export default function SiteChrome({ children }: { children: ReactNode }) {
         setIsContentRevealed(false);
       });
       prevPathRef.current = nextPath;
+      pendingClickRevealPathRef.current = nextPath;
       // 4. Navigate behind the full cover - scroll reset is invisible here.
       router.push(href);
-      // 5. Wait two animation frames for React to commit + paint the new route
-      //    before peeling, so we never peel into an empty/unpainted page.
-      await new Promise<void>((resolve) =>
-        requestAnimationFrame(() =>
-          requestAnimationFrame(() => resolve())
-        )
-      );
-      // 6. Peel the cover away first, then fade content in visibly.
-      await overlay.peel();
-      flushSync(() => {
-        setIsContentRevealed(true);
-      });
-    } finally {
+    } catch (error) {
       clickTransitionRef.current = false;
+      pendingClickRevealPathRef.current = null;
+      setIsNavigationLocked(false);
+      throw error;
     }
   }
 
@@ -191,7 +230,7 @@ export default function SiteChrome({ children }: { children: ReactNode }) {
       style={backdropStyle}
       onClickCapture={handleClickCapture}
     >
-      <SiteHeader />
+      <SiteHeader interactionDisabled={isNavigationLocked} />
       <SitePageTransitionProvider isContentRevealed={isContentRevealed}>
         {children}
       </SitePageTransitionProvider>

@@ -153,7 +153,13 @@ const HEADER_HIDE_AFTER_Y = 96;
 const HEADER_SCROLL_DELTA = 8;
 const HEADER_HIDE_SCROLL_DISTANCE = 100;
 
-export default function SiteHeader() {
+type SiteHeaderProps = {
+  interactionDisabled?: boolean;
+};
+
+export default function SiteHeader({
+  interactionDisabled = false,
+}: SiteHeaderProps) {
   const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [expandedMobileHref, setExpandedMobileHref] = useState<string | null>(
@@ -174,6 +180,11 @@ export default function SiteHeader() {
     setIsHeaderHidden(false);
     downwardScrollDistanceRef.current = 0;
   }, [pathname]);
+
+  useEffect(() => {
+    if (!interactionDisabled) return;
+    setActivePopoverHref(null);
+  }, [interactionDisabled]);
 
   useEffect(() => {
     lastScrollYRef.current = window.scrollY;
@@ -224,7 +235,8 @@ export default function SiteHeader() {
     <header
       className={cn(
         "fixed inset-x-0 top-0 z-[70] px-4 pt-4 transition-transform duration-500 ease-out will-change-transform motion-reduce:transition-none sm:px-6 sm:pt-6 lg:px-10 lg:pt-7",
-        isHeaderHidden ? "-translate-y-[calc(100%+2rem)]" : "translate-y-0"
+        isHeaderHidden ? "-translate-y-[calc(100%+2rem)]" : "translate-y-0",
+        interactionDisabled && "pointer-events-none"
       )}
     >
       <div className="mx-auto w-full max-w-[87.5rem]">
@@ -262,6 +274,7 @@ export default function SiteHeader() {
                   label={item.label}
                   popover={item.popover}
                   className={navLinkClass}
+                  interactionDisabled={interactionDisabled}
                   open={activePopoverHref === item.href}
                   onOpenChange={(open) => {
                     setActivePopoverHref((currentHref) => {
