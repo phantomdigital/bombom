@@ -18,6 +18,16 @@ const CLIP_FULLY_HIDDEN_FROM_BOTTOM = "inset(0% 0% 100% 0%)";
 
 type WipeLeadEdge = "top" | "bottom";
 
+/** Run state updates with `flushSync` after this task, so navigation never nests it inside React render. */
+function flushSyncSoon(update: () => void): Promise<void> {
+  return new Promise<void>((resolve) => {
+    queueMicrotask(() => {
+      flushSync(update);
+      resolve();
+    });
+  });
+}
+
 export type SitePageTransitionOverlayHandle = {
   /** Start the cover phase (clipped → full frame) with the given destination hex. */
   cover: (hex: string) => Promise<void>;
@@ -46,7 +56,7 @@ const SitePageTransitionOverlay = forwardRef<SitePageTransitionOverlayHandle>(
       () => ({
         async cover(nextHex: string) {
           if (reduceMotion) {
-            flushSync(() => setHex(nextHex));
+            await flushSyncSoon(() => setHex(nextHex));
             return;
           }
           const lead = nextLeadEdgeRef.current;
@@ -57,7 +67,7 @@ const SitePageTransitionOverlay = forwardRef<SitePageTransitionOverlayHandle>(
           // Commit the new bg colour BEFORE any visible frame of the cover
           // animation, otherwise the first frames can tween with the previous
           // route's colour.
-          flushSync(() => setHex(nextHex));
+          await flushSyncSoon(() => setHex(nextHex));
           await controls.start({
             clipPath: coverStartClip,
             skewY: 0,
