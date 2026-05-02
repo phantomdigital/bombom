@@ -6,6 +6,7 @@ import { flushSync } from "react-dom";
 import { useReducedMotion } from "framer-motion";
 import { usePathname, useRouter } from "next/navigation";
 import SiteHeaderLogoOutside from "@/components/header/site-header-logo-outside";
+import { SiteHeaderOrderNowChromeProvider } from "@/components/site/site-header-order-now-chrome-context";
 import { SitePageTransitionProvider } from "@/components/site/site-page-transition-context";
 import SitePageTransitionOverlay, {
   type SitePageTransitionOverlayHandle,
@@ -230,10 +231,12 @@ export default function SiteChrome({ children }: { children: ReactNode }) {
       style={backdropStyle}
       onClickCapture={handleClickCapture}
     >
-      <SiteHeaderLogoOutside interactionDisabled={isNavigationLocked} />
-      <SitePageTransitionProvider isContentRevealed={isContentRevealed}>
-        {children}
-      </SitePageTransitionProvider>
+      <SiteHeaderOrderNowChromeProvider>
+        <SiteHeaderLogoOutside interactionDisabled={isNavigationLocked} />
+        <SitePageTransitionProvider isContentRevealed={isContentRevealed}>
+          {children}
+        </SitePageTransitionProvider>
+      </SiteHeaderOrderNowChromeProvider>
       <SitePageTransitionOverlay ref={overlayRef} />
     </div>
   );
