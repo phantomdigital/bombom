@@ -9,7 +9,8 @@ export function SpecialsContent() {
       title="Specials placeholder"
       href="/menu"
       label="View the menu"
-      buttonClassName="bg-bom-ice text-bom-black font-sans font-medium antialiased w-full lg:w-auto lg:whitespace-nowrap items-center justify-center"
+      syncOrderNowChromeWithHeader
+      buttonClassName="bg-bom-dark-blue text-white font-sans font-medium antialiased w-full lg:w-auto lg:whitespace-nowrap items-center justify-center"
     />
   );
 }

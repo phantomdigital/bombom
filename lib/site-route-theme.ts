@@ -81,6 +81,13 @@ export function getSitePalette(
   return DEFAULT_PALETTE;
 }
 
+/** True when the viewport backdrop uses {@link DEFAULT_PALETTE} (unknown / non-themed routes). */
+export function siteBackdropIsDefaultDarkBlue(
+  pathname: string | null | undefined
+): boolean {
+  return getSitePalette(pathname).hex === DEFAULT_PALETTE.hex;
+}
+
 /** Prefer {@link getSitePalette}; returns the CSS token for non-motion use. */
 export function getSiteRouteColor(pathname: string | null | undefined): string {
   return getSitePalette(pathname).css;

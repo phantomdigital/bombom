@@ -12,6 +12,8 @@ export default function SiteNotFound() {
         title="Page not found"
         href="/menu"
         label="View the menu"
+        syncOrderNowChromeWithHeader
+        notFoundShellTypography
         buttonClassName="bg-bom-lime text-bom-black font-sans font-medium antialiased w-full lg:w-auto lg:whitespace-nowrap items-center justify-center"
       />
     </main>
