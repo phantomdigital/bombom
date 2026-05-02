@@ -7,13 +7,13 @@ const PLACEHOLDER_CATEGORIES = [
   "Seasonal specials",
 ] as const;
 
-/** White below-the-fold block to exercise scroll + transitions on `/home`. */
+/** Marble below-the-fold block to exercise scroll + transitions on `/home`. */
 export default function HomeMenuOverviewPlaceholder() {
   return (
     <section
       id="menu-overview"
       aria-labelledby="menu-overview-heading"
-      className="w-full shrink-0 bg-bom-white px-5 py-16 sm:px-10 sm:py-20 lg:px-16"
+      className="w-full min-h-[110dvh] shrink-0 bg-bom-marble px-5 py-16 sm:px-10 sm:py-20 lg:px-16"
     >
       <div className="mx-auto max-w-5xl">
         <p className="font-mono text-xs font-bold uppercase tracking-[0.28em] text-bom-black/70">
@@ -29,7 +29,7 @@ export default function HomeMenuOverviewPlaceholder() {
           Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
           tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
           veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-          commodo consequat. Scroll this page to check how the ice hero and white
+          commodo consequat. Scroll this page to check how the ice hero and marble
           band read under the header and page transitions.
         </p>
         <ul className="mt-12 grid list-none gap-5 sm:grid-cols-2 lg:grid-cols-3">

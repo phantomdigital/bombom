@@ -198,7 +198,7 @@ export default function LandingPageShell({
     : MARKETING_LIST_LINE;
 
   return (
-    <div className="flex min-h-dvh flex-col bg-bom-ice">
+    <div className="flex min-h-[110dvh] flex-col bg-bom-ice">
       {includeJsonLd ? (
         <script
           type="application/ld+json"

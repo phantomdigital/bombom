@@ -103,7 +103,7 @@ export default function HomeMenuScrollExperience({
         Menu
       </h2>
 
-      <div className="sticky top-0 h-svh w-full overflow-hidden bg-bom-white">
+      <div className="sticky top-0 h-[110dvh] w-full overflow-hidden bg-bom-white">
         <motion.div
           className="relative flex h-full w-full items-center justify-center box-border"
           style={{ padding }}

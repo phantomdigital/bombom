@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import {
   SITE_HEADER_ORDER_NOW_PILL_SYNC_CLASSNAME,
@@ -10,11 +9,10 @@ import {
 import { useSitePageTransition } from "@/components/site/site-page-transition-context";
 import { Button } from "@/components/ui/button";
 import { SITE_PAGE_TRANSITION } from "@/lib/site-page-transition-timing";
-import { siteBackdropIsDefaultDarkBlue } from "@/lib/site-route-theme";
 import { cn } from "@/lib/utils";
 
 const sectionShellClass =
-  "mx-auto flex w-full min-h-[100dvh] max-w-5xl flex-col items-center justify-center gap-8 px-5 pb-20 pt-12 text-center sm:px-10 sm:pt-44 lg:px-16";
+  "mx-auto flex w-full min-h-[110dvh] max-w-5xl flex-col items-center justify-center gap-8 px-5 pb-20 pt-12 text-center sm:px-10 sm:pt-26 lg:px-16";
 
 type SitePlaceholderContentProps = {
   eyebrow: string;
@@ -28,8 +26,7 @@ type SitePlaceholderContentProps = {
    */
   syncOrderNowChromeWithHeader?: boolean;
   /**
-   * When true (e.g. `(site)` not-found), heading/description adapt when the shell
-   * is default dark blue (unknown routes).
+   * When true (e.g. `(site)` not-found), use ink tuned for marble / light shell.
    */
   notFoundShellTypography?: boolean;
 };
@@ -43,7 +40,6 @@ export default function SitePlaceholderContent({
   syncOrderNowChromeWithHeader = false,
   notFoundShellTypography = false,
 }: SitePlaceholderContentProps) {
-  const pathname = usePathname();
   const reduceMotion = useReducedMotion();
   const { isContentRevealed } = useSitePageTransition();
   const orderNowChrome = useSiteHeaderOrderNowChrome();
@@ -52,8 +48,7 @@ export default function SitePlaceholderContent({
   const useHeaderChrome =
     syncOrderNowChromeWithHeader && orderNowChrome !== null;
 
-  const darkBlueNotFound =
-    notFoundShellTypography && siteBackdropIsDefaultDarkBlue(pathname);
+  const marbleNotFound = notFoundShellTypography;
 
   return (
     <motion.section
@@ -81,23 +76,18 @@ export default function SitePlaceholderContent({
       <p
         className={cn(
           "font-mono text-xs font-bold uppercase tracking-[0.28em]",
-          darkBlueNotFound ? "text-bom-white/75" : "text-bom-black/70"
+          marbleNotFound ? "text-bom-black/65" : "text-bom-black/70"
         )}
       >
         {eyebrow}
       </p>
-      <h1
-        className={cn(
-          "font-sans text-4xl font-medium tracking-tight sm:text-5xl lg:text-6xl",
-          darkBlueNotFound ? "text-bom-lime" : "text-bom-black"
-        )}
-      >
+      <h1 className="font-sans text-4xl font-medium tracking-tight text-bom-black sm:text-5xl lg:text-6xl">
         {title}
       </h1>
       <p
         className={cn(
           "max-w-xl font-sans text-base leading-relaxed sm:text-lg",
-          darkBlueNotFound ? "text-bom-white" : "text-bom-black/80"
+          marbleNotFound ? "text-bom-black/75" : "text-bom-black/80"
         )}
       >
         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod

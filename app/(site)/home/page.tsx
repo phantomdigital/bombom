@@ -1,4 +1,6 @@
 import { HomeContent } from "./home-content";
+import HomeEventsCateringPlaceholder from "./home-events-catering-placeholder";
+import HomeFooterPlaceholder from "./home-footer-placeholder";
 import HomeMenuOverviewPlaceholder from "./home-menu-overview-placeholder";
 
 export default function HomePreviewPage() {
@@ -10,6 +12,8 @@ export default function HomePreviewPage() {
     >
       <HomeContent />
       <HomeMenuOverviewPlaceholder />
+      <HomeEventsCateringPlaceholder />
+      <HomeFooterPlaceholder />
       {/* Hash targets for `/home#locations` and `/home#about` */}
       <div
         id="locations"
