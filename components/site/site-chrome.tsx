@@ -14,6 +14,10 @@ import SitePageTransitionOverlay, {
 import { SITE_PAGE_TRANSITION } from "@/lib/site-page-transition-timing";
 import { getSitePalette } from "@/lib/site-route-theme";
 
+function scrollToPageTop() {
+  window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+}
+
 /**
  * Persistent `(site)` shell. Click-driven navigation is intercepted so the
  * overlay **covers first**, then `router.push` runs behind the cover (scroll
@@ -103,6 +107,7 @@ export default function SiteChrome({ children }: { children: ReactNode }) {
     (async () => {
       const overlay = overlayRef.current;
       if (!overlay) {
+        scrollToPageTop();
         flushSync(() => {
           setIsContentRevealed(true);
           setIsNavigationLocked(false);
@@ -118,6 +123,7 @@ export default function SiteChrome({ children }: { children: ReactNode }) {
         )
       );
       if (cancelled) return;
+      scrollToPageTop();
       await overlay.peel();
       if (cancelled) return;
       flushSync(() => {
@@ -190,7 +196,8 @@ export default function SiteChrome({ children }: { children: ReactNode }) {
 
     try {
       if (!overlay) {
-        router.push(href);
+        router.push(href, { scroll: true });
+        scrollToPageTop();
         clickTransitionRef.current = false;
         setIsNavigationLocked(false);
         return;
@@ -211,7 +218,7 @@ export default function SiteChrome({ children }: { children: ReactNode }) {
       prevPathRef.current = nextPath;
       pendingClickRevealPathRef.current = nextPath;
       // 4. Navigate behind the full cover - scroll reset is invisible here.
-      router.push(href);
+      router.push(href, { scroll: true });
     } catch (error) {
       clickTransitionRef.current = false;
       pendingClickRevealPathRef.current = null;
