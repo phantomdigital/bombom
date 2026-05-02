@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  useState,
-  type ComponentType,
-  type MouseEvent,
-  type PointerEvent,
-} from "react";
+import { useState, type ComponentType, type MouseEvent, type PointerEvent } from "react";
 import Link from "next/link";
 import { CaretRightIcon } from "@phosphor-icons/react";
 
@@ -183,6 +178,7 @@ export default function NavPopoverLink({
         <PopoverContent
           side="bottom"
           align={popover.variant === "mega" ? "center" : "start"}
+          collisionPadding={16}
           sideOffset={
             popover.variant === "mega"
               ? POPOVER_SIDE_OFFSET_MEGA
@@ -198,7 +194,7 @@ export default function NavPopoverLink({
           onClickCapture={handleContentClick}
           className={cn(
             popover.variant === "mega"
-              ? "!fixed !left-[calc(50%+1.25rem)] !w-[min(calc(100vw-2rem),87.5rem)] !-translate-x-1/2 !translate-y-0 p-9"
+              ? "w-[min(calc(100vw-2rem),87.5rem)] min-w-0 max-w-[min(calc(100vw-2rem),87.5rem)] p-9"
               : "w-max min-w-48 p-5",
             popover.panelClassName
           )}
