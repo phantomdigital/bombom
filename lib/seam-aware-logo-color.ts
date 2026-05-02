@@ -18,7 +18,8 @@ type BomColorToken =
   | "bom-musk"
   | "bom-berry"
   | "bom-lime"
-  | "bom-lemon";
+  | "bom-lemon"
+  | "bom-marble";
 
 type BackgroundLogoPair = {
   background: BomColorToken;
@@ -33,13 +34,15 @@ type ResolvedBackgroundLogoPair = {
 const COLOR_MAP_LOGO: BackgroundLogoPair[] = [
   // White sections -> ice logo.
   { background: "bom-white", logo: "bom-ice" },
+  /** Unthemed routes / 404 shell — charcoal mark on pale marble. */
+  { background: "bom-marble", logo: "bom-black" },
   // Ice sections -> white logo.
   { background: "bom-ice", logo: "bom-white" },
   // Dark and saturated sections -> white logo.
   { background: "bom-black", logo: "bom-white" },
   { background: "bom-violet", logo: "bom-white" },
   // Brand pairings (matched to nearest section background).
-  { background: "bom-musk", logo: "bom-berry" },
+  { background: "bom-musk", logo: "bom-white" },
   { background: "bom-dark-blue", logo: "bom-white" },
   { background: "bom-orange", logo: "bom-white" },
   { background: "bom-lemon", logo: "bom-black" },
@@ -49,6 +52,9 @@ const COLOR_MAP_LOGO: BackgroundLogoPair[] = [
 const COLOR_MAP_ORDER_NOW: BackgroundLogoPair[] = COLOR_MAP_LOGO.map((pair) => {
   if (pair.background === "bom-white") {
     return { background: "bom-white", logo: "bom-dark-blue" };
+  }
+  if (pair.background === "bom-marble") {
+    return { background: "bom-marble", logo: "bom-black" };
   }
   if (pair.background === "bom-ice") {
     return { background: "bom-ice", logo: "bom-dark-blue" };
@@ -78,6 +84,7 @@ const BOM_COLOR_FALLBACKS: Record<BomColorToken, RgbColor> = {
   "bom-violet": { r: 105, g: 104, b: 222 },
   "bom-orange": { r: 255, g: 112, b: 64 },
   "bom-musk": { r: 247, g: 183, b: 211 },
+  "bom-marble": { r: 243, g: 243, b: 241 },
   "bom-berry": { r: 122, g: 0, b: 0 },
   "bom-lime": { r: 176, g: 217, b: 53 },
   "bom-lemon": { r: 250, g: 209, b: 0 },
@@ -489,6 +496,43 @@ export function contrastingForegroundForFill(fill: string): string {
   }
   const average = sumLuminance / matches.length;
   return average > 0.55 ? "#000000" : "#ffffff";
+}
+
+/**
+ * SSR-safe default chrome for a route palette hex. Uses {@link BOM_COLOR_FALLBACKS}
+ * (no DOM access) to pick the nearest mapped background, then returns the paired
+ * logo / Order now fill color.
+ *
+ * Lets us render the correct seam color on first paint (SSR + hard refresh) without
+ * waiting for a successful `getSeamAwareLogoColor` sample.
+ */
+export function getDefaultSeamChromeForPaletteHex(
+  paletteHex: string,
+  kind: SeamAwareChromeKind
+): { color: string; foreground: string } {
+  const parsed = parseCssColor(paletteHex);
+  const backgroundRgb: RgbColor = parsed
+    ? { r: parsed.r, g: parsed.g, b: parsed.b }
+    : BOM_COLOR_FALLBACKS["bom-white"];
+
+  const source = kind === "orderNow" ? COLOR_MAP_ORDER_NOW : COLOR_MAP_LOGO;
+
+  let nearestPair = source[0];
+  let nearestDistance = Number.POSITIVE_INFINITY;
+  for (const pair of source) {
+    const distance = colorDistance(backgroundRgb, BOM_COLOR_FALLBACKS[pair.background]);
+    if (distance < nearestDistance) {
+      nearestDistance = distance;
+      nearestPair = pair;
+    }
+  }
+
+  const logoRgb = BOM_COLOR_FALLBACKS[nearestPair.logo];
+  const color = `rgb(${logoRgb.r}, ${logoRgb.g}, ${logoRgb.b})`;
+  const foreground =
+    kind === "orderNow" ? contrastingForegroundForOrderNowFill(color) : "#000000";
+
+  return { color, foreground };
 }
 
 /** Order now label: black on orange fills (luminance heuristic alone can pick white). */

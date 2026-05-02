@@ -51,8 +51,8 @@ export const SITE_ROUTE_THEME: SiteRouteThemeEntry[] = [
   {
     match: "/story",
     palette: {
-      css: "var(--color-bom-violet)",
-      hex: "#6968de",
+      css: "var(--color-bom-marble)",
+      hex: "#f3f3f1",
     },
   },
   {
@@ -65,8 +65,8 @@ export const SITE_ROUTE_THEME: SiteRouteThemeEntry[] = [
 ];
 
 const DEFAULT_PALETTE: SitePalette = {
-  css: "var(--color-bom-dark-blue)",
-  hex: "#2665d6",
+  css: "var(--color-bom-marble)",
+  hex: "#f3f3f1",
 };
 
 export function getSitePalette(
@@ -81,11 +81,24 @@ export function getSitePalette(
   return DEFAULT_PALETTE;
 }
 
-/** True when the viewport backdrop uses {@link DEFAULT_PALETTE} (unknown / non-themed routes). */
+/** True when pathname has no themed entry in {@link SITE_ROUTE_THEME} (404 / stray URLs). */
+export function siteBackdropIsDefaultUnthemed(
+  pathname: string | null | undefined
+): boolean {
+  if (!pathname) return true;
+  for (const entry of SITE_ROUTE_THEME) {
+    if (pathname === entry.match || pathname.startsWith(`${entry.match}/`)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/** @deprecated Prefer {@link siteBackdropIsDefaultUnthemed} — default shell is marble, not dark blue. */
 export function siteBackdropIsDefaultDarkBlue(
   pathname: string | null | undefined
 ): boolean {
-  return getSitePalette(pathname).hex === DEFAULT_PALETTE.hex;
+  return siteBackdropIsDefaultUnthemed(pathname);
 }
 
 /** Prefer {@link getSitePalette}; returns the CSS token for non-motion use. */
