@@ -11,7 +11,9 @@ import { SitePageTransitionProvider } from "@/components/site/site-page-transiti
 import SitePageTransitionOverlay, {
   type SitePageTransitionOverlayHandle,
 } from "@/components/site/site-page-transition-overlay";
+import { SitePageSurfaceSetterProvider } from "@/components/site/site-page-surface-context";
 import { SITE_PAGE_TRANSITION } from "@/lib/site-page-transition-timing";
+import { getSiteCoverHex } from "@/lib/site-page-reveal-surface";
 import { getSitePalette } from "@/lib/site-route-theme";
 
 function scrollToPageTop() {
@@ -36,6 +38,9 @@ export default function SiteChrome({ children }: { children: ReactNode }) {
   const pendingClickRevealPathRef = useRef<string | null>(null);
   const [isContentRevealed, setIsContentRevealed] = useState(true);
   const [isNavigationLocked, setIsNavigationLocked] = useState(false);
+  const [pageSurfaceHexOverride, setPageSurfaceHexOverride] = useState<
+    string | null
+  >(null);
   const [shellHex, setShellHex] = useState(
     () => getSitePalette(pathname).hex
   );
@@ -56,14 +61,8 @@ export default function SiteChrome({ children }: { children: ReactNode }) {
     const from = prevPathRef.current;
     if (pathname === from) return;
 
-    const oldPalette = getSitePalette(from);
-    const newPalette = getSitePalette(pathname);
+    const coverHex = getSiteCoverHex(from, pathname);
     prevPathRef.current = pathname;
-
-    if (oldPalette.hex === newPalette.hex) {
-      setShellHex(newPalette.hex);
-      return;
-    }
 
     // Click-driven transitions are orchestrated in `handleClickCapture`; skip here.
     if (clickTransitionRef.current) return;
@@ -73,20 +72,20 @@ export default function SiteChrome({ children }: { children: ReactNode }) {
     (async () => {
       const overlay = overlayRef.current;
       if (!overlay) {
-        setShellHex(newPalette.hex);
+        setShellHex(coverHex);
         setIsContentRevealed(true);
         setIsNavigationLocked(false);
         return;
       }
       setIsNavigationLocked(true);
       setIsContentRevealed(false);
-      await overlay.cover(newPalette.hex);
+      await overlay.cover(coverHex);
       if (cancelled) return;
       await new Promise<void>((resolve) =>
         setTimeout(resolve, SITE_PAGE_TRANSITION.briefHoldS * 1000)
       );
       if (cancelled) return;
-      setShellHex(newPalette.hex);
+      setShellHex(coverHex);
       await overlay.peel();
       if (cancelled) return;
       setIsContentRevealed(true);
@@ -188,7 +187,7 @@ export default function SiteChrome({ children }: { children: ReactNode }) {
     event.preventDefault();
 
     const href = `${nextPath}${nextSearch}${nextHash}`;
-    const newPalette = getSitePalette(nextPath);
+    const coverHex = getSiteCoverHex(currentPath, nextPath);
     const overlay = overlayRef.current;
 
     clickTransitionRef.current = true;
@@ -203,16 +202,15 @@ export default function SiteChrome({ children }: { children: ReactNode }) {
         return;
       }
 
-      // 1. Cover with the destination colour while the page is still as-is.
-      await overlay.cover(newPalette.hex);
+      // 1. Cover with the computed colour while the page is still as-is.
+      await overlay.cover(coverHex);
       // 2. Brief hold so the full cover registers as a pause, not a flash.
       await new Promise<void>((resolve) =>
         setTimeout(resolve, SITE_PAGE_TRANSITION.briefHoldS * 1000)
       );
-      // 3. Swap the shell backdrop to the destination colour *before* we push,
-      //    so when the peel later exposes it there is no colour flicker.
+      // 3. Swap the shell backdrop before we push — match the wipe so there is no colour flicker.
       flushSync(() => {
-        setShellHex(newPalette.hex);
+        setShellHex(coverHex);
         setIsContentRevealed(false);
       });
       prevPathRef.current = nextPath;
@@ -239,10 +237,15 @@ export default function SiteChrome({ children }: { children: ReactNode }) {
       onClickCapture={handleClickCapture}
     >
       <SiteHeaderOrderNowChromeProvider>
-        <SiteHeaderLogoOutside interactionDisabled={isNavigationLocked} />
-        <SitePageTransitionProvider isContentRevealed={isContentRevealed}>
-          {children}
-        </SitePageTransitionProvider>
+        <SitePageSurfaceSetterProvider value={setPageSurfaceHexOverride}>
+          <SiteHeaderLogoOutside
+            interactionDisabled={isNavigationLocked}
+            pageSurfaceHexOverride={pageSurfaceHexOverride}
+          />
+          <SitePageTransitionProvider isContentRevealed={isContentRevealed}>
+            {children}
+          </SitePageTransitionProvider>
+        </SitePageSurfaceSetterProvider>
       </SiteHeaderOrderNowChromeProvider>
       <SitePageTransitionOverlay ref={overlayRef} />
     </div>

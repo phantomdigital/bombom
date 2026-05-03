@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import {
@@ -8,6 +9,7 @@ import {
 } from "@/components/site/site-header-order-now-chrome-context";
 import SiteChromeRail from "@/components/site/site-chrome-rail";
 import { useSitePageTransition } from "@/components/site/site-page-transition-context";
+import { useSitePageSurfaceSetter } from "@/components/site/site-page-surface-context";
 import { Button } from "@/components/ui/button";
 import { SITE_PAGE_TRANSITION } from "@/lib/site-page-transition-timing";
 import { cn } from "@/lib/utils";
@@ -28,6 +30,7 @@ type SitePlaceholderContentProps = {
    */
   notFoundShellTypography?: boolean;
   sectionClassName?: string;
+  pageSurfaceHex?: string;
 };
 
 export default function SitePlaceholderContent({
@@ -39,16 +42,24 @@ export default function SitePlaceholderContent({
   syncOrderNowChromeWithHeader = false,
   notFoundShellTypography = false,
   sectionClassName,
+  pageSurfaceHex,
 }: SitePlaceholderContentProps) {
   const reduceMotion = useReducedMotion();
   const { isContentRevealed } = useSitePageTransition();
   const orderNowChrome = useSiteHeaderOrderNowChrome();
+  const setPageSurfaceHex = useSitePageSurfaceSetter();
   const isVisible = reduceMotion || isContentRevealed;
 
   const useHeaderChrome =
     syncOrderNowChromeWithHeader && orderNowChrome !== null;
 
   const marbleNotFound = notFoundShellTypography;
+
+  useEffect(() => {
+    if (!setPageSurfaceHex || !pageSurfaceHex) return;
+    setPageSurfaceHex(pageSurfaceHex);
+    return () => setPageSurfaceHex(null);
+  }, [pageSurfaceHex, setPageSurfaceHex]);
 
   return (
     <motion.section
