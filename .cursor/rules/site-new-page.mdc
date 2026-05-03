@@ -61,9 +61,11 @@ Examples:
 
 - Home: route palette is dark blue; `HomeHero` paints the final ice page.
 - Menu: route palette is berry; `MenuContent` uses `sectionClassName="bg-bom-musk"`.
-- Specials: route palette can be lemon; `SpecialsContent` uses `sectionClassName="bg-bom-orange"`.
+- Specials: route palette is chocolate; `SpecialsContent` uses `sectionClassName="bg-bom-orange"`.
 - Story/marble page: route palette can be lime; `StoryContent` uses `sectionClassName="bg-bom-marble"`.
-- Site 404: default route palette is lime; `SiteNotFound` uses `sectionClassName="bg-bom-marble"`.
+- Site 404: default route palette is lime; `SiteNotFound` uses `sectionClassName="bg-bom-marble"` and `pageSurfaceHex="#f3f3f1"` so the persistent header resolves logo ink from the actual 404 surface, not the URL prefix.
+
+**Reveal surface registry:** when the destination wipe would match what the visitor already sees (`getSitePalette(to)` equals the current route’s revealed page surface), `SiteChrome` (`getSiteCoverHex(from, to)` in `lib/site-page-reveal-surface.ts`) substitutes the **arriving** page reveal colour so the wipe is visible. Extend `SITE_PAGE_REVEAL_SURFACES` whenever you add a `(site)` route whose `sectionClassName` / hero surface has a known token (keep `hex` aligned with `globals.css`). Surface entries are exact-match by default; only set `includeChildren: true` when real nested pages should inherit that surface. This keeps accidental 404s like `/menu/missing` on the marble 404 surface.
 
 ## 3. Header link (optional)
 
