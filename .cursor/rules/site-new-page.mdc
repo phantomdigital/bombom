@@ -8,7 +8,7 @@ alwaysApply: false
 
 # Add a new page under `(site)`
 
-Use this checklist when introducing a route like `/menu`: URL, shell colour wipe, header nav, gated body reveal, optional CTA.
+Use this checklist when introducing a route like `/menu`: URL, shell/wipe colour, final page colour, header nav, gated body reveal, optional CTA.
 
 ## 1. Route files
 
@@ -39,15 +39,31 @@ For placeholders, use `app/(site)/_components/site-placeholder-content.tsx`. The
 
 Important: page content reveal is a **fade only**. Do not add swipe/slide (`x`/`y`) or blur unless product asks.
 
-## 2. Register the wipe/backdrop colour
+If the final page colour should differ from the transition colour, put the final page bg on the revealed content section:
+
+```tsx
+<SitePlaceholderContent sectionClassName="bg-bom-musk" />
+```
+
+Do **not** put final page backgrounds on `page.tsx`'s `<main>`; that shows the destination colour behind the wipe too early and creates a second transition.
+
+## 2. Register the wipe/chrome colour
 
 Edit `lib/site-route-theme.ts`: add `{ match: "/example", palette: { css: "var(--color-bom-…)", hex: "#…" } }`.
 
-Pick tokens from `@theme inline` in `app/globals.css` (`--color-bom-*`). `hex` must match the CSS token so Framer can interpolate the overlay.
+This palette is for the existing route wipe and shell/header chrome, **not necessarily the final page background**. Pick tokens from `@theme inline` in `app/globals.css` (`--color-bom-*`). `hex` must match the CSS token so Framer can interpolate the overlay.
 
 Order matters (first matching prefix wins). Put **specific** paths before broader ones if needed.
 
-Default palette is applied when pathname does not match any entry (`getSitePalette`).
+Default palette is applied when pathname does not match any entry (`getSitePalette`); keep this as the 404 transition/chrome colour, not the 404 page background.
+
+Examples:
+
+- Home: route palette is dark blue; `HomeHero` paints the final ice page.
+- Menu: route palette is berry; `MenuContent` uses `sectionClassName="bg-bom-musk"`.
+- Specials: route palette can be lemon; `SpecialsContent` uses `sectionClassName="bg-bom-orange"`.
+- Story/marble page: route palette can be lime; `StoryContent` uses `sectionClassName="bg-bom-marble"`.
+- Site 404: default route palette is lime; `SiteNotFound` uses `sectionClassName="bg-bom-marble"`.
 
 ## 3. Header link (optional)
 
