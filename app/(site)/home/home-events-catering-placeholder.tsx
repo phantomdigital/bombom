@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import SiteChromeRail from "@/components/site/site-chrome-rail";
 
 const EVENT_PLACEHOLDERS = [
   "Birthday party packs",
@@ -13,9 +14,9 @@ export default function HomeEventsCateringPlaceholder() {
     <section
       id="events-catering-overview"
       aria-labelledby="events-catering-heading"
-      className="flex w-full min-h-[110dvh] shrink-0 items-center bg-bom-musk px-5 py-16 sm:px-10 sm:py-20 lg:px-16"
+      className="flex w-full min-h-[110dvh] shrink-0 items-center bg-bom-musk py-16 sm:py-20"
     >
-      <div className="mx-auto w-full max-w-5xl">
+      <SiteChromeRail>
         <p className="font-mono text-xs font-bold uppercase tracking-[0.28em] text-bom-black/70">
           Events & catering
         </p>
@@ -26,9 +27,8 @@ export default function HomeEventsCateringPlaceholder() {
           Events & catering - placeholder
         </h2>
         <p className="mt-4 max-w-2xl font-sans text-base leading-relaxed text-bom-black/85 sm:text-lg">
-          Placeholder section for event-focused offers like party packs,
-          pop-ups, and catering bundles. Content, pricing tiles, and booking
-          calls-to-action can be wired in later.
+          Placeholder section for event-focused offers like party packs, pop-ups, and catering
+          bundles. Content, pricing tiles, and booking calls-to-action can be wired in later.
         </p>
         <Button
           variant="bomPill"
@@ -47,16 +47,14 @@ export default function HomeEventsCateringPlaceholder() {
               key={label}
               className="rounded-2xl border border-bom-black/15 bg-bom-white/55 p-5"
             >
-              <h3 className="font-sans text-base font-medium text-bom-black">
-                {label}
-              </h3>
+              <h3 className="font-sans text-base font-medium text-bom-black">{label}</h3>
               <p className="mt-2 font-sans text-sm leading-relaxed text-bom-black/70">
                 Placeholder copy for inclusions, minimum spend, and lead time.
               </p>
             </li>
           ))}
         </ul>
-      </div>
+      </SiteChromeRail>
     </section>
   );
 }

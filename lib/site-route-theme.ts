@@ -19,13 +19,16 @@ export type SiteRouteThemeEntry = {
   palette: SitePalette;
 };
 
+/** `/home` wipe + shell hex — keep page/hero `bg-bom-dark-blue` visually matched. */
+export const SITE_HOME_THEME: SitePalette = {
+  css: "var(--color-bom-dark-blue)",
+  hex: "#2665d6",
+};
+
 export const SITE_ROUTE_THEME: SiteRouteThemeEntry[] = [
   {
     match: "/home",
-    palette: {
-      css: "var(--color-bom-ice)",
-      hex: "#91c4ff",
-    },
+    palette: SITE_HOME_THEME,
   },
   {
     match: "/menu",

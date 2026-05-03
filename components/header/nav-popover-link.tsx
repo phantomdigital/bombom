@@ -1,11 +1,21 @@
 "use client";
 
-import { useState, type ComponentType, type MouseEvent, type PointerEvent } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useState,
+  useRef,
+  type ComponentType,
+  type CSSProperties,
+  type MouseEvent,
+  type PointerEvent,
+} from "react";
 import Link from "next/link";
 import { CaretRightIcon } from "@phosphor-icons/react";
 
 import {
   Popover,
+  PopoverAnchor,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
@@ -58,6 +68,7 @@ type NavPopoverLinkProps = {
   popover?: NavPopoverConfig;
   manager: HeaderPopoverManager;
   interactionDisabled?: boolean;
+  megaPopoverAlignment?: "trigger" | "viewport";
 };
 
 /** Default BOM hero fill when group omits `heroTintClassName`. */
@@ -80,8 +91,14 @@ export default function NavPopoverLink({
   popover,
   manager,
   interactionDisabled = false,
+  megaPopoverAlignment = "trigger",
 }: NavPopoverLinkProps) {
   const [activeMegaIndex, setActiveMegaIndex] = useState(0);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const isTriggerHoveredRef = useRef(false);
+  const isContentHoveredRef = useRef(false);
+  const [viewportAnchorStyle, setViewportAnchorStyle] =
+    useState<CSSProperties | null>(null);
 
   const hasPopover = popover
     ? popover.variant === "mega"
@@ -92,14 +109,65 @@ export default function NavPopoverLink({
     hasPopover && !interactionDisabled && manager.activeHref === href;
   const activeMegaGroup =
     popover?.variant === "mega" ? popover.groups[activeMegaIndex] : null;
+  const shouldCenterMegaInViewport =
+    popover?.variant === "mega" && megaPopoverAlignment === "viewport";
 
-  function handleWrapperPointerEnter() {
+  function syncViewportAnchor() {
+    if (!shouldCenterMegaInViewport || typeof window === "undefined") return;
+    const trigger = triggerRef.current;
+    if (!trigger) return;
+
+    const rect = trigger.getBoundingClientRect();
+    setViewportAnchorStyle({
+      left: "50vw",
+      top: rect.top,
+      height: rect.height,
+    });
+  }
+
+  useLayoutEffect(() => {
+    if (!open || !shouldCenterMegaInViewport) return;
+
+    syncViewportAnchor();
+    window.addEventListener("resize", syncViewportAnchor);
+    window.addEventListener("scroll", syncViewportAnchor, { passive: true });
+
+    return () => {
+      window.removeEventListener("resize", syncViewportAnchor);
+      window.removeEventListener("scroll", syncViewportAnchor);
+    };
+  }, [open, shouldCenterMegaInViewport]);
+
+  useEffect(() => {
+    if (open) return;
+    isTriggerHoveredRef.current = false;
+    isContentHoveredRef.current = false;
+  }, [open]);
+
+  function handleTriggerPointerEnter() {
     if (!hasPopover || interactionDisabled) return;
+    isTriggerHoveredRef.current = true;
+    syncViewportAnchor();
     manager.open(href);
   }
 
-  function handleWrapperPointerLeave() {
-    if (manager.activeHref === href) {
+  function handleTriggerPointerLeave() {
+    isTriggerHoveredRef.current = false;
+    if (!isContentHoveredRef.current && manager.activeHref === href) {
+      manager.scheduleClose();
+    }
+  }
+
+  function handleContentPointerEnter() {
+    if (!hasPopover || interactionDisabled) return;
+    isContentHoveredRef.current = true;
+    manager.cancelClose();
+    manager.open(href);
+  }
+
+  function handleContentPointerLeave() {
+    isContentHoveredRef.current = false;
+    if (!isTriggerHoveredRef.current && manager.activeHref === href) {
       manager.scheduleClose();
     }
   }
@@ -107,6 +175,7 @@ export default function NavPopoverLink({
   function handleTriggerClick(event: MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
     if (!hasPopover || interactionDisabled) return;
+    syncViewportAnchor();
     manager.toggle(href);
   }
 
@@ -155,12 +224,20 @@ export default function NavPopoverLink({
     >
       <span
         className="inline-flex"
-        onPointerEnter={handleWrapperPointerEnter}
-        onPointerLeave={handleWrapperPointerLeave}
         onKeyDown={handleEscape}
       >
+        {shouldCenterMegaInViewport && viewportAnchorStyle ? (
+          <PopoverAnchor asChild>
+            <span
+              aria-hidden="true"
+              className="pointer-events-none fixed w-0 opacity-0"
+              style={viewportAnchorStyle}
+            />
+          </PopoverAnchor>
+        ) : null}
         <PopoverTrigger asChild>
           <button
+            ref={triggerRef}
             type="button"
             className={cn(
               className,
@@ -169,6 +246,8 @@ export default function NavPopoverLink({
             aria-haspopup="menu"
             aria-expanded={open}
             disabled={interactionDisabled}
+            onPointerEnter={handleTriggerPointerEnter}
+            onPointerLeave={handleTriggerPointerLeave}
             onPointerDown={handleTriggerPointerDown}
             onClick={handleTriggerClick}
           >
@@ -185,12 +264,8 @@ export default function NavPopoverLink({
               : POPOVER_SIDE_OFFSET_COMPACT
           }
           onOpenAutoFocus={(event) => event.preventDefault()}
-          onPointerEnter={() => manager.cancelClose()}
-          onPointerLeave={() => {
-            if (manager.activeHref === href) {
-              manager.scheduleClose();
-            }
-          }}
+          onPointerEnter={handleContentPointerEnter}
+          onPointerLeave={handleContentPointerLeave}
           onClickCapture={handleContentClick}
           className={cn(
             popover.variant === "mega"

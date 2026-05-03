@@ -6,16 +6,14 @@ import {
   SITE_HEADER_ORDER_NOW_PILL_SYNC_CLASSNAME,
   useSiteHeaderOrderNowChrome,
 } from "@/components/site/site-header-order-now-chrome-context";
+import SiteChromeRail from "@/components/site/site-chrome-rail";
 import { useSitePageTransition } from "@/components/site/site-page-transition-context";
 import { Button } from "@/components/ui/button";
 import { SITE_PAGE_TRANSITION } from "@/lib/site-page-transition-timing";
 import { cn } from "@/lib/utils";
 
-const sectionShellClass =
-  "mx-auto flex w-full min-h-[110dvh] max-w-5xl flex-col items-center justify-center gap-8 px-5 pb-20 pt-12 text-center sm:px-10 sm:pt-26 lg:px-16";
-
 type SitePlaceholderContentProps = {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   href: string;
   label: string;
@@ -53,7 +51,7 @@ export default function SitePlaceholderContent({
   return (
     <motion.section
       className={cn(
-        sectionShellClass,
+        "min-h-[100dvh]",
         !isVisible && "pointer-events-none select-none"
       )}
       aria-hidden={!isVisible}
@@ -73,58 +71,62 @@ export default function SitePlaceholderContent({
             : { duration: 0 }
       }
     >
-      <p
-        className={cn(
-          "font-mono text-xs font-bold uppercase tracking-[0.28em]",
-          marbleNotFound ? "text-bom-black/65" : "text-bom-black/70"
-        )}
-      >
-        {eyebrow}
-      </p>
-      <h1 className="font-sans text-4xl font-medium tracking-tight text-bom-black sm:text-5xl lg:text-6xl">
-        {title}
-      </h1>
-      <p
-        className={cn(
-          "max-w-xl font-sans text-base leading-relaxed sm:text-lg",
-          marbleNotFound ? "text-bom-black/75" : "text-bom-black/80"
-        )}
-      >
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-        veniam, quis nostrud exercitation ullamco laboris.
-      </p>
-      <Button
-        variant="bomPill"
-        size="bomPill"
-        asChild
-        className={cn(
-          useHeaderChrome
-            ? cn(
-                SITE_HEADER_ORDER_NOW_PILL_SYNC_CLASSNAME,
-                "w-full lg:w-auto lg:whitespace-nowrap items-center justify-center"
-              )
-            : buttonClassName
-        )}
-      >
-        <Link
-          href={href}
-          tabIndex={isVisible ? undefined : -1}
-          style={
-            useHeaderChrome
-              ? {
-                  transitionProperty: "filter",
-                  transitionDuration: "200ms",
-                  transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
-                  background: orderNowChrome.fill,
-                  color: orderNowChrome.foreground,
-                }
-              : undefined
-          }
+      <SiteChromeRail railClassName="flex min-h-[100dvh] flex-col items-center justify-center gap-8 pb-20 pt-12 text-center sm:pt-26">
+        {eyebrow ? (
+          <p
+            className={cn(
+              "font-mono text-xs font-bold uppercase tracking-[0.28em]",
+              marbleNotFound ? "text-bom-black/65" : "text-bom-black/70"
+            )}
+          >
+            {eyebrow}
+          </p>
+        ) : null}
+        <h1 className="font-sans text-4xl font-medium tracking-tight text-bom-black sm:text-5xl lg:text-6xl">
+          {title}
+        </h1>
+        <p
+          className={cn(
+            "max-w-xl font-sans text-base leading-relaxed sm:text-lg",
+            marbleNotFound ? "text-bom-black/75" : "text-bom-black/80"
+          )}
         >
-          <span>{label}</span>
-        </Link>
-      </Button>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+          incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+          exercitation ullamco laboris.
+        </p>
+        <Button
+          variant="bomPill"
+          size="bomPill"
+          asChild
+          className={cn(
+            useHeaderChrome
+              ? cn(
+                  SITE_HEADER_ORDER_NOW_PILL_SYNC_CLASSNAME,
+                  "w-full lg:w-auto lg:whitespace-nowrap items-center justify-center"
+                )
+              : buttonClassName
+          )}
+        >
+          <Link
+            href={href}
+            tabIndex={isVisible ? undefined : -1}
+            style={
+              useHeaderChrome
+                ? {
+                    transitionProperty: "filter",
+                    transitionDuration: "200ms",
+                    transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
+                    background: orderNowChrome.fill,
+                    color: orderNowChrome.foreground,
+                  }
+                : undefined
+            }
+          >
+            <span>{label}</span>
+          </Link>
+        </Button>
+      </SiteChromeRail>
     </motion.section>
   );
 }

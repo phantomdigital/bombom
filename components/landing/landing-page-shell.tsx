@@ -7,6 +7,7 @@ import { MapPinIcon } from "@phosphor-icons/react";
 import KlaviyoEmailCapture from "@/components/landing/klaviyo-email-capture";
 import LandingPageHeader from "@/components/landing/landing-page-header";
 import LandingSocialLinks from "@/components/landing/landing-social-links";
+import SiteChromeRail from "@/components/site/site-chrome-rail";
 import OpeningCountdownTicker, {
   OPENING_LAUNCH_TIMESTAMP_MS,
 } from "@/components/landing/opening-countdown-ticker";
@@ -220,9 +221,10 @@ export default function LandingPageShell({
       <LandingPageHeader />
       <main
         id="main-content"
-        className="flex min-h-0 flex-1 flex-col items-center justify-center px-5 py-8 sm:px-10 sm:py-12 lg:px-16"
+        className="flex min-h-0 flex-1 flex-col items-center justify-center py-8 sm:py-12"
         tabIndex={-1}
       >
+        <SiteChromeRail railClassName="flex w-full flex-col items-center justify-center">
         <div className="mx-auto w-full max-w-3xl sm:max-w-4xl lg:max-w-6xl">
           <motion.div
             layout
@@ -276,10 +278,11 @@ export default function LandingPageShell({
             ) : null}
           </div>
         </div>
+        </SiteChromeRail>
       </main>
 
-      <footer className="shrink-0 bg-bom-ice px-5 pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-0 sm:px-10 sm:py-8 sm:pb-12 lg:px-16">
-        <div className="flex w-full flex-col sm:gap-4">
+      <footer className="shrink-0 bg-bom-ice pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-0 sm:py-8 sm:pb-12">
+        <SiteChromeRail railClassName="flex w-full flex-col sm:gap-4">
           <div className="hidden w-full flex-col items-start gap-3 text-left sm:flex sm:flex-row sm:items-center sm:justify-between sm:gap-6">
             <address
               className={`hidden max-w-xl shrink-0 items-center gap-2.5 text-left not-italic sm:flex ${LANDING_BODY_MARKETING}`}
@@ -296,7 +299,7 @@ export default function LandingPageShell({
             ) : null}
           </div>
           <LandingSocialLinks className="flex justify-center sm:hidden" />
-        </div>
+        </SiteChromeRail>
       </footer>
     </div>
   );
