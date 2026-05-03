@@ -225,8 +225,8 @@ const HEADER_MODE_SLIDE_TRANSITION = {
   duration: 0.5,
   ease: [0.4, 0, 0.2, 1] as const,
 };
-const HEADER_HANDOFF_COMPACT_HIDE_DELAY_MS = 560;
-const HEADER_HANDOFF_HERO_REVEAL_DELAY_MS = 500;
+const HEADER_HANDOFF_COMPACT_HIDE_DELAY_MS = 880;
+const HEADER_HANDOFF_HERO_REVEAL_DELAY_MS = 820;
 
 const LOGO_TRANSIT_IDLE = { scale: 1, rotate: 0 };
 const LOGO_FIRST_WORD_LAYOUT_IDLE = {
@@ -316,9 +316,16 @@ export default function SiteHeader({
     setExpandedMobileHref(null);
     popoverManager.close();
     setIsCompactHeaderActive(false);
-    setCompactPillHandoffDelta(null);
+    // Don't clear compactPillHandoffDelta or hero suppression here — the handoff sequence
+    // needs them locked through unmount; cleanup happens when interactionDisabled flips off.
     // eslint-disable-next-line react-hooks/exhaustive-deps -- close is stable; we only want to reset on pathname change
   }, [pathname]);
+
+  useEffect(() => {
+    if (isCompactHeaderActive) {
+      setIsCompactPillHandoffSuppressed(false);
+    }
+  }, [isCompactHeaderActive]);
 
   useEffect(() => {
     if (!interactionDisabled) return;
@@ -415,7 +422,6 @@ export default function SiteHeader({
 
     if (!interactionDisabled) {
       setCompactPillHandoffDelta(null);
-      setIsCompactPillHandoffSuppressed(false);
       setIsHeroPillHandoffSuppressed(false);
       return;
     }
@@ -633,9 +639,13 @@ export default function SiteHeader({
     interactionDisabled &&
     viewportLg &&
     isCompactHeaderActive;
-  const isCompactPillHandoffActive =
-    isCompactPillHandoffRequested &&
-    compactPillHandoffDelta !== null;
+  /**
+   * Once the handoff delta is set, lock the compact pill in that visual state
+   * until it unmounts (via `isCompactPillHandoffSuppressed`). Without this,
+   * `setIsCompactHeaderActive(false)` on `pathname` change would yank the pill
+   * back to offscreen mid-transition (most visible on 404 / unprefetched routes).
+   */
+  const isCompactPillHandoffActive = compactPillHandoffDelta !== null;
 
   const logoMotionAnimate =
     reduceMotion ?
@@ -870,7 +880,7 @@ export default function SiteHeader({
                       "flex w-fit max-w-full shrink-0 self-stretch items-center gap-[0.9rem] rounded-full bg-bom-white py-[0.675rem] pl-[0.9rem] pr-[0.675rem]",
                       "ring-1 ring-bom-black/[0.06]",
                       "sm:gap-[1.125rem] sm:py-[0.7875rem] sm:pl-[1.125rem] sm:pr-[0.788rem] lg:gap-1 lg:py-[0.45rem] lg:pl-[1.35rem] lg:pr-[0.9rem] xl:gap-0",
-                      isHeroPillHandoffSuppressed && "invisible"
+                      isHeroPillHandoffSuppressed && "opacity-0"
                     )}
                   >
                     {renderPrimaryNav(isCompactHeaderActive, "w-auto shrink-0")}
@@ -885,7 +895,7 @@ export default function SiteHeader({
                     "flex items-center gap-[0.9rem] rounded-full bg-bom-white py-[0.675rem] pl-[1.575rem] pr-[0.675rem]",
                     "ring-1 ring-bom-black/[0.06]",
                     "sm:gap-[1.125rem] sm:py-[0.7875rem] sm:pl-[2.025rem] sm:pr-[0.788rem] lg:gap-1 lg:py-[0.45rem] lg:pl-[2.475rem] lg:pr-[0.9rem] xl:gap-0",
-                    isHeroPillHandoffSuppressed && "invisible"
+                    isHeroPillHandoffSuppressed && "opacity-0"
                   )}
                 >
                   {logoLink}
@@ -895,49 +905,51 @@ export default function SiteHeader({
               )}
             </motion.div>
 
-            <motion.div
-              className={cn(
-                "pointer-events-none absolute left-0 right-0 top-0 z-[1] hidden justify-center lg:flex",
-                viewportLg &&
-                  isCompactHeaderActive &&
-                  !interactionDisabled &&
-                  "pointer-events-auto"
-              )}
-              initial={false}
-              animate={{
-                x:
-                  isCompactPillHandoffActive ?
-                    compactPillHandoffDelta.x
-                  : 0,
-                y:
-                  viewportLg && isCompactHeaderActive ?
-                    0
-                  : COMPACT_HEADER_OFFSCREEN_Y,
-              }}
-              transition={
-                reduceMotion ?
-                  { duration: 0 }
-                : HEADER_MODE_SLIDE_TRANSITION
-              }
-            >
-              <div
-                ref={compactPillRef}
-                data-site-header-pill="compact"
+            {!isCompactPillHandoffSuppressed && (
+              <motion.div
                 className={cn(
-                  "flex w-fit max-w-[calc(100vw-5.4rem)] shrink-0 items-center gap-[0.9rem] rounded-full bg-bom-white py-[0.45rem] pl-[1.35rem] pr-[0.9rem]",
-                  "ring-1 ring-bom-black/[0.06]",
-                  "lg:gap-1 xl:gap-0",
-                  isCompactPillHandoffSuppressed && "hidden"
+                  "pointer-events-none absolute left-0 right-0 top-0 z-[1] hidden justify-center lg:flex",
+                  viewportLg &&
+                    isCompactHeaderActive &&
+                    !interactionDisabled &&
+                    "pointer-events-auto"
                 )}
+                initial={{ x: 0, y: COMPACT_HEADER_OFFSCREEN_Y }}
+                animate={{
+                  x:
+                    isCompactPillHandoffActive ?
+                      compactPillHandoffDelta.x
+                    : 0,
+                  y:
+                    isCompactPillHandoffActive ||
+                    (viewportLg && isCompactHeaderActive) ?
+                      0
+                    : COMPACT_HEADER_OFFSCREEN_Y,
+                }}
+                transition={
+                  reduceMotion ?
+                    { duration: 0 }
+                  : HEADER_MODE_SLIDE_TRANSITION
+                }
               >
-                {renderPrimaryNav(
-                  !isCompactHeaderActive,
-                  "w-auto shrink-0",
-                  "viewport"
-                )}
-                {renderHeaderActions()}
-              </div>
-            </motion.div>
+                <div
+                  ref={compactPillRef}
+                  data-site-header-pill="compact"
+                  className={cn(
+                    "flex w-fit max-w-[calc(100vw-5.4rem)] shrink-0 items-center gap-[0.9rem] rounded-full bg-bom-white py-[0.45rem] pl-[1.35rem] pr-[0.9rem]",
+                    "ring-1 ring-bom-black/[0.06]",
+                    "lg:gap-1 xl:gap-0"
+                  )}
+                >
+                  {renderPrimaryNav(
+                    !isCompactHeaderActive,
+                    "w-auto shrink-0",
+                    "viewport"
+                  )}
+                  {renderHeaderActions()}
+                </div>
+              </motion.div>
+            )}
           </div>
 
           {isMobileOpen && (
