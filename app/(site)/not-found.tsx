@@ -14,6 +14,7 @@ export default function SiteNotFound() {
         label="View the menu"
         notFoundShellTypography
         buttonClassName="bg-bom-black text-bom-white border-0 font-sans font-medium antialiased shadow-none hover:brightness-95 motion-reduce:hover:brightness-100 w-full lg:w-auto lg:whitespace-nowrap items-center justify-center"
+        sectionClassName="bg-bom-marble"
       />
     </main>
   );

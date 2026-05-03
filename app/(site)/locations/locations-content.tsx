@@ -10,6 +10,7 @@ export function LocationsContent() {
       href="/home"
       label="Back to home"
       buttonClassName="bg-bom-orange text-bom-black font-sans font-medium antialiased w-full lg:w-auto lg:whitespace-nowrap items-center justify-center"
+      sectionClassName="bg-bom-lemon"
     />
   );
 }

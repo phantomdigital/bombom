@@ -27,6 +27,7 @@ type SitePlaceholderContentProps = {
    * When true (e.g. `(site)` not-found), use ink tuned for marble / light shell.
    */
   notFoundShellTypography?: boolean;
+  sectionClassName?: string;
 };
 
 export default function SitePlaceholderContent({
@@ -37,6 +38,7 @@ export default function SitePlaceholderContent({
   buttonClassName,
   syncOrderNowChromeWithHeader = false,
   notFoundShellTypography = false,
+  sectionClassName,
 }: SitePlaceholderContentProps) {
   const reduceMotion = useReducedMotion();
   const { isContentRevealed } = useSitePageTransition();
@@ -52,6 +54,7 @@ export default function SitePlaceholderContent({
     <motion.section
       className={cn(
         "min-h-[100dvh]",
+        sectionClassName,
         !isVisible && "pointer-events-none select-none"
       )}
       aria-hidden={!isVisible}

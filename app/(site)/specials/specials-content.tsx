@@ -11,6 +11,7 @@ export function SpecialsContent() {
       label="View the menu"
       syncOrderNowChromeWithHeader
       buttonClassName="bg-bom-dark-blue text-white font-sans font-medium antialiased w-full lg:w-auto lg:whitespace-nowrap items-center justify-center"
+      sectionClassName="bg-bom-orange"
     />
   );
 }

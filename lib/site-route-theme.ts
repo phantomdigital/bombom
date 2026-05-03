@@ -1,5 +1,5 @@
 /**
- * Per-route theme colours for `(site)` wipes and viewport backdrop.
+ * Per-route theme colours for `(site)` wipes and shell chrome.
  *
  * Each entry's `match` is a pathname prefix. Order matters: the first entry
  * whose `match` is a prefix of the current pathname wins, so list more
@@ -33,8 +33,8 @@ export const SITE_ROUTE_THEME: SiteRouteThemeEntry[] = [
   {
     match: "/menu",
     palette: {
-      css: "var(--color-bom-musk)",
-      hex: "#f7b7d3",
+      css: "var(--color-bom-berry)",
+      hex: "#7a0000",
     },
   },
   {
@@ -47,15 +47,15 @@ export const SITE_ROUTE_THEME: SiteRouteThemeEntry[] = [
   {
     match: "/specials",
     palette: {
-      css: "var(--color-bom-orange)",
-      hex: "#ff7040",
+      css: "var(--color-bom-lemon)",
+      hex: "#fad100",
     },
   },
   {
     match: "/story",
     palette: {
-      css: "var(--color-bom-marble)",
-      hex: "#f3f3f1",
+      css: "var(--color-bom-lime)",
+      hex: "#b6ec22",
     },
   },
   {
@@ -68,8 +68,8 @@ export const SITE_ROUTE_THEME: SiteRouteThemeEntry[] = [
 ];
 
 const DEFAULT_PALETTE: SitePalette = {
-  css: "var(--color-bom-marble)",
-  hex: "#f3f3f1",
+  css: "var(--color-bom-lime)",
+  hex: "#b6ec22",
 };
 
 export function getSitePalette(
@@ -97,7 +97,7 @@ export function siteBackdropIsDefaultUnthemed(
   return true;
 }
 
-/** @deprecated Prefer {@link siteBackdropIsDefaultUnthemed} — default shell is marble, not dark blue. */
+/** @deprecated Prefer {@link siteBackdropIsDefaultUnthemed} — default shell is lime, not dark blue. */
 export function siteBackdropIsDefaultDarkBlue(
   pathname: string | null | undefined
 ): boolean {
