@@ -5,18 +5,30 @@
  * local page motion stays synced with the wipe.
  */
 export const SITE_PAGE_TRANSITION = {
-  /** Top-to-fullscreen clip wipe (seconds). */
+  /** Top-led cover clip wipe grows downward (`cover` opens from top edge). */
   coverDurationS: 0.44,
+  /**
+   * Bottom-led cover wipes upward (`cover` opens from bottom). Slightly tighter so
+   * it doesn’t read slower than the top-led wipe with the same ease curve.
+   */
+  coverDurationFromBottomLeadS: 0.34,
   briefHoldS: 0.06,
   coverEase: [0.65, 0, 0.35, 1] as const,
   /** Shear during cover; keep at 0 to avoid seams at the wipe edge vs shell. */
   coverSkewDeg: 0,
-  /** Organic peel-away from the bottom after the brief hold. */
+  /** Organic peel-away when lead is top clip retires toward bottom. */
   revealSpring: {
     type: "spring" as const,
     stiffness: 420,
     damping: 38,
     mass: 0.85,
+  },
+  /** Slightly tighter when clip retires toward top (paired with bottom-led cover). */
+  revealSpringPeelTowardTop: {
+    type: "spring" as const,
+    stiffness: 560,
+    damping: 40,
+    mass: 0.72,
   },
 
   /** Extra wait after cover+hold before page content easing starts (feel + sync with peel). */
@@ -32,9 +44,13 @@ export const SITE_PAGE_TRANSITION = {
 };
 
 export function sitePageContentRevealDelayS(): number {
+  const coverWorstDuration = Math.max(
+    SITE_PAGE_TRANSITION.coverDurationS,
+    SITE_PAGE_TRANSITION.coverDurationFromBottomLeadS
+  );
   return Math.max(
     0,
-    SITE_PAGE_TRANSITION.coverDurationS +
+    coverWorstDuration +
       SITE_PAGE_TRANSITION.briefHoldS -
       SITE_PAGE_TRANSITION.contentRevealOverlapS +
       SITE_PAGE_TRANSITION.contentRevealStartPaddingS

@@ -77,7 +77,10 @@ const SitePageTransitionOverlay = forwardRef<SitePageTransitionOverlayHandle>(
             clipPath: CLIP_FULL,
             skewY: SITE_PAGE_TRANSITION.coverSkewDeg,
             transition: {
-              duration: SITE_PAGE_TRANSITION.coverDurationS,
+              duration:
+                lead === "top" ?
+                  SITE_PAGE_TRANSITION.coverDurationS
+                : SITE_PAGE_TRANSITION.coverDurationFromBottomLeadS,
               ease: SITE_PAGE_TRANSITION.coverEase,
             },
           });
@@ -92,7 +95,10 @@ const SitePageTransitionOverlay = forwardRef<SitePageTransitionOverlayHandle>(
           await controls.start({
             clipPath: revealEndClip,
             skewY: 0,
-            transition: SITE_PAGE_TRANSITION.revealSpring,
+            transition:
+              lead === "bottom" ?
+                SITE_PAGE_TRANSITION.revealSpringPeelTowardTop
+              : SITE_PAGE_TRANSITION.revealSpring,
           });
           nextLeadEdgeRef.current = lead === "top" ? "bottom" : "top";
         },
