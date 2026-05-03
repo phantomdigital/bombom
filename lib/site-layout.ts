@@ -16,9 +16,9 @@ export const SITE_CONTENT_EDGE_X_CLASS =
  */
 export const SITE_CONTENT_RAIL_BOX_CLASS = "mx-auto w-full max-w-[97rem]";
 
-/** Fixed header outer shell — inset from viewport edges (matches SITE_CONTENT_EDGE_X on X). */
+/** Fixed header outer shell — top + horizontal inset; `pb-0` avoids extra inset below chrome for body clearance. */
 export const SITE_HEADER_SHELL_CLASS =
-  "p-[3.6rem] sm:p-[4.5rem] lg:p-[1.9rem]";
+  "px-[3.6rem] pt-[3.6rem] pb-0 sm:px-[4.5rem] sm:pt-[4.5rem] sm:pb-0 lg:px-[1.9rem] lg:pt-[1.9rem] lg:pb-0";
 
 /** Alias — same string as SITE_HEADER_SHELL_CLASS. */
 export const SITE_HEADER_GUTTER_CLASS = SITE_HEADER_SHELL_CLASS;
