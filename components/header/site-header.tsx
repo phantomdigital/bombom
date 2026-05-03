@@ -31,6 +31,11 @@ import {
   getDefaultSeamChromeForPaletteHex,
   getSeamAwareLogoColor,
 } from "@/lib/seam-aware-logo-color";
+import {
+  SITE_CONTENT_RAIL_BOX_CLASS,
+  SITE_HEADER_SHELL_CLASS,
+  SITE_HEADER_TOTAL_HEIGHT_VAR,
+} from "@/lib/site-layout";
 import { getSitePalette } from "@/lib/site-route-theme";
 import { cn } from "@/lib/utils";
 
@@ -201,6 +206,16 @@ const COMPACT_HEADER_AFTER_VIEWPORT_RATIO = 0.72;
 const COMPACT_HEADER_MIN_SCROLL_Y = 320;
 /** Lenis / sub-pixel scroll can spike; keep high to avoid closing while hovering the header. */
 const POPOVER_CLOSE_SCROLL_DELTA = 72;
+const POPOVER_SCROLL_LOCK_KEYS = new Set([
+  " ",
+  "Spacebar",
+  "PageUp",
+  "PageDown",
+  "Home",
+  "End",
+  "ArrowUp",
+  "ArrowDown",
+]);
 
 /** Dual header swap targets Tailwind `lg` (see site layout); translate-only, no fade. */
 const LG_MEDIA_QUERY = "(min-width: 1024px)";
@@ -213,51 +228,31 @@ const HEADER_MODE_SLIDE_TRANSITION = {
 const HEADER_HANDOFF_COMPACT_HIDE_DELAY_MS = 560;
 const HEADER_HANDOFF_HERO_REVEAL_DELAY_MS = 500;
 
-/** Subtle swell + tiny twist during route wipes (readable but never loud). */
-const LOGO_TRANSIT_PULSE_ANIMATE = {
-  scale: [1, 1.034, 0.997, 1],
-  rotate: [0, -1.65, 0.65, 0],
-};
-const LOGO_SECOND_WORD_PULSE_ANIMATE = {
-  scale: [1, 1, 1.034, 0.997, 1],
-  rotate: [0, 0, -1.65, 0.65, 0],
-};
 const LOGO_TRANSIT_IDLE = { scale: 1, rotate: 0 };
-const LOGO_FIRST_WORD_LAYOUT_PULSE_ANIMATE = {
-  ...LOGO_TRANSIT_PULSE_ANIMATE,
-  marginRight: [0, 10, 0, 0],
-};
 const LOGO_FIRST_WORD_LAYOUT_IDLE = {
   ...LOGO_TRANSIT_IDLE,
   marginRight: 0,
 };
-const LOGO_WORD_STAGGER_S = 0.23;
-const LOGO_TRANSIT_PULSE_TWEEN = {
-  duration: 1.24,
-  times: [0, 0.4, 0.73, 1],
-  ease: [
-    [0.33, 1, 0.38, 1],
-    [0.45, 0, 0.55, 1],
-    [0.4, 1, 0.58, 1],
-  ] as [[number, number, number, number], [number, number, number, number], [number, number, number, number]],
+const LOGO_HOVER_HOLD = { scale: 1.035, rotate: -1.4 };
+const LOGO_FIRST_WORD_LAYOUT_HOVER_HOLD = {
+  ...LOGO_HOVER_HOLD,
+  marginRight: 10,
 };
-const LOGO_SECOND_WORD_PULSE_TWEEN = {
-  ...LOGO_TRANSIT_PULSE_TWEEN,
-  times: [0, LOGO_WORD_STAGGER_S / LOGO_TRANSIT_PULSE_TWEEN.duration, 0.4, 0.73, 1],
-  ease: [
-    "linear",
-    [0.33, 1, 0.38, 1],
-    [0.45, 0, 0.55, 1],
-    [0.4, 1, 0.58, 1],
-  ] as ["linear", [number, number, number, number], [number, number, number, number], [number, number, number, number]],
+const LOGO_HOVER_APPROACH = {
+  duration: 0.34,
+  ease: [0.25, 1, 0.35, 1] as [number, number, number, number],
+};
+const LOGO_WORD_STAGGER_S = 0.20;
+const LOGO_SECOND_WORD_HOVER_APPROACH = {
+  ...LOGO_HOVER_APPROACH,
+  delay: LOGO_WORD_STAGGER_S,
 };
 /**
- * Unlock → rest: eased tween only (never overshoots past scale 1 / 0°). Curve is
- * a bit brisk at first, longer soft landing vs the swipe-in pulse opener.
+ * After transition: single segment back to idle — short and decisive so it matches a quick gravity settle.
  */
 const LOGO_REST_SETTLE = {
-  duration: 1.06,
-  ease: [0.14, 0.68, 0.045, 1] as [number, number, number, number],
+  duration: 0.42,
+  ease: [0.2, 1, 0.3, 1] as [number, number, number, number],
 };
 
 export type SiteHeaderProps = {
@@ -294,6 +289,7 @@ export default function SiteHeader({
     null
   );
   const [isCompactHeaderActive, setIsCompactHeaderActive] = useState(false);
+  const [isLogoHovered, setIsLogoHovered] = useState(false);
   const lastScrollYRef = useRef(0);
   const isTickingRef = useRef(false);
   const headerRootRef = useRef<HTMLElement | null>(null);
@@ -301,6 +297,8 @@ export default function SiteHeader({
   const compactPillRef = useRef<HTMLDivElement | null>(null);
   const logoLinkRef = useRef<HTMLAnchorElement | null>(null);
   const wasInteractionDisabledRef = useRef(interactionDisabled);
+  const isPopoverScrollLockedRef = useRef(false);
+  const lockedPopoverScrollYRef = useRef(0);
   const [compactPillHandoffDelta, setCompactPillHandoffDelta] =
     useState<HeaderPillHandoffDelta | null>(null);
   const [isCompactPillHandoffSuppressed, setIsCompactPillHandoffSuppressed] =
@@ -327,6 +325,89 @@ export default function SiteHeader({
     popoverManager.close();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- close is stable; only react to interactionDisabled
   }, [interactionDisabled]);
+
+  useEffect(() => {
+    if (!popoverManager.activeHref) return;
+
+    isPopoverScrollLockedRef.current = true;
+    lockedPopoverScrollYRef.current = window.scrollY;
+
+    const restoreLockedScroll = () => {
+      if (!isPopoverScrollLockedRef.current) return;
+      if (window.scrollY === lockedPopoverScrollYRef.current) return;
+
+      window.scrollTo(window.scrollX, lockedPopoverScrollYRef.current);
+      lastScrollYRef.current = lockedPopoverScrollYRef.current;
+    };
+    const preventWheelScroll = (event: WheelEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+      window.requestAnimationFrame(restoreLockedScroll);
+    };
+    const preventTouchScroll = (event: TouchEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+      window.requestAnimationFrame(restoreLockedScroll);
+    };
+    const preventKeyboardScroll = (event: KeyboardEvent) => {
+      const target = event.target;
+
+      if (target instanceof HTMLElement) {
+        const tagName = target.tagName;
+        if (
+          target.isContentEditable ||
+          tagName === "INPUT" ||
+          tagName === "SELECT" ||
+          tagName === "TEXTAREA"
+        ) {
+          return;
+        }
+      }
+
+      if (POPOVER_SCROLL_LOCK_KEYS.has(event.key)) {
+        event.preventDefault();
+        event.stopPropagation();
+        window.requestAnimationFrame(restoreLockedScroll);
+      }
+    };
+    const handleScrollAttempt = () => {
+      window.requestAnimationFrame(restoreLockedScroll);
+    };
+
+    window.addEventListener("wheel", preventWheelScroll, {
+      capture: true,
+      passive: false,
+    });
+    document.addEventListener("wheel", preventWheelScroll, {
+      capture: true,
+      passive: false,
+    });
+    window.addEventListener("touchmove", preventTouchScroll, {
+      capture: true,
+      passive: false,
+    });
+    document.addEventListener("touchmove", preventTouchScroll, {
+      capture: true,
+      passive: false,
+    });
+    window.addEventListener("keydown", preventKeyboardScroll, {
+      capture: true,
+    });
+    window.addEventListener("scroll", handleScrollAttempt, {
+      capture: true,
+      passive: true,
+    });
+
+    return () => {
+      isPopoverScrollLockedRef.current = false;
+      document.removeEventListener("wheel", preventWheelScroll, true);
+      window.removeEventListener("wheel", preventWheelScroll, true);
+      document.removeEventListener("touchmove", preventTouchScroll, true);
+      window.removeEventListener("touchmove", preventTouchScroll, true);
+      window.removeEventListener("keydown", preventKeyboardScroll, true);
+      window.removeEventListener("scroll", handleScrollAttempt, true);
+    };
+  }, [popoverManager.activeHref]);
 
   useLayoutEffect(() => {
     const wasInteractionDisabled = wasInteractionDisabledRef.current;
@@ -389,6 +470,16 @@ export default function SiteHeader({
       isTickingRef.current = true;
 
       window.requestAnimationFrame(() => {
+        if (isPopoverScrollLockedRef.current) {
+          if (window.scrollY !== lockedPopoverScrollYRef.current) {
+            window.scrollTo(window.scrollX, lockedPopoverScrollYRef.current);
+          }
+
+          lastScrollYRef.current = lockedPopoverScrollYRef.current;
+          isTickingRef.current = false;
+          return;
+        }
+
         const currentScrollY = window.scrollY;
         const delta = currentScrollY - lastScrollYRef.current;
 
@@ -425,6 +516,31 @@ export default function SiteHeader({
   useLayoutEffect(() => {
     setOrderNowChrome?.(HEADER_ORDER_NOW_CHROME);
   }, [setOrderNowChrome]);
+
+  useLayoutEffect(() => {
+    const el = headerRootRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+
+    const docRoot = document.documentElement;
+
+    const sync = () => {
+      docRoot.style.setProperty(
+        SITE_HEADER_TOTAL_HEIGHT_VAR,
+        `${Math.round(el.getBoundingClientRect().height)}px`
+      );
+    };
+
+    sync();
+    const ro = new ResizeObserver(sync);
+    ro.observe(el);
+    window.addEventListener("resize", sync);
+
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", sync);
+      docRoot.style.removeProperty(SITE_HEADER_TOTAL_HEIGHT_VAR);
+    };
+  }, []);
 
   useLayoutEffect(() => {
     if (logoPlacement !== "outside-pill") return;
@@ -524,32 +640,32 @@ export default function SiteHeader({
   const logoMotionAnimate =
     reduceMotion ?
       LOGO_TRANSIT_IDLE
-    : interactionDisabled ?
-      LOGO_TRANSIT_PULSE_ANIMATE
+    : isLogoHovered ?
+      LOGO_HOVER_HOLD
     : LOGO_TRANSIT_IDLE;
   const firstLogoMotionAnimate =
     reduceMotion ?
       LOGO_FIRST_WORD_LAYOUT_IDLE
-    : interactionDisabled ?
-      LOGO_FIRST_WORD_LAYOUT_PULSE_ANIMATE
+    : isLogoHovered ?
+      LOGO_FIRST_WORD_LAYOUT_HOVER_HOLD
     : LOGO_FIRST_WORD_LAYOUT_IDLE;
   const logoMotionTransition =
     reduceMotion ?
       { duration: 0 }
-    : interactionDisabled ?
-      LOGO_TRANSIT_PULSE_TWEEN
+    : isLogoHovered ?
+      LOGO_HOVER_APPROACH
     : LOGO_REST_SETTLE;
   const secondLogoWordTransition =
     reduceMotion ?
       { duration: 0 }
-    : interactionDisabled ?
-      LOGO_SECOND_WORD_PULSE_TWEEN
+    : isLogoHovered ?
+      LOGO_SECOND_WORD_HOVER_APPROACH
     : LOGO_REST_SETTLE;
   const secondLogoMotionAnimate =
     reduceMotion ?
       LOGO_TRANSIT_IDLE
-    : interactionDisabled ?
-      LOGO_SECOND_WORD_PULSE_ANIMATE
+    : isLogoHovered ?
+      LOGO_HOVER_HOLD
     : LOGO_TRANSIT_IDLE;
   const logoVariant = logoPlacement === "outside-pill" ? "light" : "dark";
   const logoColor =
@@ -563,8 +679,15 @@ export default function SiteHeader({
     <Link
       ref={logoLinkRef}
       href="/home"
+      onPointerEnter={() => setIsLogoHovered(true)}
+      onPointerLeave={() => setIsLogoHovered(false)}
+      onFocus={() => setIsLogoHovered(true)}
+      onBlur={() => setIsLogoHovered(false)}
       className={cn(
-        "flex min-w-0 items-center rounded-full translate-x-[0.225rem] sm:translate-x-[0.3375rem]",
+        "flex min-w-0 items-center rounded-full",
+        /* Optical nudge for in-pill only; outside-pill should sit flush with content rail inset. */
+        logoPlacement !== "outside-pill" &&
+          "translate-x-[0.225rem] sm:translate-x-[0.3375rem]",
         logoPlacement === "outside-pill"
           ? "shrink-0 self-stretch"
           : "shrink",
@@ -608,7 +731,8 @@ export default function SiteHeader({
 
   const renderPrimaryNav = (
     disabled: boolean,
-    layoutClassName: string
+    layoutClassName: string,
+    megaPopoverAlignment: "trigger" | "viewport" = "trigger"
   ) => (
     <nav
       aria-label="Primary"
@@ -626,6 +750,7 @@ export default function SiteHeader({
           className={navLinkClass}
           manager={popoverManager}
           interactionDisabled={interactionDisabled || disabled}
+          megaPopoverAlignment={megaPopoverAlignment}
         />
       ))}
     </nav>
@@ -705,11 +830,12 @@ export default function SiteHeader({
         : undefined
       }
       className={cn(
-        "pointer-events-none fixed inset-x-0 top-0 z-[70] p-[3.6rem] sm:p-[4.5rem] lg:p-[2.7rem]",
+        "pointer-events-none fixed inset-x-0 top-0 z-[70]",
+        SITE_HEADER_SHELL_CLASS,
         interactionDisabled && "pointer-events-none"
       )}
     >
-      <div className="mx-auto w-full max-w-full">
+      <div className={SITE_CONTENT_RAIL_BOX_CLASS}>
         <div className="flex flex-col gap-[0.675rem]">
           <div className="relative lg:min-h-[5.75rem]">
             <motion.div
@@ -804,7 +930,11 @@ export default function SiteHeader({
                   isCompactPillHandoffSuppressed && "hidden"
                 )}
               >
-                {renderPrimaryNav(!isCompactHeaderActive, "w-auto shrink-0")}
+                {renderPrimaryNav(
+                  !isCompactHeaderActive,
+                  "w-auto shrink-0",
+                  "viewport"
+                )}
                 {renderHeaderActions()}
               </div>
             </motion.div>
