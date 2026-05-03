@@ -132,14 +132,14 @@ export default function HomeHero() {
       >
         <div
           className={cn(
-            "flex w-full max-w-xl min-h-[calc(100svh_-_var(--site-header-total-height,12.5rem))] flex-col items-center justify-center gap-10 px-4 text-center sm:max-w-2xl sm:gap-11 lg:max-w-3xl lg:gap-12 lg:py-20"
+            "flex w-full max-w-xl min-h-[calc(100svh_-_var(--site-header-total-height,12.5rem))] flex-col items-center justify-center gap-10 text-center sm:max-w-2xl sm:gap-11 sm:px-4 lg:max-w-3xl lg:gap-12 lg:py-20"
           )}
         >
           <h1 className="font-sans tracking-tight text-center text-bom-iris">
-            <span className="block text-2xl font-light leading-[1.2] sm:text-3xl lg:text-[3.25rem]">
+            <span className="block text-[clamp(2.15rem,10.5vw,3rem)] font-light leading-[1.08] sm:text-3xl lg:text-[3.25rem]">
               Tiny Koalas.
             </span>
-            <span className="block text-3xl font-[900] leading-[1.2] sm:text-4xl lg:text-[7rem]">
+            <span className="mt-1 block text-[clamp(3.45rem,15.5vw,5rem)] font-[900] leading-[1.25] sm:mt-0 sm:text-4xl lg:text-[7rem]">
               Big flavours.
             </span>
           </h1>
