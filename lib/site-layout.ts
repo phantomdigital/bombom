@@ -6,9 +6,9 @@
  * horizontal inset + max-width as that inner header rail.
  */
 
-/** Horizontal inset only; matches horizontal padding of SITE_HEADER_SHELL_CLASS. */
+/** Horizontal inset only; matches mobile fixed rails, then desktop header/content chrome. */
 export const SITE_CONTENT_EDGE_X_CLASS =
-  "px-[3.6rem] sm:px-[4.5rem] lg:px-[2.7rem]";
+  "px-[1rem] min-[1301px]:px-[2.7rem]";
 
 /**
  * Centered content rail (same inner wrapper as fixed header chrome).
@@ -16,9 +16,9 @@ export const SITE_CONTENT_EDGE_X_CLASS =
  */
 export const SITE_CONTENT_RAIL_BOX_CLASS = "mx-auto w-full max-w-[97rem]";
 
-/** Fixed header outer shell — top + horizontal inset; `pb-0` avoids extra inset below chrome for body clearance. */
+/** Fixed header outer shell — top + horizontal inset; mobile rails are fixed 1rem from edges. */
 export const SITE_HEADER_SHELL_CLASS =
-  "px-[3.6rem] pt-[3.6rem] pb-0 sm:px-[4.5rem] sm:pt-[4.5rem] sm:pb-0 lg:px-[1.9rem] lg:pt-[1.9rem] lg:pb-0";
+  "px-[1rem] pt-[1rem] pb-0 min-[1301px]:px-[1.9rem] min-[1301px]:pt-[1.9rem]";
 
 /** Alias — same string as SITE_HEADER_SHELL_CLASS. */
 export const SITE_HEADER_GUTTER_CLASS = SITE_HEADER_SHELL_CLASS;

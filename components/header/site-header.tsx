@@ -36,6 +36,7 @@ import {
   SITE_HEADER_SHELL_CLASS,
   SITE_HEADER_TOTAL_HEIGHT_VAR,
 } from "@/lib/site-layout";
+import { getSitePageRevealSurface } from "@/lib/site-page-reveal-surface";
 import { getSitePalette } from "@/lib/site-route-theme";
 import { cn } from "@/lib/utils";
 
@@ -217,8 +218,8 @@ const POPOVER_SCROLL_LOCK_KEYS = new Set([
   "ArrowDown",
 ]);
 
-/** Dual header swap targets Tailwind `lg` (see site layout); translate-only, no fade. */
-const LG_MEDIA_QUERY = "(min-width: 1024px)";
+/** Dual header swap only runs when logo + nav fit in one top row; below this the pill docks bottom. */
+const DESKTOP_HEADER_MEDIA_QUERY = "(min-width: 1301px)";
 const HEADER_MODE_SLIDE_PX = 148;
 const COMPACT_HEADER_OFFSCREEN_Y = -260;
 const HEADER_MODE_SLIDE_TRANSITION = {
@@ -257,6 +258,7 @@ const LOGO_REST_SETTLE = {
 
 export type SiteHeaderProps = {
   interactionDisabled?: boolean;
+  pageSurfaceHexOverride?: string | null;
   /**
    * `in-pill`: logo inside the white bar (default).
    * `outside-pill`: logo sits beside the bar with space between (flex `justify-between`).
@@ -266,15 +268,16 @@ export type SiteHeaderProps = {
 
 export default function SiteHeader({
   interactionDisabled = false,
+  pageSurfaceHexOverride = null,
   logoPlacement = "in-pill",
 }: SiteHeaderProps) {
   const pathname = usePathname();
   const reduceMotion = useReducedMotion();
-  /** Hero vs compact chrome swap reads `lg` breakpoint so mobile never inherits desktop motion. */
+  /** Hero vs compact chrome swap uses the top-row breakpoint so bottom-docked nav never inherits desktop motion. */
   const [viewportLg, setViewportLg] = useState(false);
   useLayoutEffect(() => {
     if (typeof window === "undefined") return;
-    const mq = window.matchMedia(LG_MEDIA_QUERY);
+    const mq = window.matchMedia(DESKTOP_HEADER_MEDIA_QUERY);
     const syncViewport = () => {
       setViewportLg(mq.matches);
     };
@@ -305,8 +308,12 @@ export default function SiteHeader({
     useState(false);
   const [isHeroPillHandoffSuppressed, setIsHeroPillHandoffSuppressed] =
     useState(false);
-  const paletteHex = getSitePalette(pathname).hex;
-  const routeLogoChrome = getDefaultSeamChromeForPaletteHex(paletteHex, "logo");
+  const pageSurfaceHex =
+    pageSurfaceHexOverride ?? getSitePageRevealSurface(pathname).hex;
+  const routeLogoChrome = getDefaultSeamChromeForPaletteHex(
+    pageSurfaceHex,
+    "logo"
+  );
   const outsidePillLogoInk = coerceBrandInk(routeLogoChrome.color);
 
   const logoColorRef = useRef(outsidePillLogoInk);
@@ -559,6 +566,16 @@ export default function SiteHeader({
   }, [logoPlacement, outsidePillLogoInk]);
 
   useLayoutEffect(() => {
+    if (logoPlacement !== "outside-pill" || interactionDisabled) return;
+
+    logoColorRef.current = outsidePillLogoInk;
+    headerRootRef.current?.style.setProperty(
+      "--seam-logo-color",
+      outsidePillLogoInk
+    );
+  }, [interactionDisabled, logoPlacement, outsidePillLogoInk]);
+
+  useLayoutEffect(() => {
     if (logoPlacement !== "outside-pill" || !interactionDisabled) return;
 
     let rafId: number | null = null;
@@ -682,7 +699,7 @@ export default function SiteHeader({
     logoPlacement === "outside-pill" ? "var(--seam-logo-color)" : undefined;
   const logoWordClassName =
     logoPlacement === "outside-pill" ?
-      "block h-[84px] w-auto sm:h-[92px] lg:h-[88px]"
+      "block h-[84px] w-auto sm:h-[92px] lg:h-[88px] max-[1300px]:h-auto max-[1300px]:w-1/2"
     : "block h-[21.6px] w-auto sm:h-[25.2px] lg:h-[28.8px]";
 
   const logoLink = (
@@ -699,16 +716,28 @@ export default function SiteHeader({
         logoPlacement !== "outside-pill" &&
           "translate-x-[0.225rem] sm:translate-x-[0.3375rem]",
         logoPlacement === "outside-pill"
-          ? "shrink-0 self-stretch"
+          ? "shrink-0 self-stretch max-[1300px]:pointer-events-auto max-[1300px]:fixed max-[1300px]:inset-x-[1rem] max-[1300px]:top-[1rem] max-[1300px]:z-[80] max-[1300px]:w-[calc(100vw-2rem)] max-[1300px]:self-auto max-[1300px]:supports-[padding:max(0px)]:top-[max(1rem,env(safe-area-inset-top))]"
           : "shrink",
         focusRing
       )}
       aria-label="BomBom Treats home"
     >
+      {logoPlacement === "outside-pill" ? (
+        <span className="hidden w-full max-[1300px]:block">
+          <BomBomLogo
+            variant={logoVariant}
+            color={logoColor}
+            className="block h-auto w-full"
+          />
+        </span>
+      ) : null}
       <span
         className={cn(
           "inline-flex max-w-full items-center",
-          logoPlacement === "outside-pill" ? "origin-left" : "origin-center"
+          logoPlacement === "outside-pill" && "max-[1300px]:hidden",
+          logoPlacement === "outside-pill" ?
+            "origin-left max-[1300px]:w-full"
+          : "origin-center"
         )}
       >
         <motion.span
@@ -747,7 +776,7 @@ export default function SiteHeader({
     <nav
       aria-label="Primary"
       className={cn(
-        "hidden min-w-0 items-center justify-end gap-[0.9rem] px-[0.9rem] lg:flex lg:gap-[1.8rem] lg:px-[1.35rem] xl:gap-0 xl:px-[1.8rem]",
+        "hidden min-w-0 items-center justify-end gap-[0.9rem] px-[0.9rem] min-[1301px]:flex min-[1301px]:gap-[1.8rem] min-[1301px]:px-[1.35rem] xl:gap-0 xl:px-[1.8rem]",
         layoutClassName
       )}
     >
@@ -769,14 +798,15 @@ export default function SiteHeader({
   const renderHeaderActions = (withInlineMargin = false) => (
     <div
       className={cn(
-        "flex shrink-0 items-center gap-[10.8px] sm:gap-[14.4px] lg:gap-[18px]",
+        "flex shrink-0 items-center gap-[10.8px] sm:gap-[14.4px] min-[1301px]:gap-[18px]",
+        "max-[1300px]:w-full max-[1300px]:shrink max-[1300px]:gap-3 sm:max-[1300px]:gap-4 md:max-[1300px]:gap-6",
         withInlineMargin && "ml-auto"
       )}
     >
-      <div className="box-border flex shrink-0 items-center gap-1 p-[0.788rem] sm:p-[0.788rem]">
+      <div className="box-border flex shrink-0 items-center gap-1 p-[0.788rem] sm:p-[0.788rem] max-[1300px]:w-full max-[1300px]:shrink max-[1300px]:gap-3 max-[1300px]:p-[0.45rem] sm:max-[1300px]:gap-4 md:max-[1300px]:gap-6">
         <Link
           href="/account"
-          className={accountIconButtonClass}
+          className={cn(accountIconButtonClass, "max-[1300px]:order-1")}
           aria-label="Account"
         >
           <AccountIcon
@@ -793,7 +823,8 @@ export default function SiteHeader({
           className={cn(
             orderNowButtonBaseClass,
             orderNowButtonDefaultColorsClass,
-            "border-0 shadow-none transition-[filter] hover:brightness-[0.92] motion-reduce:hover:brightness-100"
+            "border-0 shadow-none transition-[filter] hover:brightness-[0.92] motion-reduce:hover:brightness-100",
+            "max-[1300px]:order-2 max-[1300px]:min-w-0 max-[1300px]:flex-1"
           )}
         >
           <Link
@@ -814,7 +845,7 @@ export default function SiteHeader({
           aria-controls="site-mobile-nav"
           onClick={() => setIsMobileOpen((open) => !open)}
           className={cn(
-            "flex size-[65px] shrink-0 items-center justify-center rounded-full text-bom-black/80 transition-colors hover:bg-bom-black/[0.04] hover:text-bom-black lg:hidden",
+            "flex size-[65px] shrink-0 items-center justify-center rounded-full text-bom-black/80 transition-colors hover:bg-bom-black/[0.04] hover:text-bom-black min-[1301px]:hidden max-[1300px]:order-3",
             focusRing
           )}
         >
@@ -871,7 +902,7 @@ export default function SiteHeader({
               }
             >
               {logoPlacement === "outside-pill" ? (
-                <div className="mx-auto flex w-full items-stretch justify-between">
+                <div className="mx-auto flex w-full items-stretch justify-between max-[1300px]:block">
                   {logoLink}
                   <div
                     ref={heroPillRef}
@@ -880,6 +911,8 @@ export default function SiteHeader({
                       "flex w-fit max-w-full shrink-0 self-stretch items-center gap-[0.9rem] rounded-full bg-bom-white py-[0.675rem] pl-[0.9rem] pr-[0.675rem]",
                       "ring-1 ring-bom-black/[0.06]",
                       "sm:gap-[1.125rem] sm:py-[0.7875rem] sm:pl-[1.125rem] sm:pr-[0.788rem] lg:gap-1 lg:py-[0.45rem] lg:pl-[1.35rem] lg:pr-[0.9rem] xl:gap-0",
+                      "max-[1300px]:pointer-events-auto max-[1300px]:fixed max-[1300px]:inset-x-[1rem] max-[1300px]:bottom-[1rem] max-[1300px]:z-[80] max-[1300px]:mx-auto max-[1300px]:w-[calc(100vw-2rem)] max-[1300px]:justify-between max-[1300px]:self-auto max-[1300px]:px-[0.675rem]",
+                      "max-[1300px]:supports-[padding:max(0px)]:bottom-[max(1rem,env(safe-area-inset-bottom))]",
                       isHeroPillHandoffSuppressed && "opacity-0"
                     )}
                   >
@@ -959,7 +992,8 @@ export default function SiteHeader({
               className={cn(
                 "pointer-events-auto rounded-3xl bg-bom-white p-[0.675rem]",
                 "ring-1 ring-bom-black/[0.06]",
-                "lg:hidden"
+                "fixed inset-x-[1rem] bottom-[6.75rem] z-[90] max-h-[min(70svh,32rem)] overflow-y-auto overscroll-contain min-[1301px]:hidden",
+                "supports-[padding:max(0px)]:bottom-[max(6.75rem,calc(env(safe-area-inset-bottom)+6.75rem))]"
               )}
             >
               <ul className="flex flex-col gap-1">
