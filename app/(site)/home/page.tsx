@@ -8,7 +8,7 @@ export default function HomePreviewPage() {
     <main
       id="main-content"
       tabIndex={-1}
-      className="relative isolate flex min-h-0 w-full min-w-0 flex-1 flex-col bg-transparent"
+      className="relative isolate flex min-h-0 w-full min-w-0 flex-1 flex-col bg-bom-dark-blue"
     >
       <HomeContent />
       <HomeMenuOverviewPlaceholder />
