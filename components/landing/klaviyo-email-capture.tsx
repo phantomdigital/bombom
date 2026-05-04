@@ -252,12 +252,28 @@ export default function KlaviyoEmailCapture({
           )}
         >
           <div className="flex min-h-0 flex-1 flex-col justify-center pb-5 sm:pb-4">
-            <p className="font-sans text-3xl font-medium leading-tight tracking-tight text-bom-white sm:text-4xl lg:text-5xl">
+            <p
+              className={cn(
+                "font-sans text-3xl font-medium leading-tight tracking-tight sm:text-4xl lg:text-5xl",
+                onDarkSurface ? "text-bom-white" : "text-bom-ink"
+              )}
+            >
               {successMessage}
             </p>
           </div>
-          <div className="h-1 w-full shrink-0 bg-bom-white/15" aria-hidden>
-            <div className="h-full w-0 animate-success-progress bg-bom-white" />
+          <div
+            className={cn(
+              "h-1 w-full shrink-0",
+              onDarkSurface ? "bg-bom-white/15" : "bg-bom-ink/15"
+            )}
+            aria-hidden
+          >
+            <div
+              className={cn(
+                "h-full w-0 animate-success-progress",
+                onDarkSurface ? "bg-bom-white" : "bg-bom-ink"
+              )}
+            />
           </div>
         </div>
       ) : (
@@ -291,7 +307,15 @@ export default function KlaviyoEmailCapture({
               variant === 'default' && 'flex-col sm:flex-row items-stretch sm:items-center'
             )}
           >
-            <div className="relative min-w-0 flex-1 cursor-pointer lg:flex-[1_1_560px]">
+            <div
+              className={cn(
+                'relative min-w-0 cursor-pointer',
+                'w-full',
+                isStacked && 'shrink-0',
+                isInline && 'lg:min-w-0 lg:flex-[1_1_560px]',
+                variant === 'default' && 'shrink-0 sm:flex-1 sm:min-w-0',
+              )}
+            >
               <AnimatePresence mode="wait" initial={false}>
                 {showAnimatedPlaceholder && (
                   <motion.div
