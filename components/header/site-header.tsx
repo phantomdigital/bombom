@@ -3,6 +3,7 @@
 import {
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   type CSSProperties,
@@ -21,12 +22,39 @@ import BomBomLogo from "@/components/bombom-logo";
 import NavPopoverLink, {
   type NavPopoverConfig,
 } from "@/components/header/nav-popover-link";
+import { useCompactHeaderMode } from "@/components/header/hooks/useCompactHeaderMode";
 import { useHeaderPopoverManager } from "@/components/header/hooks/useHeaderPopoverManager";
+import { useHeaderPillHandoff } from "@/components/header/hooks/useHeaderPillHandoff";
+import { useHeaderScrollLock } from "@/components/header/hooks/useHeaderScrollLock";
+import { useLogoHoverMotionState } from "@/components/header/hooks/useLogoHoverMotionState";
+import { useViewportLg } from "@/components/header/hooks/useViewportLg";
+import {
+  COMPACT_HEADER_OFFSCREEN_Y,
+  DESKTOP_HEADER_MEDIA_QUERY,
+  HEADER_HANDOFF_COMPACT_HIDE_DELAY_MS,
+  HEADER_HANDOFF_HERO_REVEAL_DELAY_MS,
+  HEADER_MODE_SLIDE_PX,
+  HEADER_MODE_SLIDE_TRANSITION,
+  LOGO_FIRST_WORD_LAYOUT_HOVER_HOLD,
+  LOGO_FIRST_WORD_LAYOUT_IDLE,
+  LOGO_HOVER_APPROACH,
+  LOGO_HOVER_APPROACH_TOTAL_MS,
+  LOGO_HOVER_HOLD,
+  LOGO_REST_SETTLE,
+  LOGO_SECOND_WORD_HOVER_APPROACH,
+  LOGO_TRANSIT_IDLE,
+} from "@/components/header/header-motion.constants";
+import {
+  DEFAULT_HEADER_NAV_ITEMS,
+  type HeaderNavIconKey,
+  type HeaderNavItem,
+  type HeaderNavPopoverConfig,
+  type HeaderNavPopoverMegaGroup,
+} from "@/components/header/nav-items";
 import AccountIcon from "@/components/icons/account-icon";
 import { useSiteHeaderOrderNowChromeSetter } from "@/components/site/site-header-order-now-chrome-context";
 import { Button } from "@/components/ui/button";
 import { focusRing } from "@/components/ui/focus-ring";
-import { productCategories } from "@/lib/categories";
 import {
   getDefaultSeamChromeForPaletteHex,
   getSeamAwareLogoColor,
@@ -37,121 +65,7 @@ import {
   SITE_HEADER_TOTAL_HEIGHT_VAR,
 } from "@/lib/site-layout";
 import { getSitePageRevealSurface } from "@/lib/site-page-reveal-surface";
-import { getSitePalette } from "@/lib/site-route-theme";
 import { cn } from "@/lib/utils";
-
-/** Chrome / pills / gutters use ~90% spacing; desktop nav stays `text-xl`; account shell, Order bomPill & icon glyphs stay baseline size */
-
-type NavItem = {
-  href: string;
-  label: string;
-  popover?: NavPopoverConfig;
-};
-
-type HeaderPillHandoffDelta = {
-  x: number;
-};
-
-const NAV_ITEMS: NavItem[] = [
-  {
-    href: "/menu",
-    label: "Menu",
-    popover: {
-      variant: "mega",
-      groups: [
-        {
-          href: "/menu/soft-serve",
-          label: "Soft serve",
-          description: "Swirls, drops, and seasonal flavours.",
-          imageLabel: "Soft serve placeholder",
-          heroTintClassName: "bg-bom-ice",
-          icon: IceCreamIcon,
-          items: [
-            {
-              href: "/menu/soft-serve",
-              label: "Monthly flavour",
-              description: "The current swirl on rotation.",
-            },
-            {
-              href: "/specials",
-              label: "Limited specials",
-              description: "Short-run flavours and launch treats.",
-            },
-          ],
-        },
-        {
-          href: "/menu/cakes",
-          label: "Cakes & celebrations",
-          description: "Gelato cakes and party-ready treats.",
-          imageLabel: "Cake placeholder",
-          heroTintClassName: "bg-bom-violet",
-          icon: CakeIcon,
-          items: [
-            {
-              href: "/menu/cakes",
-              label: "Gelato cakes",
-              description: "Layered cakes for birthdays and events.",
-            },
-            {
-              href: "/menu/take-home",
-              label: "Take-home tubs",
-              description: "Treats for the freezer.",
-            },
-          ],
-        },
-        {
-          href: "/menu/desserts",
-          label: "Coffee & desserts",
-          description: "Affogato, coffee, and sweet extras.",
-          imageLabel: "Dessert placeholder",
-          heroTintClassName: "bg-bom-orange",
-          icon: CoffeeIcon,
-          items: productCategories.slice(3).map((category) => ({
-            href: category.href,
-            label: category.name,
-            description: category.description,
-          })),
-        },
-      ],
-    },
-  },
-  {
-    href: "/specials",
-    label: "Specials",
-    popover: {
-      variant: "compact",
-      items: [
-        { href: "/specials", label: "Monthly specials" },
-        { href: "/menu/soft-serve", label: "Soft serve drops" },
-        { href: "/menu/cakes", label: "Celebration cakes" },
-      ],
-    },
-  },
-  {
-    href: "/story",
-    label: "Story",
-    popover: {
-      variant: "compact",
-      items: [
-        { href: "/story", label: "About BomBom" },
-        { href: "/story#ingredients", label: "Ingredients" },
-        { href: "/story#community", label: "Community" },
-      ],
-    },
-  },
-  {
-    href: "/locations",
-    label: "Visit",
-    popover: {
-      variant: "compact",
-      items: [
-        { href: "/locations", label: "Wagga Wagga store" },
-        { href: "/locations#hours", label: "Opening hours" },
-        { href: "/locations#contact", label: "Contact" },
-      ],
-    },
-  },
-];
 
 const navLinkClass =
   cn(
@@ -159,22 +73,18 @@ const navLinkClass =
     focusRing
   );
 
-/** Matches `/home` View menu sizing (`bomPill` defaults); header uses `w-auto` not hero `w-full`. */
 const orderNowButtonBaseClass =
   "shrink-0 font-sans font-medium antialiased w-auto lg:whitespace-nowrap items-center justify-center !h-[65px] !min-h-[65px] !px-[58px] !text-base";
 
 const orderNowButtonDefaultColorsClass = "bg-bom-ink text-bom-white";
 
-/** Canonical soft-black ink token (`globals.css`: `--bom-ink`). */
 const BOM_INK_CSS_VAR = "var(--bom-ink)";
 
-/** Fill + label for synced CTAs; `fill` mirrors Order pill (`--bom-order-now-fill` aliases `--bom-ink`). */
 const HEADER_ORDER_NOW_CHROME = {
   fill: BOM_INK_CSS_VAR,
   foreground: "var(--color-bom-white)",
 } as const;
 
-/** Map palette/seam-returned pure blacks to `:root --bom-ink`. */
 function isPureBlackInk(cssColor: string): boolean {
   const t = cssColor.trim().toLowerCase();
   return (
@@ -185,7 +95,6 @@ function isPureBlackInk(cssColor: string): boolean {
   );
 }
 
-/** Replace `#000` / `rgb(0,0,0)` with semantic brand ink everywhere the header writes logo colour. */
 function coerceBrandInk(cssColor: string): string {
   return isPureBlackInk(cssColor) ? BOM_INK_CSS_VAR : cssColor;
 }
@@ -196,7 +105,6 @@ const mobileLinkClass =
     focusRing
   );
 
-/** Same height as `Button` `size="bomPill"` (`h-[65px]`). */
 const accountIconButtonClass =
   cn(
     "inline-flex size-[65px] shrink-0 items-center justify-center rounded-md bg-bom-white text-bom-black/90 transition-colors hover:bg-neutral-200 hover:text-bom-black",
@@ -218,47 +126,39 @@ const POPOVER_SCROLL_LOCK_KEYS = new Set([
   "ArrowDown",
 ]);
 
-/** Dual header swap only runs when logo + nav fit in one top row; below this the pill docks bottom. */
-const DESKTOP_HEADER_MEDIA_QUERY = "(min-width: 1301px)";
-const HEADER_MODE_SLIDE_PX = 148;
-const COMPACT_HEADER_OFFSCREEN_Y = -260;
-const HEADER_MODE_SLIDE_TRANSITION = {
-  duration: 0.5,
-  ease: [0.4, 0, 0.2, 1] as const,
-};
-const HEADER_HANDOFF_COMPACT_HIDE_DELAY_MS = 880;
-const HEADER_HANDOFF_HERO_REVEAL_DELAY_MS = 820;
+const HEADER_ICON_BY_KEY = {
+  iceCream: IceCreamIcon,
+  cake: CakeIcon,
+  coffee: CoffeeIcon,
+} as const satisfies Record<HeaderNavIconKey, unknown>;
 
-const LOGO_TRANSIT_IDLE = { scale: 1, rotate: 0 };
-const LOGO_FIRST_WORD_LAYOUT_IDLE = {
-  ...LOGO_TRANSIT_IDLE,
-  marginRight: 0,
-};
-const LOGO_HOVER_HOLD = { scale: 1.035, rotate: -1.4 };
-const LOGO_FIRST_WORD_LAYOUT_HOVER_HOLD = {
-  ...LOGO_HOVER_HOLD,
-  marginRight: 10,
-};
-const LOGO_HOVER_APPROACH = {
-  duration: 0.34,
-  ease: [0.25, 1, 0.35, 1] as [number, number, number, number],
-};
-const LOGO_WORD_STAGGER_S = 0.20;
-const LOGO_SECOND_WORD_HOVER_APPROACH = {
-  ...LOGO_HOVER_APPROACH,
-  delay: LOGO_WORD_STAGGER_S,
-};
-/**
- * After transition: single segment back to idle — short and decisive so it matches a quick gravity settle.
- */
-const LOGO_REST_SETTLE = {
-  duration: 0.42,
-  ease: [0.2, 1, 0.3, 1] as [number, number, number, number],
-};
+function hydrateMegaGroup(group: HeaderNavPopoverMegaGroup) {
+  const icon =
+    group.iconKey ? HEADER_ICON_BY_KEY[group.iconKey] : undefined;
+
+  return {
+    ...group,
+    icon,
+  };
+}
+
+function hydrateNavPopover(
+  popover?: HeaderNavPopoverConfig
+): NavPopoverConfig | undefined {
+  if (!popover) return undefined;
+  if (popover.variant === "mega") {
+    return {
+      ...popover,
+      groups: popover.groups.map(hydrateMegaGroup),
+    };
+  }
+  return popover;
+}
 
 export type SiteHeaderProps = {
   interactionDisabled?: boolean;
   pageSurfaceHexOverride?: string | null;
+  navItems?: HeaderNavItem[];
   /**
    * `in-pill`: logo inside the white bar (default).
    * `outside-pill`: logo sits beside the bar with space between (flex `justify-between`).
@@ -269,45 +169,22 @@ export type SiteHeaderProps = {
 export default function SiteHeader({
   interactionDisabled = false,
   pageSurfaceHexOverride = null,
+  navItems = DEFAULT_HEADER_NAV_ITEMS,
   logoPlacement = "in-pill",
 }: SiteHeaderProps) {
   const pathname = usePathname();
   const reduceMotion = useReducedMotion();
-  /** Hero vs compact chrome swap uses the top-row breakpoint so bottom-docked nav never inherits desktop motion. */
-  const [viewportLg, setViewportLg] = useState(false);
-  useLayoutEffect(() => {
-    if (typeof window === "undefined") return;
-    const mq = window.matchMedia(DESKTOP_HEADER_MEDIA_QUERY);
-    const syncViewport = () => {
-      setViewportLg(mq.matches);
-    };
-    syncViewport();
-    mq.addEventListener("change", syncViewport);
-    return () => mq.removeEventListener("change", syncViewport);
-  }, []);
+  const viewportLg = useViewportLg(DESKTOP_HEADER_MEDIA_QUERY);
 
   const popoverManager = useHeaderPopoverManager();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [expandedMobileHref, setExpandedMobileHref] = useState<string | null>(
     null
   );
-  const [isCompactHeaderActive, setIsCompactHeaderActive] = useState(false);
-  const [isLogoHovered, setIsLogoHovered] = useState(false);
-  const lastScrollYRef = useRef(0);
-  const isTickingRef = useRef(false);
   const headerRootRef = useRef<HTMLElement | null>(null);
   const heroPillRef = useRef<HTMLDivElement | null>(null);
   const compactPillRef = useRef<HTMLDivElement | null>(null);
   const logoLinkRef = useRef<HTMLAnchorElement | null>(null);
-  const wasInteractionDisabledRef = useRef(interactionDisabled);
-  const isPopoverScrollLockedRef = useRef(false);
-  const lockedPopoverScrollYRef = useRef(0);
-  const [compactPillHandoffDelta, setCompactPillHandoffDelta] =
-    useState<HeaderPillHandoffDelta | null>(null);
-  const [isCompactPillHandoffSuppressed, setIsCompactPillHandoffSuppressed] =
-    useState(false);
-  const [isHeroPillHandoffSuppressed, setIsHeroPillHandoffSuppressed] =
-    useState(false);
   const pageSurfaceHex =
     pageSurfaceHexOverride ?? getSitePageRevealSurface(pathname).hex;
   const routeLogoChrome = getDefaultSeamChromeForPaletteHex(
@@ -317,212 +194,69 @@ export default function SiteHeader({
   const outsidePillLogoInk = coerceBrandInk(routeLogoChrome.color);
 
   const logoColorRef = useRef(outsidePillLogoInk);
+  const {
+    effectiveLogoHovered,
+    handleLogoHoverEnter,
+    handleLogoHoverLeave,
+    resetLogoHoverMotion,
+  } = useLogoHoverMotionState({
+    interactionDisabled,
+    reduceMotion: !!reduceMotion,
+    hoverApproachTotalMs: LOGO_HOVER_APPROACH_TOTAL_MS,
+  });
+  const { isPopoverScrollLockedRef, lockedPopoverScrollYRef } =
+    useHeaderScrollLock({
+      activeHref: popoverManager.activeHref,
+      scrollLockKeys: POPOVER_SCROLL_LOCK_KEYS,
+    });
+  const { isCompactHeaderActive, setIsCompactHeaderActive } = useCompactHeaderMode({
+    interactionDisabled,
+    isMobileOpen,
+    popoverCloseScrollDelta: POPOVER_CLOSE_SCROLL_DELTA,
+    compactHeaderMinScrollY: COMPACT_HEADER_MIN_SCROLL_Y,
+    compactHeaderAfterViewportRatio: COMPACT_HEADER_AFTER_VIEWPORT_RATIO,
+    isPopoverScrollLockedRef,
+    lockedPopoverScrollYRef,
+    onPopoverClose: popoverManager.close,
+  });
+  const {
+    compactPillHandoffDelta,
+    isCompactPillHandoffSuppressed,
+    isHeroPillHandoffSuppressed,
+  } = useHeaderPillHandoff({
+    interactionDisabled,
+    viewportLg,
+    isCompactHeaderActive,
+    heroPillRef,
+    compactPillRef,
+    reduceMotion: !!reduceMotion,
+    compactHideDelayMs: HEADER_HANDOFF_COMPACT_HIDE_DELAY_MS,
+    heroRevealDelayMs: HEADER_HANDOFF_HERO_REVEAL_DELAY_MS,
+  });
+  const hydratedNavItems = useMemo(
+    () =>
+      navItems.map((item) => ({
+        ...item,
+        popover: hydrateNavPopover(item.popover),
+      })),
+    [navItems]
+  );
 
   useEffect(() => {
     setIsMobileOpen(false);
     setExpandedMobileHref(null);
     popoverManager.close();
     setIsCompactHeaderActive(false);
-    // Don't clear compactPillHandoffDelta or hero suppression here — the handoff sequence
-    // needs them locked through unmount; cleanup happens when interactionDisabled flips off.
+    resetLogoHoverMotion();
+    // Keep handoff state through route swaps; cleared when interaction lock ends.
     // eslint-disable-next-line react-hooks/exhaustive-deps -- close is stable; we only want to reset on pathname change
   }, [pathname]);
-
-  useEffect(() => {
-    if (isCompactHeaderActive) {
-      setIsCompactPillHandoffSuppressed(false);
-    }
-  }, [isCompactHeaderActive]);
 
   useEffect(() => {
     if (!interactionDisabled) return;
     popoverManager.close();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- close is stable; only react to interactionDisabled
   }, [interactionDisabled]);
-
-  useEffect(() => {
-    if (!popoverManager.activeHref) return;
-
-    isPopoverScrollLockedRef.current = true;
-    lockedPopoverScrollYRef.current = window.scrollY;
-
-    const restoreLockedScroll = () => {
-      if (!isPopoverScrollLockedRef.current) return;
-      if (window.scrollY === lockedPopoverScrollYRef.current) return;
-
-      window.scrollTo(window.scrollX, lockedPopoverScrollYRef.current);
-      lastScrollYRef.current = lockedPopoverScrollYRef.current;
-    };
-    const preventWheelScroll = (event: WheelEvent) => {
-      event.preventDefault();
-      event.stopPropagation();
-      window.requestAnimationFrame(restoreLockedScroll);
-    };
-    const preventTouchScroll = (event: TouchEvent) => {
-      event.preventDefault();
-      event.stopPropagation();
-      window.requestAnimationFrame(restoreLockedScroll);
-    };
-    const preventKeyboardScroll = (event: KeyboardEvent) => {
-      const target = event.target;
-
-      if (target instanceof HTMLElement) {
-        const tagName = target.tagName;
-        if (
-          target.isContentEditable ||
-          tagName === "INPUT" ||
-          tagName === "SELECT" ||
-          tagName === "TEXTAREA"
-        ) {
-          return;
-        }
-      }
-
-      if (POPOVER_SCROLL_LOCK_KEYS.has(event.key)) {
-        event.preventDefault();
-        event.stopPropagation();
-        window.requestAnimationFrame(restoreLockedScroll);
-      }
-    };
-    const handleScrollAttempt = () => {
-      window.requestAnimationFrame(restoreLockedScroll);
-    };
-
-    window.addEventListener("wheel", preventWheelScroll, {
-      capture: true,
-      passive: false,
-    });
-    document.addEventListener("wheel", preventWheelScroll, {
-      capture: true,
-      passive: false,
-    });
-    window.addEventListener("touchmove", preventTouchScroll, {
-      capture: true,
-      passive: false,
-    });
-    document.addEventListener("touchmove", preventTouchScroll, {
-      capture: true,
-      passive: false,
-    });
-    window.addEventListener("keydown", preventKeyboardScroll, {
-      capture: true,
-    });
-    window.addEventListener("scroll", handleScrollAttempt, {
-      capture: true,
-      passive: true,
-    });
-
-    return () => {
-      isPopoverScrollLockedRef.current = false;
-      document.removeEventListener("wheel", preventWheelScroll, true);
-      window.removeEventListener("wheel", preventWheelScroll, true);
-      document.removeEventListener("touchmove", preventTouchScroll, true);
-      window.removeEventListener("touchmove", preventTouchScroll, true);
-      window.removeEventListener("keydown", preventKeyboardScroll, true);
-      window.removeEventListener("scroll", handleScrollAttempt, true);
-    };
-  }, [popoverManager.activeHref]);
-
-  useLayoutEffect(() => {
-    const wasInteractionDisabled = wasInteractionDisabledRef.current;
-    wasInteractionDisabledRef.current = interactionDisabled;
-
-    if (!interactionDisabled) {
-      setCompactPillHandoffDelta(null);
-      setIsHeroPillHandoffSuppressed(false);
-      return;
-    }
-
-    if (
-      wasInteractionDisabled ||
-      !viewportLg ||
-      !isCompactHeaderActive ||
-      !heroPillRef.current ||
-      !compactPillRef.current
-    ) {
-      return;
-    }
-
-    const heroRect = heroPillRef.current.getBoundingClientRect();
-    const compactRect = compactPillRef.current.getBoundingClientRect();
-
-    setIsCompactPillHandoffSuppressed(false);
-    setIsHeroPillHandoffSuppressed(true);
-    setCompactPillHandoffDelta({
-      x: heroRect.left - compactRect.left,
-    });
-  }, [interactionDisabled, isCompactHeaderActive, viewportLg]);
-
-  useEffect(() => {
-    if (!compactPillHandoffDelta) return;
-
-    const timeoutId = window.setTimeout(
-      () => setIsCompactPillHandoffSuppressed(true),
-      reduceMotion ? 0 : HEADER_HANDOFF_COMPACT_HIDE_DELAY_MS
-    );
-
-    return () => window.clearTimeout(timeoutId);
-  }, [compactPillHandoffDelta, reduceMotion]);
-
-  useEffect(() => {
-    if (!compactPillHandoffDelta) return;
-
-    const timeoutId = window.setTimeout(
-      () => setIsHeroPillHandoffSuppressed(false),
-      reduceMotion ? 0 : HEADER_HANDOFF_HERO_REVEAL_DELAY_MS
-    );
-
-    return () => window.clearTimeout(timeoutId);
-  }, [compactPillHandoffDelta, reduceMotion]);
-
-  useEffect(() => {
-    lastScrollYRef.current = window.scrollY;
-
-    function requestScrollUpdate() {
-      if (isTickingRef.current) return;
-      isTickingRef.current = true;
-
-      window.requestAnimationFrame(() => {
-        if (isPopoverScrollLockedRef.current) {
-          if (window.scrollY !== lockedPopoverScrollYRef.current) {
-            window.scrollTo(window.scrollX, lockedPopoverScrollYRef.current);
-          }
-
-          lastScrollYRef.current = lockedPopoverScrollYRef.current;
-          isTickingRef.current = false;
-          return;
-        }
-
-        const currentScrollY = window.scrollY;
-        const delta = currentScrollY - lastScrollYRef.current;
-
-        if (Math.abs(delta) > POPOVER_CLOSE_SCROLL_DELTA) {
-          popoverManager.close();
-        }
-
-        const compactThreshold = Math.max(
-          COMPACT_HEADER_MIN_SCROLL_Y,
-          window.innerHeight * COMPACT_HEADER_AFTER_VIEWPORT_RATIO
-        );
-        setIsCompactHeaderActive(
-          !isMobileOpen && currentScrollY > compactThreshold
-        );
-
-        lastScrollYRef.current = currentScrollY;
-        isTickingRef.current = false;
-      });
-    }
-
-    requestScrollUpdate();
-    window.addEventListener("scroll", requestScrollUpdate, { passive: true });
-    window.addEventListener("resize", requestScrollUpdate);
-
-    return () => {
-      window.removeEventListener("scroll", requestScrollUpdate);
-      window.removeEventListener("resize", requestScrollUpdate);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- close is stable; avoid re-subscribing on every state change
-  }, [interactionDisabled, isMobileOpen]);
 
   const setOrderNowChrome = useSiteHeaderOrderNowChromeSetter();
 
@@ -667,31 +401,31 @@ export default function SiteHeader({
   const logoMotionAnimate =
     reduceMotion ?
       LOGO_TRANSIT_IDLE
-    : isLogoHovered ?
+    : effectiveLogoHovered ?
       LOGO_HOVER_HOLD
     : LOGO_TRANSIT_IDLE;
   const firstLogoMotionAnimate =
     reduceMotion ?
       LOGO_FIRST_WORD_LAYOUT_IDLE
-    : isLogoHovered ?
+    : effectiveLogoHovered ?
       LOGO_FIRST_WORD_LAYOUT_HOVER_HOLD
     : LOGO_FIRST_WORD_LAYOUT_IDLE;
   const logoMotionTransition =
     reduceMotion ?
       { duration: 0 }
-    : isLogoHovered ?
+    : effectiveLogoHovered ?
       LOGO_HOVER_APPROACH
     : LOGO_REST_SETTLE;
   const secondLogoWordTransition =
     reduceMotion ?
       { duration: 0 }
-    : isLogoHovered ?
+    : effectiveLogoHovered ?
       LOGO_SECOND_WORD_HOVER_APPROACH
     : LOGO_REST_SETTLE;
   const secondLogoMotionAnimate =
     reduceMotion ?
       LOGO_TRANSIT_IDLE
-    : isLogoHovered ?
+    : effectiveLogoHovered ?
       LOGO_HOVER_HOLD
     : LOGO_TRANSIT_IDLE;
   const logoVariant = logoPlacement === "outside-pill" ? "light" : "dark";
@@ -706,10 +440,10 @@ export default function SiteHeader({
     <Link
       ref={logoLinkRef}
       href="/home"
-      onPointerEnter={() => setIsLogoHovered(true)}
-      onPointerLeave={() => setIsLogoHovered(false)}
-      onFocus={() => setIsLogoHovered(true)}
-      onBlur={() => setIsLogoHovered(false)}
+      onPointerEnter={handleLogoHoverEnter}
+      onPointerLeave={handleLogoHoverLeave}
+      onFocus={handleLogoHoverEnter}
+      onBlur={handleLogoHoverLeave}
       className={cn(
         "flex min-w-0 items-center rounded-full",
         /* Optical nudge for in-pill only; outside-pill should sit flush with content rail inset. */
@@ -780,7 +514,7 @@ export default function SiteHeader({
         layoutClassName
       )}
     >
-      {NAV_ITEMS.map((item) => (
+      {hydratedNavItems.map((item) => (
         <NavPopoverLink
           key={item.href}
           href={item.href}
@@ -997,7 +731,7 @@ export default function SiteHeader({
               )}
             >
               <ul className="flex flex-col gap-1">
-                {NAV_ITEMS.map((item) => {
+                {hydratedNavItems.map((item) => {
                   const isExpanded = expandedMobileHref === item.href;
 
                   return (

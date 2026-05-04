@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { DEFAULT_HEADER_NAV_ITEMS } from "@/components/header/nav-items";
 import SiteChrome from "@/components/site/site-chrome";
 
 /**
@@ -9,5 +10,7 @@ import SiteChrome from "@/components/site/site-chrome";
  * `{children}`, which is wrapped per navigation by `(site)/template.tsx`.
  */
 export default function SiteLayout({ children }: { children: ReactNode }) {
-  return <SiteChrome>{children}</SiteChrome>;
+  return (
+    <SiteChrome headerNavItems={DEFAULT_HEADER_NAV_ITEMS}>{children}</SiteChrome>
+  );
 }

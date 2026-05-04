@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { useReducedMotion } from "framer-motion";
 import { usePathname, useRouter } from "next/navigation";
+import type { HeaderNavItem } from "@/components/header/nav-items";
 import SiteHeaderLogoOutside from "@/components/header/site-header-logo-outside";
 import { SiteHeaderOrderNowChromeProvider } from "@/components/site/site-header-order-now-chrome-context";
 import { SitePageTransitionProvider } from "@/components/site/site-page-transition-context";
@@ -28,7 +29,13 @@ function scrollToPageTop() {
  * Browser back/forward (pathname change without a click) falls back to the
  * same cover → hold → peel sequence driven by a `pathname` effect.
  */
-export default function SiteChrome({ children }: { children: ReactNode }) {
+export default function SiteChrome({
+  children,
+  headerNavItems,
+}: {
+  children: ReactNode;
+  headerNavItems: HeaderNavItem[];
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const reduceMotion = useReducedMotion();
@@ -241,6 +248,7 @@ export default function SiteChrome({ children }: { children: ReactNode }) {
           <SiteHeaderLogoOutside
             interactionDisabled={isNavigationLocked}
             pageSurfaceHexOverride={pageSurfaceHexOverride}
+            navItems={headerNavItems}
           />
           <SitePageTransitionProvider isContentRevealed={isContentRevealed}>
             {children}
