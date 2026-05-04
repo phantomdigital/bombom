@@ -2,7 +2,7 @@ import SiteChromeRail from "@/components/site/site-chrome-rail";
 import CategoryCard from "@/components/categories/category-card";
 import { productCategories } from "@/lib/categories";
 
-const MENU_OVERVIEW_CARDS = productCategories.slice(0, 3);
+const MENU_OVERVIEW_CARDS = productCategories.slice(0, 4);
 
 const MENU_CARD_LOREM = [
   {
@@ -16,6 +16,10 @@ const MENU_CARD_LOREM = [
   {
     title: "Quis nostrud",
     description: "Exercitation ullamco laboris nisi ut aliquip ex ea commodo.",
+  },
+  {
+    title: "Duis aute irure",
+    description: "Dolor in reprehenderit in voluptate velit esse cillum dolore.",
   },
 ] as const;
 
@@ -40,13 +44,14 @@ export default function HomeMenuOverviewPlaceholder() {
         <p className="mt-4 max-w-xl font-sans text-base leading-snug text-bom-black/75 sm:text-lg">
           Consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.
         </p>
-        <ul className="mt-16 grid list-none grid-cols-1 gap-y-14 sm:gap-y-16 md:mt-20 md:grid-cols-3 md:gap-x-10 md:gap-y-0 lg:gap-x-14">
+        <ul className="mt-16 grid w-full list-none grid-cols-1 gap-x-4 gap-y-8 min-[640px]:grid-cols-2 min-[640px]:gap-x-6 min-[640px]:gap-y-10 min-[900px]:grid-cols-4 min-[900px]:gap-x-16 min-[900px]:gap-y-8 md:mt-20">
           {MENU_OVERVIEW_CARDS.map((category, index) => {
             const lorem = MENU_CARD_LOREM[index];
             return (
-              <li key={category.id} className="min-w-0">
+              <li key={category.id} className="min-w-0 w-full">
                 <CategoryCard
                   category={category}
+                  compact
                   title={lorem.title}
                   description={lorem.description}
                 />
