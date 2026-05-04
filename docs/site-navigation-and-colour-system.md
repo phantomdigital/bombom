@@ -56,6 +56,34 @@ The click path is:
 
 Browser back/forward uses a similar `pathname` effect fallback: cover, hold, set shell colour, peel, reveal.
 
+## Navigation lock, content reveal, and header
+
+This is the glue between `SiteChrome` and everything that must stay coherent during a wipe.
+
+### Shell state
+
+| State | Owner | Role |
+| --- | --- | --- |
+| `isNavigationLocked` | `components/site/site-chrome.tsx` | True from “cover starts” until “unlock” after peel + reveal. |
+| `isContentRevealed` | `SitePageTransitionProvider` (set by `SiteChrome`) | Route children use this to fade in (e.g. hero) after the overlay peels. |
+| `interactionDisabled` | Passed to `SiteHeader` / `SiteHeaderLogoOutside` as `interactionDisabled={isNavigationLocked}` | Header treats locked navigation like a frozen chrome beat. |
+
+While `interactionDisabled` is true, the header root uses `pointer-events: none` so clicks do not double-fire during the overlay. Popovers and mobile nav are closed when a transition starts or the pathname changes.
+
+### Logo wordmark hover (Framer Motion)
+
+The split “Bom” / “Bom” wordmark in `components/header/site-header.tsx` animates scale, rotation, and spacing on hover/focus. The second word uses a short stagger so the motion reads as one gesture. Pointer/focus presence is tracked with `isLogoHovered`.
+
+**Approach completion:** If the pointer or focus leaves before the staggered hover-in has had time to finish (`LOGO_HOVER_APPROACH_TOTAL_MS`, derived from `LOGO_WORD_STAGGER_S` + `LOGO_HOVER_APPROACH.duration`), `isLogoApproachCompleting` stays true until the remaining time elapses so the motion still reaches the full hover pose, then `LOGO_REST_SETTLE` runs back to idle. With reduced motion, completion is skipped (immediate idle).
+
+### Logo hover lock during transitions
+
+Clicks on the home link can start navigation before the hover animation has reached its rest pose. During the route transition the link may **blur** or lose pointer events while the user’s cursor is **still over** the logo. That would clear `isLogoHovered` and snap the motion back to idle mid-wipe, which looks broken.
+
+**Invariant:** When `interactionDisabled` turns on while the logo is already hovered, `SiteHeader` sets `isLogoHoverLocked`. Motion targets use `effectiveLogoHovered = isLogoHovered || isLogoHoverLocked || isLogoApproachCompleting`. The lock clears when `interactionDisabled` goes false after the transition, so the animation can finish and hold the hover pose until navigation fully unlocks, then return to pointer-driven hover as normal.
+
+Seam-aware logo *colour* sampling during transitions is separate; see [Header Logo Colour](#header-logo-colour).
+
 ## Transition Overlay
 
 `components/site/site-page-transition-overlay.tsx` is an imperative Framer Motion overlay.
@@ -207,6 +235,8 @@ So idle logo colour is based on the revealed page surface:
 During transitions, when `interactionDisabled` is true, the header samples the actual seam under the logo every animation frame with `getSeamAwareLogoColor(...)`.
 
 That sampler temporarily changes `--seam-logo-color` to match the moving wipe under the logo. When navigation unlocks, `SiteHeader` resets `--seam-logo-color` back to the final page surface colour. This avoids cases where a berry or orange transition leaves the logo white on a marble 404.
+
+For how `interactionDisabled` is driven from `SiteChrome` and how **logo motion** (not colour) stays coherent—finishing hover-in after a brief hover and staying held when clicking through a transition—see [Navigation lock, content reveal, and header](#navigation-lock-content-reveal-and-header).
 
 ## Header Pill Handoff
 
