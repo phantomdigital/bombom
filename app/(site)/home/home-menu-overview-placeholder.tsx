@@ -1,12 +1,22 @@
 import SiteChromeRail from "@/components/site/site-chrome-rail";
+import CategoryCard from "@/components/categories/category-card";
+import { productCategories } from "@/lib/categories";
 
-const PLACEHOLDER_CATEGORIES = [
-  "Soft serve",
-  "Frozen yoghurt",
-  "Toppings bar",
-  "Drinks",
-  "Kids & sharing",
-  "Seasonal specials",
+const MENU_OVERVIEW_CARDS = productCategories.slice(0, 3);
+
+const MENU_CARD_LOREM = [
+  {
+    title: "Lorem ipsum",
+    description: "Dolor sit amet consectetur adipiscing elit sed do eiusmod.",
+  },
+  {
+    title: "Tempor incididunt",
+    description: "Ut labore et dolore magna aliqua ut enim ad minim veniam.",
+  },
+  {
+    title: "Quis nostrud",
+    description: "Exercitation ullamco laboris nisi ut aliquip ex ea commodo.",
+  },
 ] as const;
 
 /** Marble below-the-fold block to exercise scroll + transitions on `/home`. */
@@ -15,43 +25,35 @@ export default function HomeMenuOverviewPlaceholder() {
     <section
       id="menu-overview"
       aria-labelledby="menu-overview-heading"
-      className="w-full min-h-[110dvh] shrink-0 bg-bom-marble py-16 sm:py-20"
+      className="w-full min-h-[clamp(34rem,100dvh,60rem)] shrink-0 bg-bom-marble py-20 sm:py-24 lg:py-28"
     >
       <SiteChromeRail>
         <p className="font-mono text-xs font-bold uppercase tracking-[0.28em] text-bom-black/70">
-          Menu overview
+          Lorem ipsum
         </p>
         <h2
           id="menu-overview-heading"
           className="mt-3 font-sans text-3xl font-medium tracking-tight text-bom-black sm:text-4xl"
         >
-          Menu overview - placeholder
+          Dolor sit amet
         </h2>
-        <p className="mt-4 max-w-2xl font-sans text-base leading-relaxed text-bom-black/80 sm:text-lg">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-          incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
-          exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Scroll this
-          page to check how the ice hero and marble band read under the header and page
-          transitions.
+        <p className="mt-4 max-w-xl font-sans text-base leading-snug text-bom-black/75 sm:text-lg">
+          Consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.
         </p>
-        <ul className="mt-12 grid list-none gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {PLACEHOLDER_CATEGORIES.map((title) => (
-            <li
-              key={title}
-              className="rounded-2xl border border-bom-black/10 bg-bom-white p-6 shadow-[0_1px_0_rgba(0,0,0,0.04)]"
-            >
-              <h3 className="font-sans text-lg font-medium text-bom-black">{title}</h3>
-              <p className="mt-2 font-sans text-sm leading-relaxed text-bom-black/70">
-                Placeholder row - sizes, pricing, and imagery wire in later.
-              </p>
-            </li>
-          ))}
+        <ul className="mt-16 grid list-none grid-cols-1 gap-y-14 sm:gap-y-16 md:mt-20 md:grid-cols-3 md:gap-x-10 md:gap-y-0 lg:gap-x-14">
+          {MENU_OVERVIEW_CARDS.map((category, index) => {
+            const lorem = MENU_CARD_LOREM[index];
+            return (
+              <li key={category.id} className="min-w-0">
+                <CategoryCard
+                  category={category}
+                  title={lorem.title}
+                  description={lorem.description}
+                />
+              </li>
+            );
+          })}
         </ul>
-        <p className="mt-12 max-w-2xl font-sans text-sm leading-relaxed text-bom-black/60">
-          Extra tail copy so the section has real length on tall viewports. Duis aute irure
-          dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-          pariatur.
-        </p>
       </SiteChromeRail>
     </section>
   );
