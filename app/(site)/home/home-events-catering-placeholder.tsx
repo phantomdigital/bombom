@@ -2,55 +2,59 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import SiteChromeRail from "@/components/site/site-chrome-rail";
 
-const EVENT_PLACEHOLDERS = [
-  "Birthday party packs",
-  "School fundraiser tubs",
-  "Corporate sundae bar",
+const EVENT_CARD_LOREM = [
+  {
+    title: "Lorem ipsum",
+    body: "Dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor.",
+  },
+  {
+    title: "Incididunt ut labore",
+    body: "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.",
+  },
+  {
+    title: "Duis aute irure",
+    body: "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia.",
+  },
 ] as const;
 
-/** Musk band below menu overview for home-page service teaser content. */
+/** Below menu overview — same rail width as other home strips (block layout, not flex-centered). */
 export default function HomeEventsCateringPlaceholder() {
   return (
     <section
       id="events-catering-overview"
       aria-labelledby="events-catering-heading"
-      className="flex w-full min-h-[110dvh] shrink-0 items-center bg-bom-musk py-16 sm:py-20"
+      className="w-full shrink-0 bg-bom-musk py-20 sm:py-24 lg:py-28"
     >
       <SiteChromeRail>
         <p className="font-mono text-xs font-bold uppercase tracking-[0.28em] text-bom-black/70">
-          Events & catering
+          Events &amp; catering
         </p>
         <h2
           id="events-catering-heading"
           className="mt-3 font-sans text-3xl font-medium tracking-tight text-bom-black sm:text-4xl"
         >
-          Events & catering - placeholder
+          Lorem ipsum dolor sit
         </h2>
-        <p className="mt-4 max-w-2xl font-sans text-base leading-relaxed text-bom-black/85 sm:text-lg">
-          Placeholder section for event-focused offers like party packs, pop-ups, and catering
-          bundles. Content, pricing tiles, and booking calls-to-action can be wired in later.
+        <p className="mt-4 max-w-xl font-sans text-base leading-snug text-bom-black/75 sm:text-lg">
+          Consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
+          aliqua. Ut enim ad minim veniam, quis nostrud exercitation.
         </p>
         <Button
           variant="bomPill"
           size="bomPill"
           asChild
-          className="mt-8 w-full lg:w-auto lg:whitespace-nowrap items-center justify-center bg-bom-berry text-bom-white font-sans font-medium antialiased"
+          className="mt-8 w-full bg-bom-berry font-sans font-medium text-bom-white antialiased lg:w-auto lg:whitespace-nowrap"
         >
           <Link href="/locations">
-            <span>Enquire for an event</span>
+            <span>Ut enim ad minim</span>
           </Link>
         </Button>
 
-        <ul className="mt-10 grid list-none gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {EVENT_PLACEHOLDERS.map((label) => (
-            <li
-              key={label}
-              className="rounded-2xl border border-bom-black/15 bg-bom-white/55 p-5"
-            >
-              <h3 className="font-sans text-base font-medium text-bom-black">{label}</h3>
-              <p className="mt-2 font-sans text-sm leading-relaxed text-bom-black/70">
-                Placeholder copy for inclusions, minimum spend, and lead time.
-              </p>
+        <ul className="mt-16 grid list-none grid-cols-1 gap-y-6 sm:gap-y-8 md:mt-20 md:grid-cols-3 md:gap-x-10 md:gap-y-0 lg:gap-x-14">
+          {EVENT_CARD_LOREM.map(({ title, body }) => (
+            <li key={title} className="min-w-0 border-t border-bom-black/15 pt-6 md:border-t-0 md:pt-0">
+              <h3 className="font-sans text-base font-medium text-bom-black">{title}</h3>
+              <p className="mt-2 font-sans text-sm leading-relaxed text-bom-black/70">{body}</p>
             </li>
           ))}
         </ul>
