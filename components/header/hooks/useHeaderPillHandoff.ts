@@ -50,6 +50,14 @@ export function useHeaderPillHandoff({
     wasInteractionDisabledRef.current = interactionDisabled;
 
     if (!interactionDisabled) {
+      // If navigation unlocks before the compact-hide timer fires, force-hide
+      // the compact pill first so it cannot visibly animate back to origin.
+      if (
+        compactPillHandoffDelta !== null &&
+        !isCompactPillHandoffSuppressed
+      ) {
+        setIsCompactPillHandoffSuppressed(true);
+      }
       setCompactPillHandoffDelta(null);
       setIsHeroPillHandoffSuppressed(false);
       return;
@@ -73,7 +81,15 @@ export function useHeaderPillHandoff({
     setCompactPillHandoffDelta({
       x: heroRect.left - compactRect.left,
     });
-  }, [compactPillRef, heroPillRef, interactionDisabled, isCompactHeaderActive, viewportLg]);
+  }, [
+    compactPillHandoffDelta,
+    compactPillRef,
+    heroPillRef,
+    interactionDisabled,
+    isCompactHeaderActive,
+    isCompactPillHandoffSuppressed,
+    viewportLg,
+  ]);
 
   useEffect(() => {
     if (!compactPillHandoffDelta) return;
