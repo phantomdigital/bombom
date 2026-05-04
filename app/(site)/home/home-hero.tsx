@@ -16,7 +16,7 @@ export default function HomeHero() {
   return (
     <motion.section
       className={cn(
-        "flex h-[100dvh] max-h-[100dvh] min-h-0 w-full flex-col overflow-y-auto bg-bom-ice",
+        "flex min-h-[clamp(34rem,100dvh,60rem)] w-full flex-col bg-bom-ice",
         !isVisible && "pointer-events-none select-none"
       )}
       aria-hidden={!isVisible}
@@ -37,25 +37,25 @@ export default function HomeHero() {
       }
     >
       <SiteChromeRail
-        className="flex min-h-0 w-full flex-1 flex-col"
-        railClassName="flex min-h-0 w-full flex-1 flex-col items-center justify-center gap-10 pt-[var(--site-header-total-height,12.5rem)] sm:gap-11 sm:px-4 lg:gap-12"
+        className="flex w-full flex-1 flex-col"
+        railClassName="flex w-full flex-1 flex-col items-center justify-center gap-10 pb-16 pt-[var(--site-header-total-height,12.5rem)] sm:gap-11 sm:px-4 sm:pb-20 lg:gap-12 lg:pb-24"
       >
         <div
           className={cn(
-            "flex w-full max-w-xl shrink-0 flex-col items-center justify-center gap-10 text-center sm:max-w-2xl sm:gap-11 lg:max-w-3xl lg:gap-12"
+            "flex w-full max-w-2xl shrink-0 flex-col items-center justify-center gap-10 text-center sm:max-w-3xl sm:gap-11 lg:max-w-4xl lg:gap-12"
           )}
         >
           <h1 className="font-sans tracking-tight text-center text-bom-iris">
-            <span className="block text-[clamp(2.15rem,10.5vw,3rem)] font-light leading-[1.08] sm:text-3xl lg:text-[3.25rem]">
-              Tiny Koalas.
+            <span className="block text-[clamp(2.35rem,11.2vw,3.2rem)] font-light leading-[1.08] sm:text-4xl lg:text-[3.45rem]">
+              Lorem ipsum.
             </span>
-            <span className="mt-1 block text-[clamp(3.45rem,15.5vw,5rem)] font-[900] leading-[1.25] sm:mt-0 sm:text-4xl lg:text-[7rem]">
-              Big flavours.
+            <span className="mt-1 block text-[clamp(3.75rem,16.5vw,5.4rem)] font-[900] leading-[1.25] sm:mt-0 sm:text-5xl lg:text-[7.4rem]">
+              Dolor magnam.
             </span>
           </h1>
           <p className="font-sans text-base font-medium leading-[1.2] text-bom-iris/60 not-italic sm:text-base lg:text-[clamp(1rem,1.75vw,16pt)] max-w-2xl text-center">
-            Made fresh every morning. Frozen yoghurt and Brazilian-inspired
-            desserts. Made fresh in Wagga.
+            Dolor sit amet consectetur. Venenatis lectus magna fringilla
+            sit-amet porttitor rhoncus. Mattis rhoncus urna neque.
           </p>
           <Button
             variant="bomPill"
