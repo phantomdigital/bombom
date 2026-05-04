@@ -7,10 +7,20 @@ import Link from 'next/link';
 
 interface CategoryCardProps {
   category: ProductCategory;
+  /** Overrides `category.name` when set (e.g. placeholder copy). */
+  title?: string;
+  /** Overrides `category.description` when set. */
+  description?: string;
 }
 
-export default function CategoryCard({ category }: CategoryCardProps) {
+export default function CategoryCard({
+  category,
+  title,
+  description,
+}: CategoryCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const displayTitle = title ?? category.name;
+  const displayDescription = description ?? category.description;
 
   return (
     <Link
@@ -20,17 +30,16 @@ export default function CategoryCard({ category }: CategoryCardProps) {
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Product Image Container */}
-      <div className="relative aspect-square bg-white rounded-xl overflow-hidden mb-4">
+      <div className="relative mb-4 aspect-square overflow-hidden rounded-[22%] bg-white supports-[corner-shape:squircle]:[corner-shape:squircle]">
         <img 
           src="/images/optim.png" 
-          alt={category.name}
-          className="w-full h-full object-contain p-8 transition-transform duration-500 group-hover:scale-105"
+          alt={displayTitle}
+          className="w-full h-full object-contain p-12 transition-transform duration-500 group-hover:scale-105 sm:p-14 lg:p-16"
         />
         
         {/* Circular Button in Top Right Corner */}
         <motion.div 
-          className="absolute top-2 right-2 w-16 h-16 bg-gray-900 rounded-full flex items-center justify-center overflow-hidden z-10 pointer-events-none"
-          style={{ boxShadow: '0 0 0 20px #faf9f7' }}
+          className="absolute top-2 right-2 w-16 h-16 bg-gray-900 rounded-full flex items-center justify-center overflow-hidden z-10 pointer-events-none shadow-[0_0_0_20px_var(--color-bom-marble)]"
           initial={{ scale: 0, opacity: 0 }}
           animate={{
             scale: isHovered ? 1 : 0,
@@ -66,10 +75,10 @@ export default function CategoryCard({ category }: CategoryCardProps) {
       {/* Content */}
       <div>
         <h3 className="font-sans text-xl lg:text-2xl font-bold text-gray-900 mb-2 tracking-tight transition-colors group-hover:text-gray-700">
-          {category.name}
+          {displayTitle}
         </h3>
         <p className="font-sans text-xs lg:text-sm text-gray-600 leading-relaxed tracking-wide uppercase">
-          {category.description}
+          {displayDescription}
         </p>
       </div>
     </Link>
