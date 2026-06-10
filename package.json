@@ -6,7 +6,6 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test:nomni": "tsx --test tests/nomni-signup.test.ts",
     "email:dev": "cross-env EMAIL_PREVIEW_STATIC=1 email dev --dir ./emails --port 3001",
     "email:push-klaviyo": "tsx scripts/push-email-templates-to-klaviyo.ts",
     "email:push-klaviyo:dry": "tsx scripts/push-email-templates-to-klaviyo.ts --dry-run",
