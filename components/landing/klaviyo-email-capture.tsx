@@ -4,7 +4,7 @@ import { useActionState, useEffect, useId, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { HiXMark } from 'react-icons/hi2';
-import { subscribeToKlaviyo } from '@/app/actions/klaviyo';
+import { subscribeToNomni } from '@/app/actions/nomni';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import TimedPopover from '@/components/ui/timed-popover';
@@ -92,7 +92,7 @@ interface KlaviyoEmailCaptureProps {
 }
 
 export default function KlaviyoEmailCapture({
-  listId = process.env.NEXT_PUBLIC_KLAVIYO_LIST_ID || '',
+  listId = process.env.NEXT_PUBLIC_NOMNI_LIST_ID || process.env.NEXT_PUBLIC_NONMNI_LIST_ID || '',
   className,
   placeholder,
   placeholderCycle,
@@ -102,7 +102,7 @@ export default function KlaviyoEmailCapture({
   onDarkSurface = false,
   onSuccessVisibilityChange,
 }: KlaviyoEmailCaptureProps) {
-  const [state, formAction, isPending] = useActionState(subscribeToKlaviyo, null);
+  const [state, formAction, isPending] = useActionState(subscribeToNomni, null);
   const [email, setEmail] = useState('');
   const [isInputFocused, setIsInputFocused] = useState(false);
   const cycles = placeholderCycle ?? DEFAULT_PLACEHOLDER_CYCLE;
