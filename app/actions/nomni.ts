@@ -20,6 +20,12 @@ const subscribeSchema = z.object({
 
 export type NomniSubscribeResult = NomniSignupResult;
 
+function envFlagEnabled(value: string | undefined): boolean {
+  if (!value) return false;
+  const normalized = value.trim().toLowerCase();
+  return normalized === '1' || normalized === 'true' || normalized === 'yes' || normalized === 'on';
+}
+
 function isLocalHostHeader(hostHeader: string | null): boolean {
   if (!hostHeader) return false;
   const host = hostHeader.split(':')[0]?.toLowerCase() ?? '';
@@ -59,6 +65,8 @@ export async function subscribeToNomni(
   const requestHeaders = await headers();
   const hostHeader = requestHeaders.get('x-forwarded-host') || requestHeaders.get('host');
   const enableLocalDebug = process.env.NODE_ENV !== 'production' && isLocalHostHeader(hostHeader);
+  const enableProductionDebug = envFlagEnabled(process.env.NOMNI_DEBUG_LOGS);
+  const enableDebug = enableLocalDebug || enableProductionDebug;
 
   return runNomniSignup(
     {
@@ -82,7 +90,7 @@ export async function subscribeToNomni(
     {
       apiKey: NOMNI_API_KEY,
       baseUrl: NOMNI_API_URL,
-      debug: enableLocalDebug,
+      debug: enableDebug,
     }
   );
 }
