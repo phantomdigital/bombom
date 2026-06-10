@@ -43,6 +43,7 @@ const jsonLd = {
       url: siteUrl,
       sameAs: [
         "https://instagram.com/bombom.au",
+        "https://www.facebook.com/people/Bombom/61587805351397/",
         "https://www.tiktok.com/@bombom_au",
       ],
     },
