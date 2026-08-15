@@ -11,7 +11,7 @@ export default function LandingPageHeader() {
             aria-label="BomBom Treats"
           />
         </div>
-        <LandingSocialLinks className="hidden sm:flex" />
+        <LandingSocialLinks includeGiftCards className="hidden sm:flex" />
       </div>
     </header>
   );

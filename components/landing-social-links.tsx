@@ -1,18 +1,22 @@
 import Link from "next/link";
 import { SiFacebook, SiInstagram, SiTiktok } from "react-icons/si";
+import GiftCardsLink from "@/components/gift-cards-link";
 
 type LandingSocialLinksProps = {
   className?: string;
+  includeGiftCards?: boolean;
 };
 
 export default function LandingSocialLinks({
   className = "",
+  includeGiftCards = false,
 }: LandingSocialLinksProps) {
   return (
     <nav
       className={`flex shrink-0 items-center gap-2 sm:gap-6 ${className}`}
-      aria-label="Social links"
+      aria-label={includeGiftCards ? "Gift cards and social links" : "Social links"}
     >
+      {includeGiftCards ? <GiftCardsLink /> : null}
       <Link
         href="https://instagram.com/bombom.au"
         target="_blank"

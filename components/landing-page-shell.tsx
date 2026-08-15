@@ -7,6 +7,7 @@ import { MapPinIcon } from "@phosphor-icons/react";
 import KlaviyoEmailCapture from "@/components/klaviyo-email-capture";
 import LandingPageHeader from "@/components/landing-page-header";
 import LandingSocialLinks from "@/components/landing-social-links";
+import { GIFT_CARDS_URL } from "@/lib/gift-cards";
 import OpeningCountdownTicker, {
   OPENING_LAUNCH_TIMESTAMP_MS,
 } from "@/components/opening-countdown-ticker";
@@ -23,7 +24,7 @@ const MARKETING_LIST_LINE =
 const LOCATION_LABEL = "Shop 1, 117 Baylis St, Wagga Wagga";
 const OPEN_CELEBRATION_HEADLINE = "And just like that, we're open!";
 const OPEN_CELEBRATION_SUBLINE =
-  "Wander in if you're around. Otherwise, join the list below for launch offers and updates.";
+  "Wander in if you're around. Otherwise, join the list below for offers and updates.";
 const MARKETING_SUCCESS_MESSAGE =
   "You're in,  we'll be in touch.";
 const INTRO_REVEAL_DELAY_MS = 1000;
@@ -69,6 +70,15 @@ const jsonLd = {
         addressCountry: "AU",
       },
       parentOrganization: { "@id": `${siteUrl}/#organization` },
+    },
+    {
+      "@type": "Offer",
+      name: "BomBom Gift Card",
+      url: GIFT_CARDS_URL,
+      description:
+        "The perfect foodie gift for every occasion. Gift cards from $10.",
+      priceCurrency: "AUD",
+      seller: { "@id": `${siteUrl}/#local` },
     },
   ],
 };
@@ -296,7 +306,7 @@ export default function LandingPageShell({
               <OpeningCountdownTicker className="hidden shrink-0 sm:block" />
             ) : null}
           </div>
-          <LandingSocialLinks className="flex justify-center sm:hidden" />
+          <LandingSocialLinks includeGiftCards className="flex justify-center sm:hidden" />
         </div>
       </footer>
     </div>

@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { GIFT_CARDS_URL } from "./lib/gift-cards";
 
 const nextConfig: NextConfig = {
   async headers() {
@@ -26,6 +27,16 @@ const nextConfig: NextConfig = {
         ],
         destination: "https://bombomtreats.com.au/:path*",
         permanent: true,
+      },
+      {
+        source: "/gift-cards",
+        destination: GIFT_CARDS_URL,
+        permanent: false,
+      },
+      {
+        source: "/giftcards",
+        destination: GIFT_CARDS_URL,
+        permanent: false,
       },
     ];
   },

@@ -35,6 +35,8 @@ export const metadata: Metadata = {
     "bakery",
     "cakes",
     "coffee",
+    "gift cards",
+    "gift vouchers",
   ],
   authors: [{ name: "BomBom Treats", url: siteUrl }],
   creator: "BomBom Treats",
